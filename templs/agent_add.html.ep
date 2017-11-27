@@ -1,0 +1,61 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'Dumper';
+% use Mojo::Util qw(dumper);
+%
+% use utf8;
+% use strict;
+%
+% my $hostname = $req->param('hostname');
+% my $username = $req->param('username');
+% my $password = $req->param('password');
+%
+% my $m = $self->app->model;
+% my $agentID = $m->agentExist($hostname);
+%
+% my $jobID = $m->jobCreate;
+% $m->jobUpdate(
+%    $jobID, 
+%    type => 'agentadd',
+%    sourceid => $agentID,
+%    destid => $agentID, 
+%    author => $c->session('username')
+% );
+%
+% if ($agentID) {
+    <div class="callout alert">
+        Agent <%= $hostname %> yet exist.
+    </div>
+%   $m->jobUpdate($jobID, status => 'mistake', error => 'agentexist', stop => $m->timestamp);
+% }
+%
+% unless ($agentID) {
+
+%     my $agentID = $m->agentAdd($hostname, $username, $password);
+%     if ($agentID) {
+        <div class="callout success">
+        Agent <%= $hostname %> was added successful with id <%= $agentID %>.
+        </div>
+        <div class="text-center">
+          <a class="button" href="/agent/list">Agent List</a>
+          <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
+          <a class="button" href="#" data-open="modal-agent-add">Add yet</a>
+        </div>
+%       $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+%     }
+
+%     unless ($agentID) {
+          <div class="callout alert">
+          Agent <%= $hostname %> was added unsuccessful.
+          </div>
+          <div class="text-center">
+              <a class="button" href="/agent/list">Agent List</a>
+              <a class="button" href="#" data-open="modal-agent-add">Add yet</a>
+          </div>
+%         $m->jobUpdate($jobID, status => 'error', error => 'agentadderr', stop => $m->timestamp);
+%     }
+% }
+%#EOF
+

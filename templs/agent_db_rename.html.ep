@@ -1,0 +1,65 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'Dumper';
+% use Mojo::Util qw(dumper);
+% use Mojo::JSON qw(j encode_json decode_json);
+
+% use utf8;
+% use strict;
+
+% my $m = $self->app->model;
+
+% my $dbname = $req->param('dbname') || undef;
+% my $agentID = $req->param('agentid') || undef;
+% my $newname = $req->param('newname') || undef;
+
+% my $agentProfile = $m->agentProfile($agentID);
+
+% my $agentHostname = $agentProfile->{'hostname'} || '';
+% my $agentUsername = $agentProfile->{'username'} || 'undef';
+% my $agentPassword = $agentProfile->{'password'} || 'undef';
+
+% my $jobID = $m->jobCreate;
+% $m->jobUpdate(
+%     $jobID, 
+%     type => 'dbrename',
+%     sourceid => $agentID,
+%     destid => $agentID
+% );
+% my $jobMagic = $m->jobProfile($jobID)->{'magic'};
+
+% my $ua = Mojo::UserAgent->new(max_redirects => 5);
+
+% my $param = "dbname=$dbname";
+% $param .= "&newname=$newname";
+
+% my $tx = $ua->get("https://$agentUsername:$agentPassword\@$agentHostname:3001/db/rename?$param");
+
+% my $body;
+% eval { $body = $tx->result->body };
+% $body ||= '{"result":"mistake"}';
+% my $res = decode_json($body);
+
+% if ($res->{'result'} eq 'success') {
+    <div class="callout success">
+        Agent <%= $agentHostname %> rename database <%= $dbname %> to <%= $newname %> as job <%= $jobID %>.
+    </div>
+%   $m->agentDBUpdate($agentID);
+%   $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+% }
+
+% if ($res->{'result'} ne 'success') {
+    <div class="callout alert">
+        Agent <%= $agentHostname %> cannot rename <%= $dbname %>. 
+        Job <%= $jobID %> was cancel.
+    </div>
+%   $m->jobUpdate($jobID, status => 'pushjob', error => 'pusherr', stop => $m->timestamp);
+% }
+
+<div class="text-center">
+    <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
+</div>
+%#EOF
+

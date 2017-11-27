@@ -1,0 +1,61 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'Dumper';
+% use Mojo::Util qw(dumper);
+% use Mojo::JSON qw(encode_json decode_json);
+% use utf8;
+% use strict;
+
+% my $m = $self->app->model;
+
+% my $dbname = $req->param('dbname') || undef;
+% my $agentID = $req->param('agentid') || undef;
+
+% my $agentProfile = $m->agentProfile($agentID);
+% my $agentHostname = $agentProfile->{'hostname'} || 'undef';
+% my $agentUsername = $agentProfile->{'username'} || 'undef';
+% my $agentPassword = $agentProfile->{'password'} || 'undef';
+
+% my $jobID = $m->jobCreate;
+% $m->jobUpdate(
+%    $jobID, 
+%    type => 'dbcreate',
+%    sourceid => $agentID,
+%    destid => $agentID, 
+%    author => $c->session('username')
+% );
+% my $jobMagic = $m->jobProfile($jobID)->{'magic'};
+
+% my $ua = Mojo::UserAgent->new(max_redirects => 5);
+% my $param = "dbname=$dbname";
+
+% my $tx = $ua->get("https://$agentUsername:$agentPassword\@$agentHostname:3001/db/create?$param");
+
+% my $body;
+% eval { $body = $tx->result->body };
+% $body ||= '{"result":"mistake"}';
+% my $res = decode_json($body);
+
+% if ($res->{'result'} eq 'success') {
+    <div class="callout success">
+        Agent <%= $agentHostname %> create database <%= $dbname %>  as job <%= $jobID %>.
+    </div>
+%   $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+%   $m->agentDBUpdate($agentID);
+% }
+
+% if ($res->{'result'} ne 'success') {
+    <div class="callout alert">
+        Agent <%= $agentHostname %> cannot create <%= $dbname %>. 
+        Job <%= $jobID %> was cancel.
+    </div>
+%   $m->jobUpdate($jobID, status => 'pushjob', error => 'pusherr', stop => $m->timestamp);
+% }
+
+<div class="text-center">
+    <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
+</div>
+%#EOF
+

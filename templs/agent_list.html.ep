@@ -1,0 +1,118 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'Dumper';
+% use Mojo::Util qw(b64_encode b64_decode md5_sum dumper);
+% use Encode qw(decode encode);
+% use utf8;
+% use strict;
+
+% my $m = $self->app->model;
+% my $agentList = $m->agentList;
+
+% foreach my $agent (@{$agentList}) {
+%   my $agentID = $agent->{'id'};
+%   my $hostname = $agent->{'hostname'};
+%   my $username = $agent->{'username'};
+%   my $password = $agent->{'password'};
+
+    <div class="reveal" id="modal-agent-config-<%= $agentID %>" data-reveal>
+        <form accept-charset="UTF-8" action="/agent/config" method="get" data-abide novalidate>
+
+            <h5>Configuration agent <%= $hostname %></h5>
+            <input type="hidden" name="id" value="<%= $agentID %>"/>
+            <label>hostname
+                <input type="text" name="hostname" placeholder="hostname" value="<%= $hostname %>" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                <span class="form-error">mandatory parameter, 5 or more letter</span>
+            </label>
+            <label>username
+                <input type="text" name="username" placeholder="username" value="<%= $username %>" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                <span class="form-error">mandatory, 5 or more letter</span>
+            </label>
+            <label>password
+                <input type="password" name="password" placeholder="password" value="<%= $password %>" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                <span class="form-error">mandatory, 5 or more letter</span>
+            </label>
+            <p class="text-center">
+                <button type="submit" class="button success">Accept</button>
+            </p>
+        </form>
+        <button class="close-button" data-close="modal-agent-config-<%= $agentID %>" type="button">&times;</button>
+    </div>
+
+    <div class="reveal" id="modal-agent-delete-<%= $agentID %>" data-reveal>
+        <div class="text-center">
+            <h5>Do you want to delete agent <%= $hostname %>?</h5>
+            <a class="button" data-close="modal-agent-delete-<%= $agentID %>">Escape</a>
+            <a class="button alert" href="/agent/delete?id=<%= $agentID %>">Delete</a>
+        </div>
+        <button class="close-button" data-close="modal-agent-delete-<%= $agentID %>" type="button">&times;</button>
+    </div>
+
+    <div class="reveal" id="modal-agent-db-create-<%= $agentID %>" data-reveal>
+        <h5>Create new database on agent [<%= $hostname %>] </h5>
+        <form accept-charset="UTF-8" action="/agent/db/create" method="get" data-abide novalidate>
+            <input type="hidden" name="agentid" value="<%= $agentID %>" />
+            <label>New name
+                <input type="text" name="dbname" value="new_empty_db" placeholder="empty_db" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{3,64}"/>
+                <span class="form-error">mandatory, 3 or more letter</span>
+            </label>
+            <p class="text-center">
+                <button type="submit" class="button">Accept</button>
+            </p>
+        </form>
+        <button class="close-button" data-close="modal-agent-db-create-<%= $agentID %>" type="button">&times;</button>
+    </div>
+
+    <div class="reveal" id="modal-agent-<%= $agentID %>" data-reveal>
+        <div class="text-center">
+            <h5>Agent <%= $hostname %></h5>
+            <div class="stacked-for-small button-group">
+                <a class="button" href="#" data-open="modal-agent-config-<%= $agentID %>">ReConf</a>
+                <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
+                <a class="button" href="#" data-open="modal-agent-db-create-<%= $agentID %>">DBCreate</a>
+                <a class="button alert" href="#" data-open="modal-agent-delete-<%= $agentID %>">Delete</a>
+            </div>
+        </div>
+        <button class="close-button" data-close="modal-agent-<%= $agentID %>" aria-label="Close modal" type="button">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+
+% }
+
+<div class="text-center">
+    <h5>Agent list&nbsp;<a href="/agent/list"><i class="fi-refresh" style="font-size:1.3rem;"></i></a></h5>
+</div>
+
+<table id="table" class="display" >
+    <thead>
+      <tr>
+        <td>#</td>
+        <td>hostname</td>
+        <td>count db</td>
+        <td>total</td>
+      </tr>
+    </thead>
+    <tbody>
+% my $num = 1;
+% foreach my $agent (@{$agentList}) {
+%   my $agentID = $agent->{'id'};
+%   my $hostname = $agent->{'hostname'};
+%   my $agentInfo = $m->agentInfo($agentID);
+%   my $sum = $agentInfo->{'sum'} || 0;
+%   my $count = $agentInfo->{'count'} || 0;
+    <tr>
+        <td><%= $num %></td>
+        <td><a href="#" data-open="modal-agent-<%= $agentID %>"><%= $hostname %></a></td>
+        <td><%= $count %></td>
+        <td><%= $m->sizeM($sum) %></td>
+    </tr>
+%   $num++;
+% }
+    </tbody>
+</table>
+%#EOF
+
