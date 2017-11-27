@@ -1,4 +1,185 @@
-#!/usr/bin/env perl
+#!/usr/local/bin/perl
+
+#--------------
+#--- DAEMON ---
+#--------------
+
+package PGmaster::Daemon;
+
+use strict;
+use warnings;
+use POSIX qw(getpid setuid setgid geteuid getegid);
+use Cwd qw(cwd getcwd chdir);
+use Mojo::Util qw(dumper);
+
+sub new {
+    my $class = shift;
+    my $self = {
+        pid => undef
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub fork {
+    my ($self, $user, $group) = shift;
+    my $pid = fork;
+    if ($pid > 0) {
+        exit;
+    }
+    chdir("/");
+    open(my $stdout, '>&', STDOUT); 
+    open(my $stderr, '>&', STDERR);
+    open(STDOUT, '>>', '/dev/null');
+    open(STDERR, '>>', '/dev/null');
+    $self->pid(getpid);
+    $self->pid;
+}
+
+sub pid {
+    my ($self, $pid) = @_;
+    return $self->{pid} unless $pid;
+    $self->{pid} = $pid if $pid;
+    $self;
+}
+
+1;
+
+#----------
+#--- DB ---
+#----------
+
+package PGmaster::DB;
+
+use strict;
+use warnings;
+use DBI;
+
+sub new {
+    my ($class, %args) = @_;
+    my $self = {
+        hostname => $args{hostname},
+        username => $args{username},
+        password => $args{password},
+        database => $args{database},
+        engine => 'Pg',
+        error => ''
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub username {
+    my ($self, $username) = @_; 
+    return $self->{username} unless $username;
+    $self->{username} = $username;
+    $self;
+}
+
+sub password {
+    my ($self, $password) = @_; 
+    return $self->{password} unless $password;
+    $self->{password} = $password;
+    $self;
+}
+
+sub hostname {
+    my ($self, $hostname) = @_; 
+    return $self->{hostname} unless $hostname;
+    $self->{hostname} = $hostname;
+    $self;
+}
+
+sub database {
+    my ($self, $database) = @_; 
+    return $self->{database} unless $database;
+    $self->{database} = $database;
+    $self;
+}
+
+sub error {
+    my ($self, $error) = @_; 
+    return $self->{error} unless $error;
+    $self->{error} = $error;
+    $self;
+}
+
+sub engine {
+    my ($self, $engine) = @_; 
+    return $self->{engine} unless $engine;
+    $self->{engine} = $engine;
+    $self;
+}
+
+
+sub exec {
+    my ($self, $query) = @_;
+    return undef unless $query;
+
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $sth;
+    eval {
+        $sth = $dbi->prepare($query);
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $rows = $sth->execute;
+    my @list;
+
+    while (my $row = $sth->fetchrow_hashref) {
+        push @list, $row;
+    }
+    $sth->finish;
+    $dbi->disconnect;
+    \@list;
+}
+
+sub do {
+    my ($self, $query) = @_;
+    return undef unless $query;
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+    my $rows;
+    eval {
+        $rows = $dbi->do($query) or return undef;
+    };
+    $self->error($@);
+    return undef if $@;
+
+    $dbi->disconnect;
+    $rows*1;
+}
+
+1;
+
+#-------------
+#--- MODEL ---
+#-------------
 
 package PGmaster::Model;
 
@@ -12,35 +193,18 @@ use Mojo::Util qw(md5_sum dumper);
 use Socket;
 use POSIX;
 
-
 sub new {
-    my ($class, $app, $dbhost, $dbuser, $dbpasswd, $dbname) = @_;
+    my ($class, $app, $db) = @_;
     my $self = {
         app => $app,
-        dbhost => $dbhost,
-        dsn => "dbi:Pg:dbname=$dbname;host=$dbhost",
-        dbuser => $dbuser,
-        dbpasswd => $dbpasswd,
-        dbname => $dbname
+        db => $db
     };
     bless $self, $class;
     return $self;
 }
 
-sub dbuser {
-    return shift->{dbuser};
-}
-
-sub dbpasswd {
-    return shift->{dbpasswd};
-}
-
-sub dsn {
-    return shift->{dsn};
-}
-
-sub dbhost {
-    return shift->{dbhost};
+sub db {
+    return shift->{db};
 }
 
 sub app {
@@ -133,23 +297,8 @@ sub agent_list {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = $id" if $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select * from agent $where order by hostname;";
-#    my $query = "select a.hostname, a.username, a.password, sum(d.size) as sum, count(d.name) as count
-#                 from agent a, db d
-#                    where a.id = d.agentid group by a.hostname, a.username,a.password
-#                    order by a.hostname;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-
-    my @list;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @list, $row;
-    }
-    $sth->finish;
-    $dbi->disconnect;
-    return \@list;
+    $self->db->exec($query);
 }
 
 sub agent_exist {
@@ -1163,63 +1312,48 @@ sub schedule_config {
 #--- SESSION CONT ---
 #--------------------
 
-sub session_auth {
-    return 1 if shift->session('username');
-    return undef;
+sub pwfile {
+    my ($self, $pwdfile) = @_;
+    return $self->app->config('pwdfile') unless $pwdfile;
+    $self->app->config(pwfile => $pwdfile);
 }
 
-sub session_deauth {
-    return 1 if shift->session(expires => 1);;
-    return undef;
-}
-
-sub check_password {
+sub ucheck {
     my ($self, $username, $password) = @_;
-
-    return undef unless $username;
     return undef unless $password;
-
-    my $passwdFile = $self->app->config('pwdfile');
-    do {
-        $self->app->log->error("Cannot read password file '$passwdFile'");
-        return undef;
-    } unless -r $passwdFile;
-
-    my $result = undef;
+    return undef unless $username;
+    my $pwdfile = $self->pwfile or return undef;
+    my $res = undef;
     eval {
-        my $ht = Apache::Htpasswd->new({ passwdFile => $passwdFile, ReadOnly => 1 });
-        $result = $ht->htCheckPassword($username, $password);
+        my $ht = Apache::Htpasswd->new({ passwdFile => $pwdfile, ReadOnly => 1 });
+        $res = $ht->htCheckPassword($username, $password);
     };
-    do { $self->app->log->debug("Auth module error: $@"); return undef; } if $@;
-
-    return 1 if $result;
-
-    $self->app->log->info("Bad auth from ".$self->tx->remote_address);
-    return undef;
+    $res;
 }
-
 
 sub login {
     my $self = shift;
-    return $self->redirect_to('/hello') if $self->session_auth;
+    return $self->redirect_to('/') if $self->session('username');
 
     my $username = $self->req->param('username') || undef;
     my $password = $self->req->param('password') || undef;
 
-    my $auth =  $self->check_password($username, $password);
-    if ($auth) {
-        $self->session(username => $username);
-        return $self->redirect_to('/hello');
-    }
+    return $self->render(template => 'login') unless $username and $password;
 
-    $self->render(template => 'login', req => $self->req);
+    if ($self->ucheck($username, $password)) {
+        $self->session(username => $username);
+        return $self->redirect_to('/');
+    }
+    $self->render(template => 'login');
 }
 
 sub logout {
     my $self = shift;
-    $self->session_deauth;
-    $self->render(template => 'login', req => $self->req);
+    $self->session(expires => 1);
+    $self->redirect_to('/');
 }
+
+
 #----------------
 #--- CONT END ---
 #----------------
@@ -1257,327 +1391,240 @@ use Sys::Hostname qw(hostname);
 use File::Basename qw(basename dirname);
 use Apache::Htpasswd;
 use Cwd qw(getcwd abs_path);
-use Time::Piece;
 
-my $appfile = abs_path(__FILE__);
-my $appname = basename($appfile, ".pl");
-$0 = $appfile;
+my $appname = 'pgmaster';
+
+#--------------
+#--- GETOPT ---
+#--------------
 
 getopt
     'h|help' => \my $help,
-    '4|ipv4listen=s' => \my $ipv4listen,
-    '6|ipv6listen=s' => \my $ipv6listen,
     'c|config=s' => \my $conffile,
-    'p|pwdfile=s' => \my $pwdfile,
-    'd|tmpdir=s' => \my $tmpdir,
-    'l|logfile=s' => \my $logfile,
-    'i|pidfile=s' => \my $pidfile,
-    'v|loglevel=s' => \my $loglevel,
     'f|nofork' => \my $nofork,
     'u|user=s' => \my $user,
     'g|group=s' => \my $group;
+
 
 if ($help) {
     print qq(
 Usage: app [OPTIONS]
 
 Options
-    -h | --help                      This help
-    -4 | --ipv4listen=address:port      Listen address and port, defaults 127.0.0.1:5100
-    -6 | --ipv6listen=[address]:port    Listen address and port, defaults [::1]:5100
-
+    -h | --help           This help
     -c | --config=path    Path to config file
-    -p | --pwdfile=path   Path to user password file
-    -d | --tmpdir=path    Path to application files
-    -l | --logfile=path   Path to log file
-    -i | --pidfile=path   Path to process ID file
-    -v | --loglevel=level  Verbose level: debug, info, warn, error, fatal
     -u | --user=user      System owner of process
-    -g | --group=group    System group
-    -f | --nofork         Dont fork process, for debugging
-All path option override option from configuration file
+    -g | --group=group    System group 
+    -f | --nofork         Dont fork process
 
+The options override options from configuration file
     )."\n";
     exit 0;
 }
+
+#------------------
+#--- APP CONFIG ---
+#------------------
 
 my $server = Mojo::Server::Prefork->new;
 my $app = $server->build_app('PGmaster');
 $app = $app->controller_class('PGmaster::Controller');
 
-$app->config(
-    hostname => hostname,
-    tmpdir => $tmpdir || "/tmp",
-    listenIPv4 => $ipv4listen || "0.0.0.0",
-    listenIPv6 => $ipv6listen || "[::]",
-    listenPort => "3003",
+$app->secrets(['6d578e43ba88260e0375a1a35fd7954b']);
+$app->static->paths(['/usr/local/share/pgdumper/public']);
+$app->renderer->paths(['/usr/local/share/pgdumper/templs']);
 
-    dbhost => "127.0.0.1",
-    dbuser => "postgres",
-    dbpasswd => "password",
-    dbname => "pgdumper",
+$app->config(conffile => $conffile || '/usr/local/etc/pgdumper/pgmaster.conf');
+$app->config(pwdfile => '/usr/local/etc/pgdumper/pgmaster.pw');
+$app->config(logfile => '/var/log/pgdumper/pgmaster.log');
+$app->config(loglevel => 'info');
+$app->config(pidfile => '/var/run/pgdumper/pgmaster.pid');
+$app->config(crtfile => '/usr/local/etc/pgdumper/pgmaster.crt');
+$app->config(keyfile => '/usr/local/etc/pgdumper/pgmaster.key');
 
-    pwdfile => $pwdfile || "/usr/local/etc/pgdumper/$appname.pw",
-    pidfile => $pidfile || "/var/run/pgdumper/$appname.pid",
-    logfile => $logfile || "/var/log/pgdumper/$appname.log",
-    conffile => $conffile || "/usr/local/etc/pgdumper/$appname.conf",
-    maxrequestsize => 1024*1024*1024,
-    tlscert => "/usr/local/etc/pgdumper/$appname.crt",
-    tlskey => "/usr/local/etc/pgdumper/$appname.key",
-    appuser => $user || "www",
-    appgroup => $group || "www",
-    mode => 'production',
-    loglevel => $loglevel || 'info',
-    libdir => '/usr/local/share/pgdumper',
-    timezone => 'Europe/Moscow',
-);
+$app->config(user => $user || 'www');
+$app->config(group => $group || 'www');
 
-$conffile = $app->config('conffile');
-do {
-    $app->log->debug("Load configuration from $conffile ");
-    my $config = $app->plugin( 'JSONConfig', { file => $conffile } );
-} if -r $conffile;
+$app->config(listenaddr4 => '0.0.0.0');
+$app->config(listenaddr6 => '[::]');
+$app->config(listenport => '3003');
 
-$ENV{TZ} = $app->config('timezone');;
-tzset;
+$app->config(tmpdir => '/tmp');
 
-my $tlscert = $app->config('tlscert');
-my $tlskey = $app->config('tlskey');
-$tmpdir = $app->config('tmpdir');
-my $rundir = dirname ($app->config('pidfile'));
-my $logdir = dirname ($app->config('logfile'));
-$pwdfile = $app->config('pwdfile');
+$app->config(dbhost => '127.0.0.1');
+$app->config(dbuser => 'postgres');
+$app->config(dbpwd => 'password');
+$app->config(dbname => 'pgdumper');
 
-do { print "Error: Cannot write to tmp direcory $tmpdir\n"; exit 1; } unless -w $tmpdir;
-do { print "Error: Cannot write to run direcory $rundir\n"; exit 1; } unless -w $rundir;
-do { print "Error: Cannot write to log direcory $logdir\n"; exit 1; } unless -w $logdir;
+if (-r $app->config('conffile')) {
+    $app->log->debug("Load configuration from ".$app->config('conffile'));
+    $app->plugin('JSONConfig', { file => $app->config('conffile') });
+}
 
-do { print "Error: Cannot read TLS certificate $tlscert\n"; exit 1; } unless -r $tlscert;
-do { print "Error: Cannot read TLS key $tlskey\n"; exit 1; } unless -r $tlskey;
-do { print "Error: Cannot read password file $pwdfile\n"; exit 1; } unless -r $pwdfile;
+#---------------
+#--- HELPERS ---
+#---------------
 
-my $appUser = $app->config('appuser');
-my $appGroup = $app->config('appgroup');
-
-my $appUID = getpwnam($appUser);
-my $appGID = getgrnam($appGroup);
-
-do { print "System user $appUser not exist.\n"; exit 1; } unless $appUID;
-do { print "System group $appGroup not exist.\n"; exit 1; } unless $appGID;
+$app->helper('reply.not_found' => sub {
+        my $c = shift; 
+        return $c->redirect_to('/login') unless $c->session('username'); 
+        $c->render(template => 'not_found.production');
+});
 
 $app->helper(
     model => sub {
-        state $model = PGmaster::Model->new(
-            $app,
-            $app->config("dbhost"),
-            $app->config("dbuser"),
-            $app->config("dbpasswd"),
-            $app->config("dbname"),
+        my $db = PGmaster::DB->new(
+                        hostname => $app->config("dbhost"),
+                        username => $app->config("dbuser"),
+                        password => $app->config("dbpwd"),
+                        database => $app->config("dbname"),
         );
+        state $model = PGmaster::Model->new($app, $db);
     }
 );
 
-$app->moniker($appname);
-$app->mode($app->config("mode"));
-$app->secrets([ md5_sum('6d578e43ba88260e0375a1a35fd7954b') ]);
-
-$app->hook(before_dispatch => sub {
-        my $c = shift;
-
-        my $remoteIPaddr = $c->tx->remote_address;
-        my $method = $c->req->method;
-
-        my $base = $c->req->url->base->to_string;
-        my $path = $c->req->url->path->to_string;
-        my $loglevel = $c->app->log->level;
-
-        my $username  = $c->session('username') || 'undef';
-
-        unless ($loglevel eq 'debug') {
-            $c->app->log->info("$method $base$path from $remoteIPaddr as $username");
-        }
-        if ($loglevel eq 'debug') {
-            my $url = $c->req->url->to_abs->to_string;
-            $c->app->log->debug("$method $url from $remoteIPaddr as $username");
-        }
-});
-
-$app->static->paths->[0] = $app->config('libdir').'/public';
-$app->renderer->paths->[0] = $app->config('libdir').'/templs';
+#--------------
+#--- ROUTES ---
+#--------------
 
 my $r = $app->routes;
 
 $r->add_condition(
     auth => sub {
-        my ($route, $c, $captures, $hash) = @_;
-        return 1 if $c->session_auth;
-        return undef;
+        my ($route, $c) = @_;
+        $c->session('username');
     }
 );
 
-$r->any('/login')       ->to('controller#login');
-$r->any('/logout')      ->to('controller#logout');
-
-$r->any('/hello')               ->over('auth')->to('controller#hello');
+$r->any('/login')->to('Controller#login');
+$r->any('/logout')->to('Controller#logout');
+$r->any('/hello')->over('auth')->to('Controller#hello');
 # agent forms
-$r->any('/agent/list')          ->over('auth')->to('controller#agent_list');
+$r->any('/agent/list')->over('auth')->to('Controller#agentList');
 # agent handlers
-$r->any('/agent/add')           ->over('auth')->to('controller#agent_add');
-$r->any('/agent/config')        ->over('auth')->to('controller#agent_config');
-$r->any('/agent/delete')        ->over('auth')->to('controller#agent_delete');
+$r->any('/agent/add')->over('auth')->to('Controller#agentAdd');
+$r->any('/agent/config')->over('auth')->to('Controller#agentConfig');
+$r->any('/agent/delete')->over('auth')->to('Controller#agentDelete');
 # agent db forms
-$r->any('/agent/db/list')       ->over('auth')->to('controller#agent_db_list');
+$r->any('/agent/db/list')->over('auth')->to('Controller#agentDBList');
 # agent db handlers
-$r->any('/agent/db/create')     ->over('auth')->to('controller#agent_db_create');
-$r->any('/agent/db/drop')       ->over('auth')->to('controller#agent_db_drop');
-$r->any('/agent/db/copy')       ->over('auth')->to('controller#agent_db_copy');
-$r->any('/agent/db/rename')     ->over('auth')->to('controller#agent_db_rename');
-$r->any('/agent/db/dump')       ->over('auth')->to('controller#agent_db_dump');
-$r->any('/agent/db/restore')    ->over('auth')->to('controller#agent_db_restore');
+$r->any('/agent/db/create')->over('auth')->to('Controller#agentDBCreate');
+$r->any('/agent/db/drop')->over('auth')->to('Controller#agentDBDrop');
+$r->any('/agent/db/copy')->over('auth')->to('Controller#agentDBCopy');
+$r->any('/agent/db/rename')->over('auth')->to('Controller#agentDBRename');
+$r->any('/agent/db/dump')->over('auth')->to('Controller#agentDBDump');
+$r->any('/agent/db/restore')->over('auth')->to('Controller#agentDBRestore');
 
 # store forms
-$r->any('/store/list')          ->over('auth')->to('controller#store_list');
+$r->any('/store/list')->over('auth')->to('Controller#storeList');
 # store handlers
-$r->any('/store/add')           ->over('auth')->to('controller#store_add');
-$r->any('/store/config')        ->over('auth')->to('controller#store_config');
-$r->any('/store/delete')        ->over('auth')->to('controller#store_delete');
+$r->any('/store/add')->over('auth')->to('Controller#storeAdd');
+$r->any('/store/config')->over('auth')->to('Controller#storeConfig');
+$r->any('/store/delete')->over('auth')->to('Controller#storeDelete');
 # store data manipulation
-$r->any('/store/data/list')     ->over('auth')->to('controller#store_data_list');
-$r->any('/store/data/delete')   ->over('auth')->to('controller#store_data_delete');
-$r->any('/store/data/download') ->over('auth')->to('controller#store_data_download');
+$r->any('/store/data/list')->over('auth')->to('Controller#storeDataList');
+$r->any('/store/data/delete')->over('auth')->to('Controller#storeDataDelete');
+$r->any('/store/data/download')->over('auth')->to('Controller#storeDataDownload');
 
 # generic data list
-$r->any('/data/list')           ->over('auth')->to('controller#data_list');
+$r->any('/data/list')->over('auth')->to('Controller#dataList');
 # generic job list
-$r->any('/job/list')            ->over('auth')->to('controller#job_list');
+$r->any('/job/list')->over('auth')->to('Controller#jobList');
 
 
-$r->any('/schedule/list')       ->over('auth')->to('controller#schedule_list');
-$r->any('/schedule/add')        ->over('auth')->to('controller#schedule_add');
-$r->any('/schedule/delete')     ->over('auth')->to('controller#schedule_delete');
-$r->any('/schedule/config')     ->over('auth')->to('controller#schedule_config');
+$r->any('/schedule/list')->over('auth')->to('Controller#scheduleList');
+$r->any('/schedule/add')->over('auth')->to('Controller#scheduleAdd');
+$r->any('/schedule/delete')->over('auth')->to('Controller#scheduleDelete');
+$r->any('/schedule/config')->over('auth')->to('Controller#scheduleConfig');
 
 # callback handlers
-$r->any('/agent/job/cb')        ->to('controller#job_cb');
-$r->any('/store/job/cb')        ->to('controller#job_cb');
+$r->any('/agent/job/cb')->to('Controller#jobCB');
+$r->any('/store/job/cb')->to('Controller#jobCB');
 
+#----------------
+#--- LISTENER ---
+#----------------
 
-#$app->helper('reply.exception' => sub { my $c = shift; return $c->rendered(404); });
-$app->helper('reply.not_found' => sub {
-        my $c = shift;
-        return $c->redirect_to('/login') unless $c->session_auth;
-        $c->render(template => 'not_found.production');
-});
+my $tls = '?';
+$tls .= 'cert='.$app->config('crtfile');
+$tls .= '&key='.$app->config('keyfile');
 
-my $tlsParam .= '?';
-$tlsParam .= 'cert='.$tlscert;
-$tlsParam .= '&key='.$tlskey;
+my $listen4;
+if ($app->config('listenaddr4')) {
+    $listen4 = "https://";
+    $listen4 .= $app->config('listenaddr4').':'.$app->config('listenport');
+    $listen4 .= $tls;
+}
 
-my $listenPort = $app->config('listenPort');
-my $listenIPv4 = $app->config('listenIPv4');
-my $listenIPv6 = $app->config('listenIPv6');
+my $listen6;
+if ($app->config('listenaddr6')) {
+    $listen6 = "https://";
+    $listen6 .= $app->config('listenaddr6').':'.$app->config('listenport');
+    $listen6 .= $tls;
+}
 
-$server->listen([
-    "https://$listenIPv4:$listenPort$tlsParam",
-]);
+my @listen;
+push @listen, $listen4 if $listen4;
+push @listen, $listen6 if $listen6;
 
-$server->pid_file($app->config('pidfile'));
-
+$server->listen(\@listen);
 $server->heartbeat_interval(3);
 $server->heartbeat_timeout(60);
 
-#my $id3 = $server->ioloop->recurring(3 => sub {
-#            my $loop = shift;
-#            open my $handle, '<', $server->pid_file;
-#            my $pid = <$handle>;
-#            chomp $pid;
-##            return 1 unless $$ == $pid;
-#            print "   Hi 3! $pid $$\n";
-#});
-
-my $subprocess = Mojo::IOLoop::Subprocess->new;
-$app->log->info("----");
-
-my $log = $app->log;
-
-$app->config(last => 0);
-
-sub cron {
-    my $loop = shift;
-    my $m = $app->model;
-
-    my $last = time;
-    my $stamp = $m->timestamp($last);
-
-    my $curr_sec = $m->curr_sec;
-    $app->config(lastCron => $last);
-
-    my $schedule_list = $m->schedule_list;
-    my $curr_time = $m->currTime;
-
-    $log->debug("Achtung: $stamp !");
-    foreach my $rec (@{$schedule_list}) {
-        my $id = $rec->{'id'};
-        my $curr_sec = $curr_time->{'sec'};
-        my $currMin = $curr_time->{'min'};
-
-        my $recMin = $rec->{'min'};
-        my $recHour = $rec->{'hour'};
-
-        $log->debug("--- Match id=$id $recMin == $currMin!") if $m->period_match($currMin, $m->period_expand($recMin, 59, 0));
-#        $log->debug("Unmatch id=$id!") unless $m->period_match($curr_time->{'min'}, $m->period_expand($recMin));
-
-#  "hour" => "6,23",
-#  "id" => 2,
-#  "mday" => "1-31",
-#  "min" => 16,
-#  "sourceid" => 1,
-#  "subject" => "asterisk_copy",
-#  "type" => "dump",
-#  "wday" => "1-7"
-
-
-    }
-    $log->debug("");
-    sleep 60-$curr_sec;
-}
-
-#$subprocess->run(
-#    sub {
-#        my $subproc = shift;
-#        my $loop = Mojo::IOLoop->singleton;
-#        my $id = $loop->recurring(1 => \&cron );
-#        $loop->start unless $loop->is_running;
-#    },
-#    sub {
-#        my ($subprocess, $err, @results) = @_;
-#        $app->log->info('Exit subprocess');
-#        return 1;
-#    }
-#);
+#--------------
+#--- DAEMON ---
+#--------------
 
 unless ($nofork) {
-    my $pid = fork;
-    if ($pid == 0) {
-        setuid($appUID) if $appUID;
-        setgid($appGID) if $appGID;
-        $app->log(Mojo::Log->new( path => $app->config('logfile') ));
-        open (my $STDOUT2, '>&', STDOUT); open (STDOUT, '>>', '/dev/null');
-        open (my $STDERR2, '>&', STDERR); open (STDERR, '>>', '/dev/null');
-        chdir($tmpdir);
-        local $SIG{HUP} = sub {
-                $app->log(Mojo::Log->new(
-                        path => $app->config('logfile'),
-                        level => $app->config('loglevel'),
-                ));
-        };
-
-
-        $server->run;
-    }
-} else {
-    setuid($appUID) if $appUID;
-    setgid($appGID) if $appGID;
-    $server->run;
+    my $d = PGmaster::Daemon->new;
+    my $user = $app->config('user');
+    my $group = $app->config('group');
+    $d->fork;
+    $app->log(Mojo::Log->new( 
+                path => $app->config('logfile'),
+                level => $app->config('loglevel')
+    ));
 }
+
+$server->pid_file($app->config('pidfile'));
+
+#---------------
+#--- WEB LOG ---
+#---------------
+
+$app->hook(before_dispatch => sub {
+        my $c = shift;
+
+        my $remote_address = $c->tx->remote_address;
+        my $method = $c->req->method;
+
+        my $base = $c->req->url->base->to_string;
+        my $path = $c->req->url->path->to_string;
+        my $loglevel = $c->app->log->level;
+        my $url = $c->req->url->to_abs->to_string;
+
+        unless ($loglevel eq 'debug') {
+            #$c->app->log->info("$remote_address $method $base$path");
+            $c->app->log->info("$remote_address $method $url");
+        }
+        if ($loglevel eq 'debug') {
+            $c->app->log->debug("$remote_address $method $url");
+        }
+});
+
+#----------------------
+#--- SIGNAL HANDLER ---
+#----------------------
+
+local $SIG{HUP} = sub {
+    $app->log->info('Catch HUP signal'); 
+    $app->log(Mojo::Log->new(
+                    path => $app->config('logfile'),
+                    level => $app->config('loglevel')
+    ));
+};
+
+$server->run;
+
+
 #EOF

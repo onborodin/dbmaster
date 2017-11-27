@@ -428,11 +428,8 @@ if (-r $app->config('conffile')) {
 #--- HELPERS ---
 #---------------
 
-$app->helper('reply.not_found' => sub {
-        my $c = shift; 
-        return $c->redirect_to('/login') unless $c->session('username'); 
-        $c->render(template => 'not_found.production');
-});
+$app->helper('reply.exception' => sub { my $c = shift; return $c->rendered(404); });
+$app->helper('reply.not_found' => sub { my $c = shift; return $c->rendered(404); });
 
 #--------------
 #--- ROUTES ---

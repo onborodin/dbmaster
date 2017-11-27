@@ -268,16 +268,26 @@ use Mojo::JSON qw(encode_json decode_json true false);
 use POSIX;
 use Socket;
 
+#sub new {
+#    my ($class, $app, $dbhost, $dbuser, $dbpwd) = @_;
+#    my $self = {
+#        app => $app,
+#        db => PGagent::DB->new(
+#                        hostname => $dbhost,
+#                        username => $dbuser,
+#                        password => $dbpwd,
+#                        database => 'postgres',
+#        )
+#    };
+#    bless $self, $class;
+#    return $self;
+#}
+
 sub new {
-    my ($class, $app, $dbhost, $dbuser, $dbpwd) = @_;
+    my ($class, $app, $db) = @_;
     my $self = {
         app => $app,
-        db => PGagent::DB->new(
-                        hostname => $dbhost,
-                        username => $dbuser,
-                        password => $dbpwd,
-                        database => 'postgres',
-        )
+        db => $db
     };
     bless $self, $class;
     return $self;
@@ -764,7 +774,6 @@ sub db_restore {
 
     my $m = $self->app->model;
 
-
     return $self->render(json => { success => false }) unless ($dataname and $storename and $storelogin);
     return $self->render(json => { success => false }) unless ($storepwd and $newname and $jobID and $master and $magic);
     return $self->render(json => { success => false }) unless $m->store_alive($storename);
@@ -868,11 +877,9 @@ sub startup {
 
 1;
 
-#-------------
 #------------
 #--- MAIN ---
 #------------
-#-------------
 
 use strict;
 use warnings;
@@ -960,20 +967,19 @@ if (-r $app->config('conffile')) {
 #--- HELPERS ---
 #---------------
 
-$app->helper('reply.not_found' => sub {
-        my $c = shift; 
-        return $c->redirect_to('/login') unless $c->session('username'); 
-        $c->render(template => 'not_found.production');
-});
+$app->helper('reply.exception' => sub { my $c = shift; return $c->rendered(404); });
+$app->helper('reply.not_found' => sub { my $c = shift; return $c->rendered(404); });
+
 
 $app->helper(
     model => sub {
-        state $model = PGagent::Model->new(
-            $app,
-            $app->config("pghost"),
-            $app->config("pguser"),
-            $app->config("pgpwd")
+        my $db => PGagent::DB->new(
+                        hostname => $app->config("pghost"),
+                        username => $app->config("pguser"),
+                        password => $app->config("pgpwd"),
+                        database => 'postgres'
         );
+        state $model = PGagent::Model->new($app, $db);
     }
 );
 
