@@ -14,12 +14,12 @@
 % my $agent_id = $req->param('agentid') || undef;
 % my $store_id = $req->param('storeid') || undef;
 %
-% my $agent_profile = $m->agentProfile($agent_id);
+% my $agent_profile = $m->agent_profile($agent_id);
 % my $agent_hostname = $agent_profile->{'hostname'} || '';
 % my $agent_username = $agent_profile->{'username'} || '';
 % my $agent_password = $agent_profile->{'password'} || '';
 %
-% my $store_profile = $m->storeProfile($store_id);
+% my $store_profile = $m->store_profile($store_id);
 % my $store_hostname = $store_profile->{'hostname'} || '';
 % my $store_username = $store_profile->{'username'} || '';
 % my $store_password = $store_profile->{'password'} || '';
@@ -30,7 +30,7 @@
 % $m->job_update($job_id, type => 'dbdump', sourceid => $agent_id, destid => $store_id, author => $c->session('username'));
 % my $jobMagic = $m->job_profile($job_id)->{'magic'};
 
-% my $agent_alive = $m->agentAlive($agent_id);
+% my $agent_alive = $m->agent_alive($agent_id);
 
 % unless ($agent_alive) {
     <div class="callout alert">
@@ -40,7 +40,7 @@
 %   $m->job_update($job_id, error => 'connecterr', stop => $m->timestamp);
 % }
 
-% my $store_alive = $m->storeAlive($store_id);
+% my $store_alive = $m->store_alive($store_id);
 % unless ($store_alive) {
     <div class="callout alert">
         Oops.. Store <%= $store_hostname %> not respond.

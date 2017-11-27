@@ -562,7 +562,7 @@ sub store_data_list {
 sub store_data_update {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $store_profile = $self->storeProfile($id) or return undef;
+    my $store_profile = $self->store_profile($id) or return undef;
 
     my $hostname = $store_profile->{'hostname'} || 'undef';
     my $username = $store_profile->{'username'} || 'undef';
@@ -1415,50 +1415,51 @@ $r->add_condition(
     }
 );
 
-$r->any('/login')->to('Controller#login');
-$r->any('/logout')->to('Controller#logout');
-$r->any('/hello')->over('auth')->to('Controller#hello');
+$r->any('/login')       ->to('controller#login');
+$r->any('/logout')      ->to('controller#logout');
+
+$r->any('/hello')               ->over('auth')->to('controller#hello');
 # agent forms
-$r->any('/agent/list')->over('auth')->to('Controller#agent_list');
+$r->any('/agent/list')          ->over('auth')->to('controller#agent_list');
 # agent handlers
-$r->any('/agent/add')->over('auth')->to('Controller#agent_add');
-$r->any('/agent/config')->over('auth')->to('Controller#agent_config');
-$r->any('/agent/delete')->over('auth')->to('Controller#agent_delete');
+$r->any('/agent/add')           ->over('auth')->to('controller#agent_add');
+$r->any('/agent/config')        ->over('auth')->to('controller#agent_config');
+$r->any('/agent/delete')        ->over('auth')->to('controller#agent_delete');
 # agent db forms
-$r->any('/agent/db/list')->over('auth')->to('Controller#agent_db_list');
+$r->any('/agent/db/list')       ->over('auth')->to('controller#agent_db_list');
 # agent db handlers
-$r->any('/agent/db/create')->over('auth')->to('Controller#agent_db_create');
-$r->any('/agent/db/drop')->over('auth')->to('Controller#agent_db_drop');
-$r->any('/agent/db/copy')->over('auth')->to('Controller#agent_db_copy');
-$r->any('/agent/db/rename')->over('auth')->to('Controller#agent_db_rename');
-$r->any('/agent/db/dump')->over('auth')->to('Controller#agent_db_dump');
-$r->any('/agent/db/restore')->over('auth')->to('Controller#agent_db_restore');
+$r->any('/agent/db/create')     ->over('auth')->to('controller#agent_db_create');
+$r->any('/agent/db/drop')       ->over('auth')->to('controller#agent_db_drop');
+$r->any('/agent/db/copy')       ->over('auth')->to('controller#agent_db_copy');
+$r->any('/agent/db/rename')     ->over('auth')->to('controller#agent_db_rename');
+$r->any('/agent/db/dump')       ->over('auth')->to('controller#agent_db_dump');
+$r->any('/agent/db/restore')    ->over('auth')->to('controller#agent_db_restore');
 
 # store forms
-$r->any('/store/list')->over('auth')->to('Controller#store_list');
+$r->any('/store/list')          ->over('auth')->to('controller#store_list');
 # store handlers
-$r->any('/store/add')->over('auth')->to('Controller#store_add');
-$r->any('/store/config')->over('auth')->to('Controller#store_config');
-$r->any('/store/delete')->over('auth')->to('Controller#store_delete');
+$r->any('/store/add')           ->over('auth')->to('controller#store_add');
+$r->any('/store/config')        ->over('auth')->to('controller#store_config');
+$r->any('/store/delete')        ->over('auth')->to('controller#store_delete');
 # store data manipulation
-$r->any('/store/data/list')->over('auth')->to('Controller#store_data_list');
-$r->any('/store/data/delete')->over('auth')->to('Controller#store_data_delete');
-$r->any('/store/data/download')->over('auth')->to('Controller#store_data_download');
+$r->any('/store/data/list')     ->over('auth')->to('controller#store_data_list');
+$r->any('/store/data/delete')   ->over('auth')->to('controller#store_data_delete');
+$r->any('/store/data/download') ->over('auth')->to('controller#store_data_download');
 
 # generic data list
-$r->any('/data/list')->over('auth')->to('Controller#data_list');
+$r->any('/data/list')           ->over('auth')->to('controller#data_list');
 # generic job list
-$r->any('/job/list')->over('auth')->to('Controller#job_list');
+$r->any('/job/list')            ->over('auth')->to('controller#job_list');
 
 
-$r->any('/schedule/list')->over('auth')->to('Controller#schedule_list');
-$r->any('/schedule/add')->over('auth')->to('Controller#schedule_add');
-$r->any('/schedule/delete')->over('auth')->to('Controller#schedule_delete');
-$r->any('/schedule/config')->over('auth')->to('Controller#schedule_config');
+$r->any('/schedule/list')       ->over('auth')->to('controller#schedule_list');
+$r->any('/schedule/add')        ->over('auth')->to('controller#schedule_add');
+$r->any('/schedule/delete')     ->over('auth')->to('controller#schedule_delete');
+$r->any('/schedule/config')     ->over('auth')->to('controller#schedule_config');
 
 # callback handlers
-$r->any('/agent/job/cb')->to('Controller#job_cb');
-$r->any('/store/job/cb')->to('Controller#job_cb');
+$r->any('/agent/job/cb')        ->to('controller#job_cb');
+$r->any('/store/job/cb')        ->to('controller#job_cb');
 
 
 #$app->helper('reply.exception' => sub { my $c = shift; return $c->rendered(404); });
@@ -1508,10 +1509,10 @@ sub cron {
     my $last = time;
     my $stamp = $m->timestamp($last);
 
-    my $curr_sec = $m->currSec;
+    my $curr_sec = $m->curr_sec;
     $app->config(lastCron => $last);
 
-    my $schedule_list = $m->scheduleList;
+    my $schedule_list = $m->schedule_list;
     my $curr_time = $m->currTime;
 
     $log->debug("Achtung: $stamp !");
@@ -1541,19 +1542,19 @@ sub cron {
     sleep 60-$curr_sec;
 }
 
-$subprocess->run(
-    sub {
-        my $subproc = shift;
-        my $loop = Mojo::IOLoop->singleton;
-        my $id = $loop->recurring(1 => \&cron );
-        $loop->start unless $loop->is_running;
-    },
-    sub {
-        my ($subprocess, $err, @results) = @_;
-        $app->log->info('Exit subprocess');
-        return 1;
-    }
-);
+#$subprocess->run(
+#    sub {
+#        my $subproc = shift;
+#        my $loop = Mojo::IOLoop->singleton;
+#        my $id = $loop->recurring(1 => \&cron );
+#        $loop->start unless $loop->is_running;
+#    },
+#    sub {
+#        my ($subprocess, $err, @results) = @_;
+#        $app->log->info('Exit subprocess');
+#        return 1;
+#    }
+#);
 
 unless ($nofork) {
     my $pid = fork;

@@ -8,7 +8,7 @@
 % use utf8;
 % use strict;
 
-% my $data_list = $self->app->model->dataList;
+% my $data_list = $self->app->model->data_list;
 
 <div class="text-center">
     <h5>Generic dataset list</h5>

@@ -9,7 +9,7 @@
 % use Mojo::Util qw(dumper);
 
 % my $m = $self->app->model;
-% my $job_list = $m->jobList;
+% my $job_list = $m->job_list;
 
 <div class="text-center">
     <h5>

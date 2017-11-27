@@ -562,7 +562,7 @@ sub store_data_list {
 sub store_data_update {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $store_profile = $self->storeProfile($id) or return undef;
+    my $store_profile = $self->store_profile($id) or return undef;
 
     my $hostname = $store_profile->{'hostname'} || 'undef';
     my $username = $store_profile->{'username'} || 'undef';
@@ -1509,10 +1509,10 @@ sub cron {
     my $last = time;
     my $stamp = $m->timestamp($last);
 
-    my $curr_sec = $m->currSec;
+    my $curr_sec = $m->curr_sec;
     $app->config(lastCron => $last);
 
-    my $schedule_list = $m->scheduleList;
+    my $schedule_list = $m->schedule_list;
     my $curr_time = $m->currTime;
 
     $log->debug("Achtung: $stamp !");
@@ -1542,19 +1542,19 @@ sub cron {
     sleep 60-$curr_sec;
 }
 
-$subprocess->run(
-    sub {
-        my $subproc = shift;
-        my $loop = Mojo::IOLoop->singleton;
-        my $id = $loop->recurring(1 => \&cron );
-        $loop->start unless $loop->is_running;
-    },
-    sub {
-        my ($subprocess, $err, @results) = @_;
-        $app->log->info('Exit subprocess');
-        return 1;
-    }
-);
+#$subprocess->run(
+#    sub {
+#        my $subproc = shift;
+#        my $loop = Mojo::IOLoop->singleton;
+#        my $id = $loop->recurring(1 => \&cron );
+#        $loop->start unless $loop->is_running;
+#    },
+#    sub {
+#        my ($subprocess, $err, @results) = @_;
+#        $app->log->info('Exit subprocess');
+#        return 1;
+#    }
+#);
 
 unless ($nofork) {
     my $pid = fork;

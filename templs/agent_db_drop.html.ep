@@ -13,7 +13,7 @@
 % my $dbname = $req->param('dbname') || undef;
 % my $agent_id = $req->param('agentid') || undef;
 
-% my $agent_profile = $m->agentProfile($agent_id);
+% my $agent_profile = $m->agent_profile($agent_id);
 % my $agent_hostname = $agent_profile->{'hostname'} || 'undef';
 % my $agent_username = $agent_profile->{'username'} || 'undef';
 % my $agent_password = $agent_profile->{'password'} || 'undef';

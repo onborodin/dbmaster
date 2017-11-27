@@ -9,7 +9,7 @@
 % use strict;
 
 % my $m = $self->app->model;
-% my $agent_list = $m->agentList;
+% my $agent_list = $m->agent_list;
 
 % foreach my $agent (@{$agent_list}) {
 %   my $agent_id = $agent->{'id'};
@@ -101,7 +101,7 @@
 % foreach my $agent (@{$agent_list}) {
 %   my $agent_id = $agent->{'id'};
 %   my $hostname = $agent->{'hostname'};
-%   my $agent_info = $m->agentInfo($agent_id);
+%   my $agent_info = $m->agent_info($agent_id);
 %   my $sum = $agent_info->{'sum'} || 0;
 %   my $count = $agent_info->{'count'} || 0;
     <tr>

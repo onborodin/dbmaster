@@ -17,9 +17,9 @@
 % my $m = $self->app->model;
 
 % my $store_id = $req->param('id');
-% my $store_hostname = $m->storeHostname($store_id);
+% my $store_hostname = $m->store_hostname($store_id);
 
-% my $store_alive = $m->storeAlive($store_id);
+% my $store_alive = $m->store_alive($store_id);
 % unless ($store_alive) {
     <div class="callout alert">
         Oops.. Store <%= $store_hostname %> not respond.
@@ -39,7 +39,7 @@
 % }
 
 % my $data_list = $m->store_data_list($store_id);
-% my $agent_list = $m->agentList;
+% my $agent_list = $m->agent_list;
 
 
 % my $num = 1;

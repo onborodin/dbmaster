@@ -10,7 +10,7 @@
 % use strict;
 
 % my $m = $self->app->model;
-% my $store_list = $m->storeList;
+% my $store_list = $m->store_list;
 
 % foreach my $store (@{$store_list}) {
 %   my $store_id = $store->{'id'};
@@ -84,7 +84,7 @@
 %   my $store_id = $store->{'id'};
 %   my $hostname = $store->{'hostname'};
 
-%   my $store_info = $m->storeInfo($store_id);
+%   my $store_info = $m->store_info($store_id);
 %   my $sum = $store_info->{'sum'};
 %   my $count = $store_info->{'count'};
 

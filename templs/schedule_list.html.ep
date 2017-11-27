@@ -9,7 +9,7 @@
 % use strict;
 
 % my $m = $self->app->model;
-% my $schedule_list = $m->scheduleList;
+% my $schedule_list = $m->schedule_list;
 
 <div class="text-center">
     <h5>

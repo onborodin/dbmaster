@@ -14,7 +14,7 @@
 % my $store_id = $req->param('id');
 % my $dataname = $req->param('dataname');
 
-% my $store_profile = $m->storeProfile($store_id);
+% my $store_profile = $m->store_profile($store_id);
 % my $store_hostname = $store_profile->{'hostname'};
 % my $store_username = $store_profile->{'username'};
 % my $store_password = $store_profile->{'password'};

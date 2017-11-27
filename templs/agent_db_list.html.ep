@@ -11,9 +11,9 @@
 % my $m = $self->app->model;
 
 % my $agent_id = $req->param('id');
-% my $agent_hostname = $m->agentHostname($agent_id);
+% my $agent_hostname = $m->agent_hostname($agent_id);
 
-% my $agent_alive = $m->agentAlive($agent_id);
+% my $agent_alive = $m->agent_alive($agent_id);
 % unless ($agent_alive) {
     <div class="callout alert">
         Oops...Agent <%= $agent_hostname %> not responded.
@@ -32,7 +32,7 @@
 % }
 
 % my $dbList = $m->agent_db_list($agent_id);
-% my $store_list = $m->storeList;
+% my $store_list = $m->store_list;
 
 % my $num = 1;
 % foreach my $db (@{$dbList}) {
