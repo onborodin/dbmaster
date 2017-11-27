@@ -38,13 +38,15 @@ sub auth {
 
     my $hash = $self->split($authstr);
     return undef unless $hash;
-
     return undef unless -r $self->{pwdfile};
 
     my $res = undef;
     eval {
         my $ht = Apache::Htpasswd->new( { passwdFile => $self->pwdfile, ReadOnly => 1 } );
-        $res = $ht->htCheckPassword($hash->{username}, $hash->{password});
+        $res = $ht->htCheckPassword(
+                            $hash->{username},
+                            $hash->{password}
+        );
     };
     return undef if $@;
     $res;
