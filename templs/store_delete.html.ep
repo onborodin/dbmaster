@@ -31,7 +31,7 @@
 %   $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
 % };
 
-% unless $(res) {
+% unless ($res) {
     <div class="callout alert">
         Store id <%= $store_id %> was deleted unsuccessful.
     </div>
@@ -39,7 +39,7 @@
 % }
 
 <div class="text-center">
-    <a class="button" href="/store/list">List</a>
+    <a class="button" href="/store/list">Store List</a>
 </div>
 %#EOF
 

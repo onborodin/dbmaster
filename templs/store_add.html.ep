@@ -13,15 +13,15 @@
 % my $password = $req->param('password');
 %
 % my $m = $self->app->model;
-% my $store_id = $self->app->model->store_exist($hostname);
+% my $store_id = $m->store_exist($hostname);
 
 % my $job_id = $m->job_create;
-%
+
 % $m->job_update(
 %    $job_id, 
 %    type => 'storeadd',
-%    sourceid => $agent_id,
-%    destid => $agent_id, 
+%    sourceid => $store_id,
+%    destid => $store_id, 
 %    author => $c->session('username')
 % );
 
@@ -48,7 +48,7 @@
 %     $m->job_update($job_id, status => 'error', error => 'storeadderr', stop => $m->timestamp);
 %   }
 % }
-%
+
 <div class="text-center">
     <a class="button" href="/store/list">StoreList</a>
     <a class="button" href="/store/data/list?id=<%= $store_id %>">DataList</a>

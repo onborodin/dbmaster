@@ -113,7 +113,9 @@ nobase_dist_pkgdata_DATA = \
 	templs/store_list.html.ep \
 	templs/store_config.html.ep \
 	templs/store_data_delete.html.ep \
-	templs/store_data_list.html.ep
+	templs/store_data_list.html.ep \
+	\
+	templs/layouts/default.html.ep
 
 endif
 

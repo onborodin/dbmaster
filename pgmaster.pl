@@ -148,6 +148,39 @@ sub exec {
     \@list;
 }
 
+sub exec1 {
+    my ($self, $query) = @_;
+    return undef unless $query;
+
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $sth;
+    eval {
+        $sth = $dbi->prepare($query);
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $rows = $sth->execute;
+    my $row = $sth->fetchrow_hashref;
+
+    $sth->finish;
+    $dbi->disconnect;
+    $row;
+}
+
 sub do {
     my ($self, $query) = @_;
     return undef unless $query;
@@ -297,16 +330,16 @@ sub agent_list {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = $id" if $id;
-    my $query = "select * from agent $where order by hostname;";
+    my $query = "select * from agent $where order by hostname";
     $self->db->exec($query);
 }
 
 sub agent_exist {
     my ($self, $hostname)  = @_;
     return undef unless $hostname;
-    my $query = "select id from agent where hostname = '$hostname' limit 1;";
-    my $rows = $self->db->exec($query);
-    my $id = $rows->[0]{'id'};
+    my $query = "select id from agent where hostname = '$hostname' limit 1";
+    my $row = $self->db->exec1($query);
+    my $id = $row->{'id'};
     return undef unless $id;
     $id;
 }
@@ -314,38 +347,21 @@ sub agent_exist {
 sub agent_hostname {
     my ($self, $id)  = @_;
     return undef unless $id;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "select hostname from agent where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    $sth->finish;
-    $dbi->disconnect;
-
+    my $query = "select hostname from agent where id = $id limit 1";
+    my $row = $self->db->exec1($query);
     my $hostname = $row->{'hostname'};
-    return $hostname if $hostname;
-    return undef;
+    return undef unless $hostname;
+    $hostname;
 }
 
 sub agent_profile {
     my ($self, $id)  = @_;
     return undef unless $id;
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
-    my $query = "select * from agent where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-
-    $sth->finish;
-    $dbi->disconnect;
-
-    return $row if $row;
-    return undef;
+    my $query = "select * from agent where id = $id limit 1";
+    my $row = $self->db->exec1($query);
+    return undef unless $row;
+    $row;
 }
 
 sub agent_info {
@@ -354,15 +370,15 @@ sub agent_info {
     my $query = "select sum(d.size) as sum , count(d.name) as count
                     from agent a, db d
                     where a.id = d.agentid and a.id = $id limit 1";
-    my $res = $self->db->exec($query);
-    $res->[0];
+    my $row = $self->db->exec1($query);
+    $row;
 }
 
 sub agent_next_id {
     my $self = shift;
-    my $query = "select id from agent order by id desc limit 1;";
-    my $rows = $self->db->exec($query);
-    my $id = $rows->[0]{'id'};
+    my $query = "select id from agent order by id desc limit 1";
+    my $row = $self->db->exec1($query);
+    my $id = $row->{'id'};
     $id++;
     $id;
 }
@@ -375,7 +391,7 @@ sub agent_add {
 
     my $id = $self->agent_next_id;
     my $query = "insert into agent (id, hostname, username, password)
-                    values ($id, '$hostname', '$username', '$password');";
+                    values ($id, '$hostname', '$username', '$password')";
     $self->db->do($query);
     $self->agent_exist($hostname);
 }
@@ -384,7 +400,7 @@ sub agent_delete {
     my ($self, $id) = @_;
     return undef unless $id;
 
-    my $query = "delete from agent where id = $id;";
+    my $query = "delete from agent where id = $id";
     $self->db->do($query);
 }
 
@@ -394,7 +410,7 @@ sub agent_config {
                     hostname = '$hostname',
                     username = '$username',
                     password = '$password'
-                    where id = $id;";
+                    where id = $id";
     $self->db->do($query);
 }
 
@@ -422,18 +438,8 @@ sub agent_alive {
 sub agent_db_list {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "select * from db where agentid = $id order by name;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my @list;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @list, $row;
-    }
-    $sth->finish;
-    $dbi->disconnect;
-    return \@list;
+    my $query = "select * from db where agentid = $id order by name";
+    $self->db->exec($query);
 }
 
 sub agent_db_update {
@@ -454,24 +460,21 @@ sub agent_db_update {
     return undef if $@;
 
     my $dblist = $res->{'dblist'};
-
     return undef unless $dblist;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "delete from db where agentid = $id;";
-    my $rows = $dbi->do($query) or return undef;
-    return undef unless $rows;
+
+    my $query = "delete from db where agentid = $id";
+    $self->db->do($query);
+
     foreach my $rec (@{$dblist}) {
         my $dbname = $rec->{'name'} || 'undef';
         my $dbsize = $rec->{'size'} || 1;
         my $dbowner = $rec->{'owner'} || 'undef';
         my $numbackends = $rec->{'numbackends'} || 0;
         my $query = "insert into db (agentid, name, size, owner, type, numbackends) values
-                    ($id, '$dbname',  $dbsize, '$dbowner', 'pgsql', $numbackends);";
-        my $rows = $dbi->do($query);
+                    ($id, '$dbname',  $dbsize, '$dbowner', 'pgsql', $numbackends)";
+        my $rows = $self->db->do($query);
     }
-    $dbi->disconnect;
-    return $dblist;
+    $dblist;
 }
 
 #-------------------
@@ -481,50 +484,30 @@ sub agent_db_update {
 sub store_hostname {
     my ($self, $id)  = @_;
     return undef unless $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "select hostname from store where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    $sth->finish;
-    $dbi->disconnect;
+    my $query = "select hostname from store where id = $id limit 1";
+    my $row = $self->db->exec1($query);
     my $hostname = $row->{'hostname'};
-    return $hostname if $hostname;
-    return undef;
+    return undef unless $hostname;
+    $hostname;
 }
 
 sub store_profile {
     my ($self, $id)  = @_;
     return undef unless $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "select * from store where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    $sth->finish;
-    $dbi->disconnect;
-    return $row if $row;
-    return undef;
+    my $query = "select * from store where id = $id limit 1";
+    $self->db->exec1($query);
 }
 
 sub store_info {
     my ($self, $id)  = @_;
     return undef unless $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select sum(d.size) as sum , count(d.name) as count
                     from store s, data d
-                    where s.id = d.storeid and s.id = $id;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    $sth->finish;
-    $dbi->disconnect;
+                    where s.id = d.storeid and s.id = $id limit 1";
+    my $row = $self->db->exec1($query);
+    return undef unless $row;
     $row->{'sum'} ||= 0;
-    return $row if $row;
-    return undef;
+    $row;
 }
 
 sub store_alive {
@@ -552,55 +535,28 @@ sub store_list {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = '$id'" if $id;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd);
-    my $query = "select * from store $where order by hostname;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-
-    my @list;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @list, $row;
-    }
-
-    $sth->finish;
-    $dbi->disconnect;
-
-    return \@list;
+    my $query = "select * from store $where order by hostname";
+    $self->db->exec($query);
 }
 
 sub store_exist {
     my ($self, $hostname)  = @_;
     return undef unless $hostname;
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "select id from store where hostname = '$hostname' limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-
-    $sth->finish;
-    $dbi->disconnect;
-
+    my $query = "select id from store where hostname = '$hostname' limit 1";
+    my $row = $self->db->exec1($query);
     my $id = $row->{'id'};
-    return $id if $id;
-    return undef;
+    return undef unless $id;
+    $id;
 }
 
 sub store_next_id {
     my $self = shift;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd);
-    my $query = "select id from store order by id desc limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
+    my $query = "select id from store order by id desc limit 1";
+    my $row = $self->db->exec1($query);
     my $id = $row->{'id'};
     $id++;
-    $sth->finish;
-    $dbi->disconnect;
-    return $id;
+    $id;
 }
 
 sub store_add {
@@ -608,64 +564,36 @@ sub store_add {
     return undef unless $hostname;
     return undef unless $username;
     return undef unless $password;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $id = $self->store_next_id;
     my $query = "insert into store (id, hostname, username, password)
-                    values ($id, '$hostname', '$username', '$password');";
-    my $rows = $dbi->do($query) or return undef;
-    $dbi->disconnect;
-    return $id if $rows*1 > 0;
-    return undef;
+                    values ($id, '$hostname', '$username', '$password')";
+    $self->db->do($query);
+    $self->store_exist($hostname);
 }
 
 sub store_delete {
     my ($self, $id) = @_;
-
     return undef unless $id;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "delete from store where id = $id;";
-    my $rows = $dbi->do($query) or return undef;
-
-    $dbi->disconnect;
-    return $rows*1;
+    my $query = "delete from store where id = $id";
+    $self->db->do($query);
 }
 
 sub store_config {
     my ($self, $id, $hostname, $username, $password) = @_;
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "update store set
                     hostname = '$hostname',
                     username = '$username',
                     password = '$password'
-                    where id = $id;";
-    my $rows = $dbi->do($query) or return undef;
-    $dbi->disconnect;
-    return $rows*1;
+                    where id = $id";
+    $self->db->do($query);
 }
 
 sub store_data_list {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
-    my $query = "select * from data where storeid = $id order by name;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my @list;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @list, $row;
-    }
-
-    $sth->finish;
-    $dbi->disconnect;
-
-    return \@list;
+    my $query = "select * from data where storeid = $id order by name";
+    $self->db->exec($query);
 }
 
 sub store_data_update {
@@ -689,15 +617,12 @@ sub store_data_update {
     my $datalist = $res->{'datalist'} || undef;
 
     return undef unless $datalist;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-    my $query = "delete from data where storeid = $id;";
-    my $rows = $dbi->do($query) or return undef;
-    return undef unless $rows;
 
-    $query = "update store set free = $free where id = $id;";
-    $rows = $dbi->do($query) or return undef;
-    return undef unless $rows;
+    my $query = "delete from data where storeid = $id";
+    $self->db->do($query);
+
+    $query = "update store set free = $free where id = $id";
+    $self->db->do($query);
 
     my @list;
     foreach my $rec (@{$datalist}) {
@@ -708,43 +633,29 @@ sub store_data_update {
         # Dataname pattern for dumps dbname--timestamp--sourcehost.ext
         next unless $dataname =~ m/.+--.+--.+\.(sqlz|sql|sql.gz|sql.xz)/;
 
-        $self->app->log->debug("Parse label $dataname");
         my $label = $self->app->model->parse_label($dataname);
         my $dbname = $label->{'dbname'} || 'undef';
         my $source = $label->{'source'} || 'undef';
         my $stamp = $label->{'timestamp'} || '1970-01-01 00:00:00 UTC';
         my $datetime = $label->{'datetime'} || '1970-01-01 00:00:00';
         my $tz = $label->{'tz'} || 'UND';
-        $self->app->log->debug("Parse label $dataname: dbname=$dbname, stamp=$stamp");
 
         my $query = "insert into data (storeid, name, size, mtime, type, dbname, source, stamp, datetime, tz) values
-                    ($id, '$dataname',  $datasize, '$datamtime', 'pgsql', '$dbname', '$source', '$stamp', '$datetime', '$tz');";
-        my $rows = $dbi->do($query) or return undef;
+                    ($id, '$dataname',  $datasize, '$datamtime', 'pgsql', '$dbname', '$source', '$stamp', '$datetime', '$tz')";
+        $self->db->do($query);
         push @list, $rec;
     }
-    $dbi->disconnect;
     return \@list;
 }
 
 sub store_free {
     my ($self, $id)  = @_;
     return undef unless $id;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
-    my $query = "select free from store where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-
-    $sth->finish;
-    $dbi->disconnect;
-
+    my $query = "select free from store where id = $id limit 1";
+    my $row = $self->db->exec1($query);
     my $free = $row->{'free'};
-
-    return $free if $free;
-    return undef;
+    return undef unless $free;
+    $free;
 }
 
 #---------------
@@ -755,7 +666,7 @@ sub data_list {
     my $self = shift;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
-    my $query = "select s.hostname as store, d.* from data d, store s where s.id = d.storeid order by d.dbname;";
+    my $query = "select s.hostname as store, d.* from data d, store s where s.id = d.storeid order by d.dbname";
     my $sth = $dbi->prepare($query);
     my $rows = $sth->execute;
     my @list;
@@ -788,7 +699,7 @@ sub job_create {
     my $magic = md5_sum(localtime(time));
 
     my $query = "insert into job (id, begin, stop, author, type, sourceid, destid, status, error, message, magic)
-                    values ($id, '$begin', '$stop', '$author', '$type', $sourceid, $destid, '$status', '$error', '$message', '$magic');";
+                    values ($id, '$begin', '$stop', '$author', '$type', $sourceid, $destid, '$status', '$error', '$message', '$magic')";
     $self->db->do($query);
 }
 
@@ -800,7 +711,7 @@ sub job_list {
                     to_char(begin, 'YYYY-MM-DD HH24:MI:SS TZ') as begin,
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
                     author, type, sourceid, destid, status, error, message, magic from job
-                        order by id desc limit 100;";
+                        order by id desc limit 100";
     my $sth = $dbi->prepare($query);
     my $rows = $sth->execute;
     my @list;
@@ -814,7 +725,7 @@ sub job_list {
 
 sub job_next_id {
     my $self = shift;
-    my $query = "select id from job order by id desc limit 1;";
+    my $query = "select id from job order by id desc limit 1";
     my $rows = $self->db->exec($query);
     my $id = $rows->[0]{'id'};
     $id++;
@@ -823,7 +734,7 @@ sub job_next_id {
 
 sub job_exist {
     my ($self, $id)  = @_;
-    my $query = "select id from job where id = $id limit 1;";
+    my $query = "select id from job where id = $id limit 1";
     my $rows = $self->db->exec($query);
     $id = $rows->[0]{'id'};
     return undef unless $id;
@@ -860,7 +771,7 @@ sub job_update {
                     status = '$status',
                     error = '$error',
                     message = '$message'
-                        where id = $id;";
+                        where id = $id";
 
     my $rows = $self->db->do($query);
     return undef unless $rows;
@@ -872,7 +783,7 @@ sub job_delete {
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
 
-    my $query = "delete from job where id = $id;";
+    my $query = "delete from job where id = $id";
     my $rows = $dbi->do($query) or return undef;
 
     $dbi->disconnect;
@@ -886,7 +797,7 @@ sub job_profile {
 
     my $query = "select id, to_char(begin, 'YYYY-MM-DD HH24:MI:SS TZ') as begin,
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
-                    author, type, sourceid, destid, status, error, message, magic from job where id = $id limit 1;";
+                    author, type, sourceid, destid, status, error, message, magic from job where id = $id limit 1";
 
     my $rows = $self->db->exec($query);
     return undef unless $rows;
@@ -924,7 +835,7 @@ sub schedule_list {
     $where = "where id = $id" if $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
-    my $query = "select * from schedule $where order by id;";
+    my $query = "select * from schedule $where order by id";
     my $sth = $dbi->prepare($query);
     my $rows = $sth->execute;
 
@@ -943,7 +854,7 @@ sub schedule_profile {
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
-    my $query = "select * from schedule where id = $id limit 1;";
+    my $query = "select * from schedule where id = $id limit 1";
     my $sth = $dbi->prepare($query);
     my $rows = $sth->execute;
     my $row = $sth->fetchrow_hashref;
@@ -959,7 +870,7 @@ sub schedule_next_id {
     my $self = shift;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
-    my $query = "select id from schedule order by id desc limit 1;";
+    my $query = "select id from schedule order by id desc limit 1";
     my $sth = $dbi->prepare($query);
     my $rows = $sth->execute;
     my $row = $sth->fetchrow_hashref;
@@ -990,7 +901,7 @@ sub schedule_add {
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
          or return undef;
     my $query = "insert into schedule (id, type, sourceid, destid, subject, mday, wday, hour, min)
-                    values ($id, '$type', $sourceID, $destID, '$subject', '$mday', '$wday', '$hour', '$min');";
+                    values ($id, '$type', $sourceID, $destID, '$subject', '$mday', '$wday', '$hour', '$min')";
     my $rows = $dbi->do($query) or return undef;
     $dbi->disconnect;
 
