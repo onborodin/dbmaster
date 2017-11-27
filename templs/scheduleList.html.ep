@@ -1,0 +1,88 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'Dumper';
+% use Mojo::Util qw(dumper);
+
+% use utf8;
+% use strict;
+
+% my $m = $self->app->model;
+% my $scheduleList = $m->scheduleList;
+
+<div class="text-center">
+    <h5>
+    Schedule list&nbsp;<a href="/schedule/list"><i class="fi-refresh" style="font-size:1.3rem;"></i></a>
+    </h5>
+</div>
+
+<table id="table" class="display" >
+    <thead>
+      <tr>
+        <td>#</td>
+        <td>type</td>
+        <td>source</td>
+        <td>dest</td>
+        <td>subj</td>
+        <td>mday</td>
+        <td>wday</td>
+        <td>hour</td>
+        <td>min</td>
+      </tr>
+    </thead>
+    <tbody>
+% my $num = 1;
+% foreach my $descr (@{$scheduleList}) {
+%   my $type = $descr->{'type'};
+%   my $sourceID = $descr->{'sourceid'};
+%   my $destID = $descr->{'destid'};
+%   my $subject = $descr->{'subject'};
+%   my $mday = $descr->{'mday'};
+%   my $wday = $descr->{'wday'};
+%   my $hour = $descr->{'hour'};
+%   my $min = $descr->{'min'};
+
+%   my $source = 'undef';
+%   my $dest = 'undef';
+
+%   if ($type eq 'dump') { 
+%        $source = $m->agentHostname($sourceID) || 'undef';
+%        $dest = $m->storeHostname($destID) || 'undef'; 
+%   }
+    <tr>
+        <td><%= $num %></td>
+        <td><%= $type %></td>
+        <td><%= $source %></td>
+        <td><%= $dest %></td>
+        <td><%= $subject %></td>
+        <td><%= $mday %></td>
+        <td><%= $wday %></td>
+        <td><%= $hour %></td>
+        <td><%= $min %></td>
+    </tr>
+%   $num++;
+% }
+    </tbody>
+</table>
+
+<script>
+$.extend(true, $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true,
+    "lengthChange": true,
+    "language": {
+        "search": "",
+        "lengthMenu": "_MENU_",
+    },
+});
+
+$(document).ready(function() {
+    $('#table').DataTable({
+        "info": false,
+        "processing": true
+    });
+});
+</script>
+%#EOF
+

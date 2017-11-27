@@ -1,0 +1,12 @@
+[Unit]
+Description=PGstore
+
+[Service]
+Type=forking
+PIDFile=/var/run/pgdumper/pgstore.pid
+ExecStart=/usr/local/sbin/pgstore
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

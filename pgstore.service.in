@@ -1,0 +1,12 @@
+[Unit]
+Description=PGstore
+
+[Service]
+Type=forking
+PIDFile=@APP_RUNDIR@/pgstore.pid
+ExecStart=@APP_EXECDIR@/pgstore
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

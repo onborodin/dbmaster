@@ -1,0 +1,12 @@
+[Unit]
+Description=PGagent
+
+[Service]
+Type=forking
+PIDFile=/var/run/pgdumper/pgagent.pid
+ExecStart=/usr/local/sbin/pgagent
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

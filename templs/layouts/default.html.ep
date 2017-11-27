@@ -1,0 +1,121 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><%= title %></title>
+        <link rel="stylesheet" href="/css/datatables.min.css"/>
+        <link rel="stylesheet" href="/css/foundation-float.min.css">
+        <link rel="stylesheet" href="/css/app.css">
+
+        <link rel="stylesheet" href="/icons/foundation-icons.css">
+
+        <script src="/js/jquery.min.js"></script>
+        <script src="/js/datatables.min.js"></script>
+        <script src="/js/foundation.min.js"></script>
+
+    </head>
+
+    <body>
+
+        <div class="reveal" id="modal-agent-add" data-reveal>
+            <form accept-charset="UTF-8" id="user-create-form" action="/agent/add" method="post" data-abide novalidate>
+                <h5>Add new agent</h5>
+                <label>hostname
+                    <input type="text" name="hostname" placeholder="agent hostname" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{3,64}"/>
+                    <span class="form-error">mandatory, 3 or more letter</span>
+                </label>
+                <label>username
+                    <input type="text" name="username" placeholder="login" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                    <span class="form-error">mandatory, 5 or more letter</span>
+                </label>
+                <label>password
+                    <input type="text" name="password" placeholder="password" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                    <span class="form-error">mandatory, 5 or more letter</span>
+                </label>
+                <p class="text-center">
+                    <button type="submit" class="button success">Accept</button>
+                    <button data-close="modal-agent-add" class="button alert" >Escape</button>
+                </p>
+            </form>
+            <button class="close-button" data-close="modal-agent-add" type="button">&times;</button>
+        </div>
+
+        <div class="reveal" id="modal-store-add" data-reveal>
+            <form accept-charset="UTF-8" id="user-create-form" action="/store/add" method="post" data-abide novalidate>
+                <h5>Add new store</h5>
+                <label>hostname
+                    <input type="text" name="hostname" placeholder="store hostname" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{3,64}"/>
+                    <span class="form-error">mandatory, 3 or more letter</span>
+                </label>
+                <label>username
+                    <input type="text" name="username" placeholder="login" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                    <span class="form-error">mandatory, 5 or more letter</span>
+                </label>
+                <label>password
+                    <input type="text" name="password" placeholder="password" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                    <span class="form-error">mandatory, 5 or more letter</span>
+                </label>
+                <p class="text-center">
+                    <button type="submit" class="button success">Accept</button>
+                    <button data-close="modal-store-add" class="button alert" >Escape</button>
+                </p>
+            </form>
+            <button class="close-button" data-close="modal-store-add" type="button">&times;</button>
+        </div>
+
+        <div class="title-bar" data-responsive-toggle="topbar-menu" data-hide-for="medium">
+            <button class="menu-icon" type="button" data-toggle="topbar-menu"></button>
+            <div class="title-bar-title">Menu</div>
+        </div>
+
+%       my $username = $self->session('username') || '';
+
+        <div class="top-bar" id="topbar-menu">
+            <div class="top-bar-left">
+                <ul class="dropdown menu" data-dropdown-menu>
+                    <li class="menu-text">DB</li>
+                    <li><a href="/agent/list">Agent</a></li>
+                    <li><a href="/store/list">Store</a></li>
+                    <li><a href="/job/list">Job</a></li>
+                    <li><a href="/schedule/list">Schedule</a></li>
+                    <li class="is-dropdown-submenu-parent">
+                        <a href="#">Add</a>
+                        <ul class="menu vertical">
+                            <li><a href="#" data-open="modal-agent-add">Agent</a></li>
+                            <li><a href="#" data-open="modal-store-add">Store</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="top-bar-right">
+                <ul class="menu">
+                    <li><a href="/logout"><%= $username %></a></li>
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">&nbsp;</div>
+        <div class="row">
+<!- end of head template ->
+
+<%= content %>
+
+<!- begin of tail template ->
+            </div>
+        </div>
+        <hr/>
+        <div class="row">
+            <p class="text-center"><small>Made by <a href="http://wiki.unix7.org">Borodin Oleg</a></small></p>
+        </div>
+
+
+
+        <script src="/js/app.js"></script>
+    </body>
+</html>
+<!- end of tail template ->
+<!- EOF ->

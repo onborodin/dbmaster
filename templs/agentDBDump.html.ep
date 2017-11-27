@@ -1,0 +1,86 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'Dumper';
+% use Mojo::Util qw(dumper);
+% use Mojo::JSON qw(j encode_json decode_json);
+% use utf8;
+% use strict;
+
+% my $m = $self->app->model;
+
+% my $dbname = $req->param('dbname') || undef;
+% my $agentID = $req->param('agentid') || undef;
+% my $storeID = $req->param('storeid') || undef;
+%
+% my $agentProfile = $m->agentProfile($agentID);
+% my $agentHostname = $agentProfile->{'hostname'} || '';
+% my $agentUsername = $agentProfile->{'username'} || '';
+% my $agentPassword = $agentProfile->{'password'} || '';
+%
+% my $storeProfile = $m->storeProfile($storeID);
+% my $storeHostname = $storeProfile->{'hostname'} || '';
+% my $storeUsername = $storeProfile->{'username'} || '';
+% my $storePassword = $storeProfile->{'password'} || '';
+
+% my $masterHostname = $self->app->config('hostname');
+% my $jobID = $m->jobCreate;
+
+% $m->jobUpdate($jobID, type => 'dbdump', sourceid => $agentID, destid => $storeID, author => $c->session('username'));
+% my $jobMagic = $m->jobProfile($jobID)->{'magic'};
+
+% my $agentAlive = $m->agentAlive($agentID);
+
+% unless ($agentAlive) {
+    <div class="callout alert">
+        Oops...Agent <%= $agentHostname %> not respond.
+        Please, check agent configuration.
+    </div>
+%   $m->jobUpdate($jobID, error => 'connecterr', stop => $m->timestamp);
+% }
+
+% my $storeAlive = $m->storeAlive($storeID);
+% unless ($storeAlive) {
+    <div class="callout alert">
+        Oops.. Store <%= $storeHostname %> not respond.
+        Please, check store configuration.
+    </div>
+%   $m->jobUpdate($jobID, error => 'connecterr', stop => $m->timestamp);
+% }
+
+% if ($agentAlive && $storeAlive) {
+%     my $ua = Mojo::UserAgent->new(max_redirects => 5);
+%
+%     my $param = "dbname=$dbname";
+%     $param = $param."&store=$storeHostname";
+%     $param = $param."&storelogin=$storeUsername";
+%     $param = $param."&storepwd=$storePassword";
+%     $param = $param."&master=$masterHostname";
+%     $param = $param."&jobid=$jobID";
+%     $param = $param."&magic=$jobMagic";
+%
+%     $m->jobUpdate($jobID, status => 'pushjob');
+%     my $body = $ua->get("https://$agentUsername:$agentPassword\@$agentHostname:3001/db/dump?$param")->result->body;
+%     my $res = decode_json($body);
+%
+%     if ( $res->{'result'} eq 'success' ) {
+        <div class="callout success">
+            Agent <%= $agentHostname %> now will create dump of database <%= $dbname %> as job <%= $jobID %>.
+        </div>
+%     }
+%     if ( $res->{'result'} ne 'success' ) {
+        <div class="callout alert">
+            Agent <%= $agentHostname %> not correct responded for the request.
+            Job <%= $jobID %> was cancel.
+        </div>
+%       $m->jobUpdate($jobID, error => 'pushjoberr', stop => $m->timestamp);
+%     }
+% }
+
+<div class="text-center">
+    <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
+    <a class="button" href="/store/data/list?id=<%= $storeID %>">DataList</a>
+</div>
+%#EOF
+

@@ -1,0 +1,13 @@
+[Unit]
+Description=PGmaster
+
+[Service]
+Type=forking
+PIDFile=@APP_RUNDIR@/pgmaster.pid
+ExecStart=@APP_EXECDIR@/pgmaster
+ExecReload=/bin/kill -HUP $MAINPID
+
+
+[Install]
+WantedBy=multi-user.target
+
