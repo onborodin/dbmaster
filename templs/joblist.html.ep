@@ -9,7 +9,7 @@
 % use Mojo::Util qw(dumper);
 
 % my $m = $self->app->model;
-% my $jobList = $m->jobList;
+% my $job_list = $m->jobList;
 
 <div class="text-center">
     <h5>
@@ -35,8 +35,8 @@
     </thead>
     <tbody>
 % my $num = 1;
-% foreach my $job (@{$jobList}) {
-%   my $jobID = $job->{'id'};
+% foreach my $job (@{$job_list}) {
+%   my $job_id = $job->{'id'};
 %   my $type = $job->{'type'};
 %   my $sourceID = $job->{'sourceid'};
 %   my $destID = $job->{'destid'};
@@ -49,12 +49,12 @@
 %   my $author = $job->{'author'} || 'unkn';
 
 %   if ($type eq 'dbdump') { 
-%      $sourcehost = $m->agentProfile($sourceID)->{'hostname'} if $sourceID;
-%      $desthost = $m->storeProfile($destID)->{'hostname'} if $destID;
+%      $sourcehost = $m->agent_profile($sourceID)->{'hostname'} if $sourceID;
+%      $desthost = $m->store_profile($destID)->{'hostname'} if $destID;
 %   }
 
 %   if ($type eq 'dbcopy' || $type eq 'dbrename' || $type eq 'dbdrop') { 
-%      $sourcehost = $m->agentProfile($sourceID)->{'hostname'} if $sourceID;
+%      $sourcehost = $m->agent_profile($sourceID)->{'hostname'} if $sourceID;
 %      $desthost = '';
 %   }
 
@@ -63,7 +63,7 @@
 
     <tr>
         <td><%= $num %></td>
-        <td><%= $jobID %></td>
+        <td><%= $job_id %></td>
         <td><%= $type %></td>
         <td><%= $status %></td>
         <td><%= $error %></td>

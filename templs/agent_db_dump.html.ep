@@ -11,76 +11,76 @@
 % my $m = $self->app->model;
 
 % my $dbname = $req->param('dbname') || undef;
-% my $agentID = $req->param('agentid') || undef;
-% my $storeID = $req->param('storeid') || undef;
+% my $agent_id = $req->param('agentid') || undef;
+% my $store_id = $req->param('storeid') || undef;
 %
-% my $agentProfile = $m->agentProfile($agentID);
-% my $agentHostname = $agentProfile->{'hostname'} || '';
-% my $agentUsername = $agentProfile->{'username'} || '';
-% my $agentPassword = $agentProfile->{'password'} || '';
+% my $agent_profile = $m->agentProfile($agent_id);
+% my $agent_hostname = $agent_profile->{'hostname'} || '';
+% my $agent_username = $agent_profile->{'username'} || '';
+% my $agent_password = $agent_profile->{'password'} || '';
 %
-% my $storeProfile = $m->storeProfile($storeID);
-% my $storeHostname = $storeProfile->{'hostname'} || '';
-% my $storeUsername = $storeProfile->{'username'} || '';
-% my $storePassword = $storeProfile->{'password'} || '';
+% my $store_profile = $m->storeProfile($store_id);
+% my $store_hostname = $store_profile->{'hostname'} || '';
+% my $store_username = $store_profile->{'username'} || '';
+% my $store_password = $store_profile->{'password'} || '';
 
 % my $masterHostname = $self->app->config('hostname');
-% my $jobID = $m->jobCreate;
+% my $job_id = $m->job_create;
 
-% $m->jobUpdate($jobID, type => 'dbdump', sourceid => $agentID, destid => $storeID, author => $c->session('username'));
-% my $jobMagic = $m->jobProfile($jobID)->{'magic'};
+% $m->job_update($job_id, type => 'dbdump', sourceid => $agent_id, destid => $store_id, author => $c->session('username'));
+% my $jobMagic = $m->job_profile($job_id)->{'magic'};
 
-% my $agentAlive = $m->agentAlive($agentID);
+% my $agent_alive = $m->agentAlive($agent_id);
 
-% unless ($agentAlive) {
+% unless ($agent_alive) {
     <div class="callout alert">
-        Oops...Agent <%= $agentHostname %> not respond.
+        Oops...Agent <%= $agent_hostname %> not respond.
         Please, check agent configuration.
     </div>
-%   $m->jobUpdate($jobID, error => 'connecterr', stop => $m->timestamp);
+%   $m->job_update($job_id, error => 'connecterr', stop => $m->timestamp);
 % }
 
-% my $storeAlive = $m->storeAlive($storeID);
-% unless ($storeAlive) {
+% my $store_alive = $m->storeAlive($store_id);
+% unless ($store_alive) {
     <div class="callout alert">
-        Oops.. Store <%= $storeHostname %> not respond.
+        Oops.. Store <%= $store_hostname %> not respond.
         Please, check store configuration.
     </div>
-%   $m->jobUpdate($jobID, error => 'connecterr', stop => $m->timestamp);
+%   $m->job_update($job_id, error => 'connecterr', stop => $m->timestamp);
 % }
 
-% if ($agentAlive && $storeAlive) {
+% if ($agent_alive && $store_alive) {
 %     my $ua = Mojo::UserAgent->new(max_redirects => 5);
 %
 %     my $param = "dbname=$dbname";
-%     $param = $param."&store=$storeHostname";
-%     $param = $param."&storelogin=$storeUsername";
-%     $param = $param."&storepwd=$storePassword";
+%     $param = $param."&store=$store_hostname";
+%     $param = $param."&storelogin=$store_username";
+%     $param = $param."&storepwd=$store_password";
 %     $param = $param."&master=$masterHostname";
-%     $param = $param."&jobid=$jobID";
+%     $param = $param."&jobid=$job_id";
 %     $param = $param."&magic=$jobMagic";
 %
-%     $m->jobUpdate($jobID, status => 'pushjob');
-%     my $body = $ua->get("https://$agentUsername:$agentPassword\@$agentHostname:3001/db/dump?$param")->result->body;
+%     $m->job_update($job_id, status => 'pushjob');
+%     my $body = $ua->get("https://$agent_username:$agent_password\@$agent_hostname:3001/db/dump?$param")->result->body;
 %     my $res = decode_json($body);
 %
 %     if ( $res->{'result'} eq 'success' ) {
         <div class="callout success">
-            Agent <%= $agentHostname %> now will create dump of database <%= $dbname %> as job <%= $jobID %>.
+            Agent <%= $agent_hostname %> now will create dump of database <%= $dbname %> as job <%= $job_id %>.
         </div>
 %     }
 %     if ( $res->{'result'} ne 'success' ) {
         <div class="callout alert">
-            Agent <%= $agentHostname %> not correct responded for the request.
-            Job <%= $jobID %> was cancel.
+            Agent <%= $agent_hostname %> not correct responded for the request.
+            Job <%= $job_id %> was cancel.
         </div>
-%       $m->jobUpdate($jobID, error => 'pushjoberr', stop => $m->timestamp);
+%       $m->job_update($job_id, error => 'pushjoberr', stop => $m->timestamp);
 %     }
 % }
 
 <div class="text-center">
-    <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
-    <a class="button" href="/store/data/list?id=<%= $storeID %>">DataList</a>
+    <a class="button" href="/agent/db/list?id=<%= $agent_id %>">DBList</a>
+    <a class="button" href="/store/data/list?id=<%= $store_id %>">DataList</a>
 </div>
 %#EOF
 

@@ -9,7 +9,7 @@
 % use strict;
 
 % my $m = $self->app->model;
-% my $scheduleList = $m->scheduleList;
+% my $schedule_list = $m->scheduleList;
 
 <div class="text-center">
     <h5>
@@ -33,7 +33,7 @@
     </thead>
     <tbody>
 % my $num = 1;
-% foreach my $descr (@{$scheduleList}) {
+% foreach my $descr (@{$schedule_list}) {
 %   my $type = $descr->{'type'};
 %   my $sourceID = $descr->{'sourceid'};
 %   my $destID = $descr->{'destid'};
@@ -47,8 +47,8 @@
 %   my $dest = 'undef';
 
 %   if ($type eq 'dump') { 
-%        $source = $m->agentHostname($sourceID) || 'undef';
-%        $dest = $m->storeHostname($destID) || 'undef'; 
+%        $source = $m->agent_hostname($sourceID) || 'undef';
+%        $dest = $m->store_hostname($destID) || 'undef'; 
 %   }
     <tr>
         <td><%= $num %></td>

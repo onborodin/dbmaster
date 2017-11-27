@@ -8,21 +8,21 @@
 % use utf8;
 % use strict;
 %
-% my $agentID = $req->param('id');
+% my $agent_id = $req->param('id');
 % my $hostname = $req->param('hostname');
 % my $username = $req->param('username');
 % my $password = $req->param('password');
 %
 % my $m = $self->app->model;
-% my $res = $m->agentConfig($agentID, $hostname, $username, $password);
+% my $res = $m->agent_config($agent_id, $hostname, $username, $password);
 %
-% my $jobID = $m->jobCreate;
+% my $job_id = $m->job_create;
 %
-% $m->jobUpdate(
-%     $jobID,
+% $m->job_update(
+%     $job_id,
 %     type => 'agentreconf',
-%     sourceid => $agentID,
-%     destid => $agentID,
+%     sourceid => $agent_id,
+%     destid => $agent_id,
 %     author => $c->session('username')
 % );
 %
@@ -30,19 +30,19 @@
     <div class="callout success">
         Agent <%= $hostname %> was updated successful.
     </div>
-%   $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+%   $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
 % }
 %
 % unless ($res) {
     <div class="callout alert">
         Agent <%= $hostname %> was updated unsuccessful.
     </div>
-%   $m->jobUpdate($jobID, status => 'error', error => 'reconferror', stop => $m->timestamp);
+%   $m->job_update($job_id, status => 'error', error => 'reconferror', stop => $m->timestamp);
 % }
 %
 <div class="text-center">
     <a class="button" href="/agent/list">AgentList</a>
-    <a class="button" href="/agent/db/list?id=<%= $agentID %>">DBList</a>
+    <a class="button" href="/agent/db/list?id=<%= $agent_id %>">DBList</a>
 </div>
 %#EOF
 

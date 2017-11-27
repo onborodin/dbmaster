@@ -10,20 +10,20 @@
 % use strict;
 
 % my $m = $self->app->model;
-% my $storeList = $m->storeList;
+% my $store_list = $m->storeList;
 
-% foreach my $store (@{$storeList}) {
-%   my $storeID = $store->{'id'};
+% foreach my $store (@{$store_list}) {
+%   my $store_id = $store->{'id'};
 %   my $hostname = $store->{'hostname'};
 %   my $username = $store->{'username'};
 %   my $password = $store->{'password'};
-%   my $free = $m->storeFree($storeID) || 0; 
+%   my $free = $m->store_free($store_id) || 0; 
 
-    <div class="reveal" id="modal-store-config-<%= $storeID %>" data-reveal>
+    <div class="reveal" id="modal-store-config-<%= $store_id %>" data-reveal>
         <form accept-charset="UTF-8" action="/store/config" method="get" data-abide novalidate>
 
             <h5>Configuration agent <%= $hostname %></h5>
-            <input type="hidden" name="id" value="<%= $storeID %>"/>
+            <input type="hidden" name="id" value="<%= $store_id %>"/>
             <label>hostname
                 <input type="text" name="hostname" placeholder="hostname" value="<%= $hostname %>" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
                 <span class="form-error">mandatory parameter, 5 or more letter</span>
@@ -40,28 +40,28 @@
                 <button type="submit" class="button success">Accept</button>
             </p>
         </form>
-        <button class="close-button" data-close="modal-store-config-<%= $storeID %>" type="button">&times;</button>
+        <button class="close-button" data-close="modal-store-config-<%= $store_id %>" type="button">&times;</button>
     </div>
 
-    <div class="reveal" id="modal-store-<%= $storeID %>" data-reveal>
+    <div class="reveal" id="modal-store-<%= $store_id %>" data-reveal>
         <div class="text-center">
             <h5>Store <%= $hostname %></h5>
             <div class="stacked-for-small button-group">
-                <a class="button" href="#" data-open="modal-store-config-<%= $storeID %>">ReConf</a>
-                <a class="button" href="/store/data/list?id=<%= $storeID %>">DataList</a>
-                <a class="button alert" href="#" data-open="modal-store-delete-<%= $storeID %>">Delete</a>
+                <a class="button" href="#" data-open="modal-store-config-<%= $store_id %>">ReConf</a>
+                <a class="button" href="/store/data/list?id=<%= $store_id %>">DataList</a>
+                <a class="button alert" href="#" data-open="modal-store-delete-<%= $store_id %>">Delete</a>
             </div>
         </div>
-        <button class="close-button" data-close="modal-store-<%= $storeID %>" type="button">&times;</button>
+        <button class="close-button" data-close="modal-store-<%= $store_id %>" type="button">&times;</button>
     </div>
 
-    <div class="reveal" id="modal-store-delete-<%= $storeID %>" data-reveal>
+    <div class="reveal" id="modal-store-delete-<%= $store_id %>" data-reveal>
         <div class="text-center">
             <h5>Do you want to delete store <%= $hostname %>?</h5>
-            <a class="button" data-close="modal-store-delete-<%= $storeID %>">Escape</a>
-            <a class="button alert" href="/store/delete?id=<%= $storeID %>">Delete</a>
+            <a class="button" data-close="modal-store-delete-<%= $store_id %>">Escape</a>
+            <a class="button alert" href="/store/delete?id=<%= $store_id %>">Delete</a>
         </div>
-        <button class="close-button" data-close="modal-store-delete-<%= $storeID %>" type="button">&times;</button>
+        <button class="close-button" data-close="modal-store-delete-<%= $store_id %>" type="button">&times;</button>
     </div>
 
 % }
@@ -80,21 +80,21 @@
     </thead>
     <tbody>
 % my $num = 1;
-% foreach my $store (@{$storeList}) {
-%   my $storeID = $store->{'id'};
+% foreach my $store (@{$store_list}) {
+%   my $store_id = $store->{'id'};
 %   my $hostname = $store->{'hostname'};
 
-%   my $storeInfo = $m->storeInfo($storeID);
-%   my $sum = $storeInfo->{'sum'};
-%   my $count = $storeInfo->{'count'};
+%   my $store_info = $m->storeInfo($store_id);
+%   my $sum = $store_info->{'sum'};
+%   my $count = $store_info->{'count'};
 
-%   my $free = $m->storeFree($storeID) || 0; 
+%   my $free = $m->store_free($store_id) || 0; 
     <tr>
         <td><%= $num %></td>
-        <td><a href="#" data-open="modal-store-<%= $storeID %>"><%= $hostname %></a></td>
-        <td><a href="/store/data/list?id=<%= $storeID %>"><%= $count %></a></td>
-        <td><%= $m->sizeM($sum) if $sum %></td>
-        <td><%= $m->sizeM($free) if $free %></td>
+        <td><a href="#" data-open="modal-store-<%= $store_id %>"><%= $hostname %></a></td>
+        <td><a href="/store/data/list?id=<%= $store_id %>"><%= $count %></a></td>
+        <td><%= $m->size_m($sum) if $sum %></td>
+        <td><%= $m->size_m($free) if $free %></td>
     </tr>
 %   $num++;
 % }

@@ -10,20 +10,20 @@
 
 % my $m = $self->app->model;
 %
-% my $storeID = $req->param('id');
+% my $store_id = $req->param('id');
 % my $hostname = $req->param('hostname');
 % my $username = $req->param('username');
 % my $password = $req->param('password');
 
-% my $res = $m->storeConfig($storeID, $hostname, $username, $password);
+% my $res = $m->store_config($store_id, $hostname, $username, $password);
 %
-% my $jobID = $m->jobCreate;
+% my $job_id = $m->job_create;
 %
-% $m->jobUpdate(
-%     $jobID,
+% $m->job_update(
+%     $job_id,
 %     type => 'storereconf',
-%     sourceid => $agentID,
-%     destid => $agentID,
+%     sourceid => $agent_id,
+%     destid => $agent_id,
 %     author => $c->session('username')
 % );
 %
@@ -31,19 +31,19 @@
     <div class="callout success">
         Store <%= $hostname %> was updated successful.
     </div>
-%   $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+%   $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
 % } if $res;
 %
 % do {
     <div class="callout alert">
         Store <%= $hostname %> was updated unsuccessful.
     </div>
-%   $m->jobUpdate($jobID, status => 'error', error => 'reconferror', stop => $m->timestamp);
+%   $m->job_update($job_id, status => 'error', error => 'reconferror', stop => $m->timestamp);
 % } unless $res;
 
 <div class="text-center">
     <a class="button" href="/store/list">StoreList</a>
-    <a class="button" href="/store/data/list?id=<%= $storeID %>">DataList</a>
+    <a class="button" href="/store/data/list?id=<%= $store_id %>">DataList</a>
 </div>
 %#EOF
 

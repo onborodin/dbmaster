@@ -8,7 +8,7 @@
 % use utf8;
 % use strict;
 
-% my $dataList = $self->app->model->dataList;
+% my $data_list = $self->app->model->dataList;
 
 <div class="text-center">
     <h5>Generic dataset list</h5>
@@ -27,17 +27,17 @@
     </thead>
     <tbody>
 % my $num = 1;
-% foreach my $data (@{$dataList}) {
+% foreach my $data (@{$data_list}) {
 %   my $filename = $data->{'name'};
 %   my $dbname = $data->{'dbname'};
 %   my $stamp = $data->{'stamp'};
 %   my $size = $data->{'size'};
 %   my $store = $data->{'store'};
-%   my $storeID = $data->{'storeid'};
+%   my $store_id = $data->{'storeid'};
 %   my $source = $data->{'source'};
     <tr>
         <td><%= $num %></td>
-        <td><a href="/store/data/list?id=<%= $storeID %>"><%= $store %></a></td>
+        <td><a href="/store/data/list?id=<%= $store_id %>"><%= $store %></a></td>
         <td><%= $dbname %></td>
         <td><%= $stamp %></td>
         <td><%= $size %></td>

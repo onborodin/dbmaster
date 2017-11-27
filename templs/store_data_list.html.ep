@@ -16,41 +16,41 @@
 
 % my $m = $self->app->model;
 
-% my $storeID = $req->param('id');
-% my $storeHostname = $m->storeHostname($storeID);
+% my $store_id = $req->param('id');
+% my $store_hostname = $m->storeHostname($store_id);
 
-% my $storeAlive = $m->storeAlive($storeID);
-% unless ($storeAlive) {
+% my $store_alive = $m->storeAlive($store_id);
+% unless ($store_alive) {
     <div class="callout alert">
-        Oops.. Store <%= $storeHostname %> not respond.
+        Oops.. Store <%= $store_hostname %> not respond.
         Please, check store configuration. 
         Now will use cached dataset list.
     </div>
 % }
 
-% if ($storeAlive) {
-%    my $res = $m->storeDataUpdate($storeID);
+% if ($store_alive) {
+%    my $res = $m->store_data_update($store_id);
 %    unless ($res) {
        <div class="callout alert">
-          Oops...Store <%= $storeHostname %> not responded for update data list.
+          Oops...Store <%= $store_hostname %> not responded for update data list.
           Use cached data list.
       </div>
 %    }
 % }
 
-% my $dataList = $m->storeDataList($storeID);
-% my $agentList = $m->agentList;
+% my $data_list = $m->store_data_list($store_id);
+% my $agent_list = $m->agentList;
 
 
 % my $num = 1;
-% foreach my $data (@{$dataList}) {
+% foreach my $data (@{$data_list}) {
 %   my $dataname = $data->{'name'};
 %   my $dbname = $data->{'dbname'};
 %   my $size = $data->{'size'};
 %   my $source = $data->{'source'};
 %   my $stamp = $data->{'datetime'} || $data->{'stamp'} ;
 
-%   my $newName = $dbname."-".$m->stripSec($stamp);
+%   my $newName = $dbname."-".$m->strip_sec($stamp);
 %   $newName =~ s/[-\.: ]//g;
 %   $newName =~ s/[+]//g;
 
@@ -63,17 +63,17 @@
         </div>
 
         <form accept-charset="UTF-8" action="/agent/db/restore" method="get" data-abide novalidate>
-            <input type="hidden" name="storeid" value="<%= $storeID %>" />
+            <input type="hidden" name="storeid" value="<%= $store_id %>" />
             <input type="hidden" name="dataname" value="<%= $dataname %>" />
             <input type="hidden" name="dbname" value="<%= $newName %>" />
 
             <label>Agent hostname
                 <select name="agentid" id="agent-hostname" required>
                     <option value=""></option>
-%                   foreach my $agent (@{$agentList}) {
+%                   foreach my $agent (@{$agent_list}) {
 %                      my $agentName = $agent->{'hostname'};
-%                      my $agentID = $agent->{'id'};
-                       <option value="<%= $agentID %>"><%= $agentName %></option>
+%                      my $agent_id = $agent->{'id'};
+                       <option value="<%= $agent_id %>"><%= $agentName %></option>
 %                   }
                 </select>
             </label>
@@ -95,14 +95,14 @@
         <div class="text-center">
             <h5>Do you want to delete the data?</h5>
             <a class="button" data-close="modal-data-delete-<%= $modalID %>">Escape</a>
-            <a class="button alert" href="/store/data/delete?id=<%= $storeID %>&dataname=<%=  url_escape $dataname %>">Delete</a>
+            <a class="button alert" href="/store/data/delete?id=<%= $store_id %>&dataname=<%=  url_escape $dataname %>">Delete</a>
         </div>
         <button class="close-button" data-close="modal-data-delete-<%= $modalID %>" type="button">&times;</button>
     </div>
 
     <div class="reveal" id="modal-store-data-<%= $modalID %>" data-reveal>
         <div class="text-center">
-            <h5>Store <%= $storeHostname %></h5>
+            <h5>Store <%= $store_hostname %></h5>
             <div class="stacked-for-small button-group">
                 <a class="button" href="#" data-open="modal-data-restore-<%= $modalID %>">Restore</a>
                 <a class="button alert" href="#" data-open="modal-data-delete-<%= $modalID %>">Delete</a>
@@ -117,8 +117,8 @@
 
 <div class="text-center">
     <h5>
-        Store <%= $storeHostname%> dataset list&nbsp;
-        <a href="/store/data/list?id=<%= $storeID %>">
+        Store <%= $store_hostname%> dataset list&nbsp;
+        <a href="/store/data/list?id=<%= $store_id %>">
             <i class="fi-refresh" style="font-size:1.3rem;"></i>
         </a>
     </h5>
@@ -138,7 +138,7 @@
     <tbody>
 
 % $num = 1;
-% foreach my $data (@{$dataList}) {
+% foreach my $data (@{$data_list}) {
 %   my $filename = $data->{'name'};
 %   my $dataname = $data->{'name'};
 %   my $dbname = $data->{'dbname'};
@@ -152,9 +152,9 @@
     <tr>
         <td><%= $num %></td>
         <td><a href="#" data-open="modal-store-data-<%= $modalID %>"><%= $dbname %></a></td>
-        <td class="show-for-medium"><%= $m->stripSec($stamp) %></td>
-        <td class="show-for-large"><%= $m->stripSec($datetime)." ".$tz %></td>
-        <td><%= $m->sizeM($size) %></td>
+        <td class="show-for-medium"><%= $m->strip_sec($stamp) %></td>
+        <td class="show-for-large"><%= $m->strip_sec($datetime)." ".$tz %></td>
+        <td><%= $m->size_m($size) %></td>
         <td class="show-for-medium"><%= $source %></td>
     </tr>
 %   $num++;

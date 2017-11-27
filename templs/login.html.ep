@@ -27,10 +27,10 @@
                         <form accept-charset="UTF-8" method="post" action="/login">
                             <div class="row column">
                                 <h4 class="text-center">Login with your username</h4>
-                                <label>Username
+                                <label>_username
                                     <input type="text" name="username" placeholder="username" />
                                 </label>
-                                <label>Password
+                                <label>_password
                                     <input type="password" name="password" placeholder="password" />
                                 </label>
                                 <p>

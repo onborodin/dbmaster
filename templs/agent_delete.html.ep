@@ -11,30 +11,30 @@
 
 % my $m = $self->app->model;
 
-% my $agentID = $req->param('id');
-% my $res = $self->app->model->agentDelete($agentID);
+% my $agent_id = $req->param('id');
+% my $res = $self->app->model->agent_delete($agent_id);
 
-% my $jobID = $m->jobCreate;
-% $m->jobUpdate(
-%    $jobID, 
+% my $job_id = $m->job_create;
+% $m->job_update(
+%    $job_id, 
 %    type => 'agentdelete',
-%    sourceid => $agentID,
-%    destid => $agentID, 
+%    sourceid => $agent_id,
+%    destid => $agent_id, 
 %    author => $c->session('username')
 % );
 
 % do {
     <div class="callout success">
-        Agent id <%= $agentID %> was deleted successful.
+        Agent id <%= $agent_id %> was deleted successful.
     </div>
-    $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+    $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
 % } if $res;
 
 % do {
     <div class="callout alert">
-        Agent id <%= $agentID %> was deleted unsuccessful.
+        Agent id <%= $agent_id %> was deleted unsuccessful.
     </div>
-    $m->jobUpdate($jobID, status => 'error', error => 'agentdelerr', stop => $m->timestamp);
+    $m->job_update($job_id, status => 'error', error => 'agentdelerr', stop => $m->timestamp);
 % } unless $res;
 
 <div class="text-center">

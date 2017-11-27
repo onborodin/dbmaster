@@ -10,29 +10,29 @@
 
 % my $m = $self->app->model;
 
-% my $agentID = $req->param('id');
-% my $agentHostname = $m->agentHostname($agentID);
+% my $agent_id = $req->param('id');
+% my $agent_hostname = $m->agentHostname($agent_id);
 
-% my $agentAlive = $m->agentAlive($agentID);
-% unless ($agentAlive) {
+% my $agent_alive = $m->agentAlive($agent_id);
+% unless ($agent_alive) {
     <div class="callout alert">
-        Oops...Agent <%= $agentHostname %> not responded.
+        Oops...Agent <%= $agent_hostname %> not responded.
         Use cached database list.
     </div>
 % }
 
-% if ($agentAlive) {
-%    my $res = $m->agentDBUpdate($agentID);
+% if ($agent_alive) {
+%    my $res = $m->agent_db_update($agent_id);
 %    unless ($res) {
        <div class="callout alert">
-          Oops...Agent <%= $agentHostname %> not responded for update db list.
+          Oops...Agent <%= $agent_hostname %> not responded for update db list.
           Use cached database list.
       </div>
 %    }
 % }
 
-% my $dbList = $self->app->model->agentDBList($agentID);
-% my $storeList = $self->app->model->storeList;
+% my $dbList = $m->agent_db_list($agent_id);
+% my $store_list = $m->storeList;
 
 % my $num = 1;
 % foreach my $db (@{$dbList}) {
@@ -43,19 +43,19 @@
 %#  --- dump database ---
     <div class="reveal" id="modal-dump-<%= $dbname %>" data-reveal>
         <div class="text-center">
-            <h5>Dump database <%= $dbname %> from <%= $agentHostname %></h5>
+            <h5>Dump database <%= $dbname %> from <%= $agent_hostname %></h5>
         </div>
         <form accept-charset="UTF-8" action="/agent/db/dump" method="get" data-abide novalidate>
-            <input type="hidden" name="agentid" value="<%= $agentID %>" />
+            <input type="hidden" name="agentid" value="<%= $agent_id %>" />
             <input type="hidden" name="dbname" value="<%= $dbname %>" />
 
             <label>Store hostname
                 <select name="storeid" id="store-hostname" required>
                     <option value=""></option>
-%                   foreach my $store (@{$storeList}) {
+%                   foreach my $store (@{$store_list}) {
 %                      my $storeName = $store->{'hostname'};
-%                      my $storeID = $store->{'id'};
-                       <option value="<%= $storeID %>"><%= $storeName %></option>
+%                      my $store_id = $store->{'id'};
+                       <option value="<%= $store_id %>"><%= $storeName %></option>
 %                   }
                 </select>
             </label>
@@ -76,16 +76,16 @@
 
         <form accept-charset="UTF-8" action="/schedule/add" method="get" data-abide novalidate>
             <input type="hidden" name="type" value="dump" />
-            <input type="hidden" name="sourceid" value="<%= $agentID %>" />
+            <input type="hidden" name="sourceid" value="<%= $agent_id %>" />
             <input type="hidden" name="subject" value="<%= $dbname %>" />
 
             <label>Store hostname
                 <select name="destid" required>
                     <option value=""></option>
-%                   foreach my $store (@{$storeList}) {
+%                   foreach my $store (@{$store_list}) {
 %                      my $storeName = $store->{'hostname'};
-%                      my $storeID = $store->{'id'};
-                       <option value="<%= $storeID %>"><%= $storeName %></option>
+%                      my $store_id = $store->{'id'};
+                       <option value="<%= $store_id %>"><%= $storeName %></option>
 %                   }
                 </select>
             </label>
@@ -122,10 +122,10 @@
 %#  --- drop database ---
     <div class="reveal" id="modal-drop-<%= $dbname %>" data-reveal>
         <div class="text-center">
-            <h5>Drop database <%= $dbname %> on <%= $agentHostname %> </h5>
+            <h5>Drop database <%= $dbname %> on <%= $agent_hostname %> </h5>
         </div>
         <form accept-charset="UTF-8" action="/agent/db/drop" method="get" data-abide novalidate>
-            <input type="hidden" name="agentid" value="<%= $agentID %>" />
+            <input type="hidden" name="agentid" value="<%= $agent_id %>" />
             <input type="hidden" name="dbname" value="<%= $dbname %>" />
             <p class="text-center">
                 <button type="submit" class="button alert">Accept</button>
@@ -138,10 +138,10 @@
 %#  --- rename database ---
     <div class="reveal" id="modal-rename-<%= $dbname %>" data-reveal>
         <div class="text-center">
-            <h5>Rename database <%= $dbname %> on <%= $agentHostname %> </h5>
+            <h5>Rename database <%= $dbname %> on <%= $agent_hostname %> </h5>
         </div>
         <form accept-charset="UTF-8" action="/agent/db/rename" method="get" data-abide novalidate>
-            <input type="hidden" name="agentid" value="<%= $agentID %>" />
+            <input type="hidden" name="agentid" value="<%= $agent_id %>" />
             <input type="hidden" name="dbname" value="<%= $dbname %>" />
             <label>New name
                 <input type="text" name="newname" value="<%= $dbname %>" placeholder="new db name" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{3,64}"/>
@@ -158,10 +158,10 @@
 %#  --- copy database ---
     <div class="reveal" id="modal-copy-<%= $dbname %>" data-reveal>
         <div class="text-center">
-            <h5>Copy database <%= $dbname %> on <%= $agentHostname %> </h5>
+            <h5>Copy database <%= $dbname %> on <%= $agent_hostname %> </h5>
         </div>
         <form accept-charset="UTF-8" action="/agent/db/copy" method="get" data-abide novalidate>
-            <input type="hidden" name="agentid" value="<%= $agentID %>" />
+            <input type="hidden" name="agentid" value="<%= $agent_id %>" />
             <input type="hidden" name="dbname" value="<%= $dbname %>" />
             <label>Copy name
                 <input type="text" name="newname" value="<%= $dbname %>_copy" placeholder="db name of copy" required pattern="[a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{3,64}"/>
@@ -178,7 +178,7 @@
 %#  --- operation modal ---
     <div class="reveal" id="modal-<%= $dbname %>" data-reveal>
         <div class="text-center">
-            <h5><i class="fi-database" style="font-size:1.3em;"></i>&nbsp;Database <%= $dbname %> on <%= $agentHostname %> </h5>
+            <h5><i class="fi-database" style="font-size:1.3em;"></i>&nbsp;Database <%= $dbname %> on <%= $agent_hostname %> </h5>
             <div class="stacked-for-small button-group">
                 <a class="button" href="#" data-open="modal-schedule-<%= $dbname %>"><i class="fi-plus" style="font-size:1.3em;"></i>&nbsp;ToPlan</a>
                 <a class="button" href="#" data-open="modal-dump-<%= $dbname %>"><i class="fi-archive" style="font-size:1.3em;"></i>&nbsp;Dump</a>
@@ -194,8 +194,8 @@
 
 <div class="text-center">
     <h5>
-        Agent <%= $agentHostname%> database list&nbsp;
-        <a href="/agent/db/list?id=<%= $agentID %>"><i class="fi-refresh" style="font-size:1.3rem;"></i></a>
+        Agent <%= $agent_hostname%> database list&nbsp;
+        <a href="/agent/db/list?id=<%= $agent_id %>"><i class="fi-refresh" style="font-size:1.3rem;"></i></a>
     </h5>
 </div>
 
@@ -211,6 +211,7 @@
     </thead>
     <tbody>
 % $num = 1;
+
 % foreach my $db (@{$dbList}) {
 %   my $dbname = $db->{'name'};
 %   my $dbsize = $db->{'size'};
@@ -246,4 +247,3 @@ $(document).ready(function() {
 </script>
 
 %#EOF
-

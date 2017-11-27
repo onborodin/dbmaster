@@ -11,20 +11,20 @@
 
 % my $m = $self->app->model;
 
-% my $storeID = $req->param('id');
+% my $store_id = $req->param('id');
 % my $dataname = $req->param('dataname');
 
-% my $storeProfile = $m->storeProfile($storeID);
-% my $storeHostname = $storeProfile->{'hostname'};
-% my $storeUsername = $storeProfile->{'username'};
-% my $storePassword = $storeProfile->{'password'};
+% my $store_profile = $m->storeProfile($store_id);
+% my $store_hostname = $store_profile->{'hostname'};
+% my $store_username = $store_profile->{'username'};
+% my $store_password = $store_profile->{'password'};
 
-% my $jobID = $m->jobCreate;
-% $m->jobUpdate(
-%     $jobID,
+% my $job_id = $m->job_create;
+% $m->job_update(
+%     $job_id,
 %     type => 'dropdata',
-%     sourceid => $storeID,
-%     destid => $storeID,
+%     sourceid => $store_id,
+%     destid => $store_id,
 %     author => $c->session('username')
 % );
 
@@ -33,7 +33,7 @@
 % my $datanameEsc = url_escape $dataname;
 % my $param = "dataname=$datanameEsc";
 
-% my $tx = $ua->get("https://$storeUsername:$storePassword\@$storeHostname:3002/data/delete?$param");
+% my $tx = $ua->get("https://$store_username:$store_password\@$store_hostname:3002/data/delete?$param");
 
 % my $body;
 % eval { $body = $tx->result->body };
@@ -42,23 +42,23 @@
 
 % if ($res->{'result'} eq 'success') {
     <div class="callout success">
-        Store <%= $storeHostname %> deleted <%= $dataname %> as job <%= $jobID %>.
+        Store <%= $store_hostname %> deleted <%= $dataname %> as job <%= $job_id %>.
     </div>
-%   $m->storeDataUpdate($storeID);
-%   $m->jobUpdate($jobID, status => 'deleted', error => 'noerr', stop => $m->timestamp);
+%   $m->store_data_update($store_id);
+%   $m->job_update($job_id, status => 'deleted', error => 'noerr', stop => $m->timestamp);
 % }
 
 % if ($res->{'result'} ne 'success') {
     <div class="callout alert">
-        Agent <%= $storeHostname %> cannot delete <%= $dataname %>. 
-        Job <%= $jobID %> was cancel.
+        Agent <%= $store_hostname %> cannot delete <%= $dataname %>. 
+        Job <%= $job_id %> was cancel.
     </div>
-%   $m->jobUpdate($jobID, status => 'pushjob', error => 'pusherr', stop => $m->timestamp);
+%   $m->job_update($job_id, status => 'pushjob', error => 'pusherr', stop => $m->timestamp);
 % }
 
 <div class="text-center">
     <a class="button" href="/store/list">StoreList</a>
-    <a class="button" href="/store/data/list?id=<%= $storeID %>">DataList</a>
+    <a class="button" href="/store/data/list?id=<%= $store_id %>">DataList</a>
 </div>
 %#EOF
 

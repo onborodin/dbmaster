@@ -13,45 +13,45 @@
 % my $password = $req->param('password');
 %
 % my $m = $self->app->model;
-% my $storeID = $self->app->model->storeExist($hostname);
+% my $store_id = $self->app->model->store_exist($hostname);
 
-% my $jobID = $m->jobCreate;
+% my $job_id = $m->job_create;
 %
-% $m->jobUpdate(
-%    $jobID, 
+% $m->job_update(
+%    $job_id, 
 %    type => 'storeadd',
-%    sourceid => $agentID,
-%    destid => $agentID, 
+%    sourceid => $agent_id,
+%    destid => $agent_id, 
 %    author => $c->session('username')
 % );
 
-% if ($storeID) {
+% if ($store_id) {
     <div class="callout alert">
         Store <%= $hostname %> yet exist.
     </div>
-%   $m->jobUpdate($jobID, status => 'mistake', error => 'storeexist', stop => $m->timestamp);
+%   $m->job_update($job_id, status => 'mistake', error => 'storeexist', stop => $m->timestamp);
 % }
 
-% unless ($storeID) {
-%   my $storeID = $self->app->model->storeAdd($hostname, $username, $password);
-%   if ($storeID) {
+% unless ($store_id) {
+%   my $store_id = $self->app->model->store_add($hostname, $username, $password);
+%   if ($store_id) {
       <div class="callout success">
-        Store <%= $hostname %> was added successful with id <%= $storeID %>.
+        Store <%= $hostname %> was added successful with id <%= $store_id %>.
       </div>
-%     $m->jobUpdate($jobID, status => 'done', error => 'noerr', stop => $m->timestamp);
+%     $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
 %   }
 
-%   unless ($storeID) {
+%   unless ($store_id) {
       <div class="callout alert">
           Store <%= $hostname %> was added unsuccessful =(
       </div>
-%     $m->jobUpdate($jobID, status => 'error', error => 'storeadderr', stop => $m->timestamp);
+%     $m->job_update($job_id, status => 'error', error => 'storeadderr', stop => $m->timestamp);
 %   }
 % }
 %
 <div class="text-center">
     <a class="button" href="/store/list">StoreList</a>
-    <a class="button" href="/store/data/list?id=<%= $storeID %>">DataList</a>
+    <a class="button" href="/store/data/list?id=<%= $store_id %>">DataList</a>
     <a class="button" href="#" data-open="modal-store-add">Add yet</a>
 </div>
 %#EOF
