@@ -453,13 +453,13 @@ $r->add_condition(
     }
 );
 
-$r->any('/hello')       ->to('Controller#hello');
+$r->any('/hello')       ->to('controller#hello');
 
-$r->any('/data/list')   ->over('auth') ->to('Controller#data_list');
-$r->any('/data/get')    ->over('auth') ->to('Controller#data_get');
-$r->any('/data/put')    ->over('auth') ->to('Controller#data_put');
-$r->any('/data/free')   ->over('auth') ->to('Controller#data_free');
-$r->any('/data/delete') ->over('auth') ->to('Controller#data_delete');
+$r->any('/data/list')   ->over('auth') ->to('controller#data_list');
+$r->any('/data/get')    ->over('auth') ->to('controller#data_get');
+$r->any('/data/put')    ->over('auth') ->to('controller#data_put');
+$r->any('/data/free')   ->over('auth') ->to('controller#data_free');
+$r->any('/data/delete') ->over('auth') ->to('controller#data_delete');
 
 #----------------
 #--- LISTENER ---

@@ -47,13 +47,13 @@ sub app {
     return shift->{app};
 }
 
-sub hostname_alive {
+sub hostnameAlive {
     my ($self, $hostname) = @_;
     return undef unless gethostbyname($hostname);
     return 1;
 }
 
-sub parse_label {
+sub parseLabel {
     my ($self, $label) = @_;
     return undef unless $label;
 
@@ -77,12 +77,12 @@ sub timestamp {
     return strftime("%Y-%m-%d %H:%M:%S %Z", localtime($timenum));
 }
 
-sub curr_sec {
+sub currSec {
     my $self = shift;
     return strftime("%S", localtime(time));
 }
 
-sub curr_time {
+sub currTime {
     my $self = shift;
     my $time = time;
     my %time;
@@ -96,7 +96,7 @@ sub curr_time {
     return \%time;
 }
 
-sub size_hr {
+sub sizeHR {
     my ($self, $size) = @_;
     return $size if $size < 1024;
     return int($size/1024+0.5)."k" if ($size < 1024*1024 && $size > 1024);
@@ -104,7 +104,7 @@ sub size_hr {
     return int($size/(1024*1024*1024)+0.5)."G" if ($size < 1024*1024*1024*1024 && $size > 1024*1024*1024);
 }
 
-sub size_wp {
+sub sizeWP {
     my ($self, $size) = @_;
     my $out = $size;
     $out =~ s/(\d{9})$/.$1/g if $size > 1000*1000*1000;
@@ -113,12 +113,12 @@ sub size_wp {
     return $out;
 }
 
-sub size_m {
+sub sizeM {
     my ($self, $size) = @_;
     return int($size/(1024*1024)+0.5);
 }
 
-sub strip_sec {
+sub stripSec {
     my ($self, $s) = @_;
     my $a = substr $s, 0, 16;
     $a =~ s/\//-/g;
@@ -129,7 +129,7 @@ sub strip_sec {
 #--- AGENT MODEL ---
 #-------------------
 
-sub agent_list {
+sub agentList {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = $id" if $id;
@@ -152,7 +152,7 @@ sub agent_list {
     return \@list;
 }
 
-sub agent_exist {
+sub agentExist {
     my ($self, $hostname)  = @_;
     return undef unless $hostname;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -168,7 +168,7 @@ sub agent_exist {
     return undef;
 }
 
-sub agent_hostname {
+sub agentHostname {
     my ($self, $id)  = @_;
     return undef unless $id;
 
@@ -186,7 +186,7 @@ sub agent_hostname {
     return undef;
 }
 
-sub agent_profile {
+sub agentProfile {
     my ($self, $id)  = @_;
     return undef unless $id;
 
@@ -205,7 +205,7 @@ sub agent_profile {
     return undef;
 }
 
-sub agent_info {
+sub agentInfo {
     my ($self, $id)  = @_;
     return undef unless $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -226,7 +226,7 @@ sub agent_info {
     return undef;
 }
 
-sub agent_next_id {
+sub agentNextID {
     my $self = shift;
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -244,7 +244,7 @@ sub agent_next_id {
     return $id;
 }
 
-sub agent_add {
+sub agentAdd {
     my ($self, $hostname, $username, $password) = @_;
     return undef unless $hostname;
     return undef unless $username;
@@ -252,7 +252,7 @@ sub agent_add {
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
          or return undef;
-    my $id = $self->agent_next_id;
+    my $id = $self->agentNextID;
     my $query = "insert into agent (id, hostname, username, password)
                     values ($id, '$hostname', '$username', '$password');";
     my $rows = $dbi->do($query) or return undef;
@@ -262,7 +262,7 @@ sub agent_add {
     return undef;
 }
 
-sub agent_delete {
+sub agentDelete {
     my ($self, $id) = @_;
     return undef unless $id;
 
@@ -275,7 +275,7 @@ sub agent_delete {
     return $rows*1;
 }
 
-sub agent_config {
+sub agentConfig {
     my ($self, $id, $hostname, $username, $password) = @_;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -289,10 +289,10 @@ sub agent_config {
     return $rows*1;
 }
 
-sub agent_alive {
+sub agentAlive {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $hostname = $self->agent_hostname($id);
+    my $hostname = $self->agentHostname($id);
     return undef unless $hostname;
     my $ua = Mojo::UserAgent->new;
     $ua = $ua->connect_timeout(5);
@@ -303,14 +303,14 @@ sub agent_alive {
     eval {
         $body = $tx->result->body;
     };
-    do { $self->app->log->info("agent_alive: $@");  return undef; } if $@;
+    do { $self->app->log->info("agentAlive: $@");  return undef; } if $@;
     return undef unless $body;
     my $res = decode_json $body;
     return 1 if $res->{'message'} eq 'hello';
     return undef;
 }
 
-sub agent_db_list {
+sub agentDBList {
     my ($self, $id) = @_;
     return undef unless $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -327,14 +327,14 @@ sub agent_db_list {
     return \@list;
 }
 
-sub agent_db_update {
+sub agentDBUpdate {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $agent_profile = $self->agentProfile($id) or return undef;
+    my $agentProfile = $self->agentProfile($id) or return undef;
 
-    my $hostname = $agent_profile->{'hostname'} || 'undef';
-    my $username = $agent_profile->{'username'} || 'undef';
-    my $password = $agent_profile->{'password'} || 'password';
+    my $hostname = $agentProfile->{'hostname'} || 'undef';
+    my $username = $agentProfile->{'username'} || 'undef';
+    my $password = $agentProfile->{'password'} || 'password';
 
     my $ua = Mojo::UserAgent->new(max_redirects => 2) or return undef;
     $ua = $ua->connect_timeout(5);
@@ -369,7 +369,7 @@ sub agent_db_update {
 #--- STORE MODEL ---
 #-------------------
 
-sub store_hostname {
+sub storeHostname {
     my ($self, $id)  = @_;
     return undef unless $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -385,7 +385,7 @@ sub store_hostname {
     return undef;
 }
 
-sub store_profile {
+sub storeProfile {
     my ($self, $id)  = @_;
     return undef unless $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -400,7 +400,7 @@ sub store_profile {
     return undef;
 }
 
-sub store_info {
+sub storeInfo {
     my ($self, $id)  = @_;
     return undef unless $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -418,10 +418,10 @@ sub store_info {
     return undef;
 }
 
-sub store_alive {
+sub storeAlive {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $hostname = $self->store_hostname($id);
+    my $hostname = $self->storeHostname($id);
     return undef unless $hostname;
 
     my $ua = Mojo::UserAgent->new;
@@ -430,7 +430,7 @@ sub store_alive {
 
     my $body;
     eval { $body = $tx->result->body; };
-    do { $self->app->log->info("store_alive: $@"); return undef; } if $@;
+    do { $self->app->log->info("storeAlive: $@"); return undef; } if $@;
     return undef unless $body;
 
     my $res = decode_json $body;
@@ -439,7 +439,7 @@ sub store_alive {
     return undef;
 }
 
-sub store_list {
+sub storeList {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = '$id'" if $id;
@@ -460,7 +460,7 @@ sub store_list {
     return \@list;
 }
 
-sub store_exist {
+sub storeExist {
     my ($self, $hostname)  = @_;
     return undef unless $hostname;
 
@@ -479,7 +479,7 @@ sub store_exist {
     return undef;
 }
 
-sub store_next_id {
+sub storeNextID {
     my $self = shift;
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd);
@@ -494,14 +494,14 @@ sub store_next_id {
     return $id;
 }
 
-sub store_add {
+sub storeAdd {
     my ($self, $hostname, $username, $password) = @_;
     return undef unless $hostname;
     return undef unless $username;
     return undef unless $password;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
-    my $id = $self->store_next_id;
+    my $id = $self->storeNextID;
     my $query = "insert into store (id, hostname, username, password)
                     values ($id, '$hostname', '$username', '$password');";
     my $rows = $dbi->do($query) or return undef;
@@ -510,7 +510,7 @@ sub store_add {
     return undef;
 }
 
-sub store_delete {
+sub storeDelete {
     my ($self, $id) = @_;
 
     return undef unless $id;
@@ -524,7 +524,7 @@ sub store_delete {
     return $rows*1;
 }
 
-sub store_config {
+sub storeConfig {
     my ($self, $id, $hostname, $username, $password) = @_;
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -539,7 +539,7 @@ sub store_config {
     return $rows*1;
 }
 
-sub store_data_list {
+sub storeDataList {
     my ($self, $id) = @_;
     return undef unless $id;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -559,14 +559,14 @@ sub store_data_list {
     return \@list;
 }
 
-sub store_data_update {
+sub storeDataUpdate {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $store_profile = $self->storeProfile($id) or return undef;
+    my $storeProfile = $self->storeProfile($id) or return undef;
 
-    my $hostname = $store_profile->{'hostname'} || 'undef';
-    my $username = $store_profile->{'username'} || 'undef';
-    my $password = $store_profile->{'password'} || 'password';
+    my $hostname = $storeProfile->{'hostname'} || 'undef';
+    my $username = $storeProfile->{'username'} || 'undef';
+    my $password = $storeProfile->{'password'} || 'password';
 
     my $ua = Mojo::UserAgent->new(max_redirects => 2) or return undef;
     $ua = $ua->connect_timeout(5);
@@ -600,7 +600,7 @@ sub store_data_update {
         next unless $dataname =~ m/.+--.+--.+\.(sqlz|sql|sql.gz|sql.xz)/;
 
         $self->app->log->debug("Parse label $dataname");
-        my $label = $self->app->model->parse_label($dataname);
+        my $label = $self->app->model->parseLabel($dataname);
         my $dbname = $label->{'dbname'} || 'undef';
         my $source = $label->{'source'} || 'undef';
         my $stamp = $label->{'timestamp'} || '1970-01-01 00:00:00 UTC';
@@ -617,7 +617,7 @@ sub store_data_update {
     return \@list;
 }
 
-sub store_free {
+sub storeFree {
     my ($self, $id)  = @_;
     return undef unless $id;
 
@@ -642,7 +642,7 @@ sub store_free {
 #--- XXXXXXX ---
 #---------------
 
-sub data_list {
+sub dataList {
     my $self = shift;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -662,10 +662,10 @@ sub data_list {
 #--- JOB MODEL ---
 #-----------------
 
-sub job_create {
+sub jobCreate {
     my ($self, @args) = @_;
 
-    my $id = $self->job_nextID;
+    my $id = $self->jobNextID;
 
     my $begin = strftime("%Y-%m-%d %H:%M:%S %Z", localtime(time));
     my $stop = '1970-01-01 00:00:00 UTC';
@@ -688,7 +688,7 @@ sub job_create {
     return undef;
 }
 
-sub job_list {
+sub jobList {
     my $self = shift;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -708,7 +708,7 @@ sub job_list {
     return \@list;
 }
 
-sub job_nextID {
+sub jobNextID {
     my $self = shift;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -723,7 +723,7 @@ sub job_nextID {
     return $id;
 }
 
-sub job_exist {
+sub jobExist {
     my ($self, $id)  = @_;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -738,25 +738,25 @@ sub job_exist {
     return undef;
 }
 
-sub job_update {
+sub jobUpdate {
     my ($self, $id, %args) = @_;
 
     return undef unless $id;
-    return undef unless $self->job_exist($id);
+    return undef unless $self->jobExist($id);
 
-    my $job_profile = $self->jobProfile($id);
+    my $jobProfile = $self->jobProfile($id);
     my $args = \%args;
 
-    my $begin = $args->{'begin'} || $job_profile->{'begin'};
-    my $stop = $args->{'stop'} || $job_profile->{'stop'};
-    my $type = $args->{'type'} || $job_profile->{'type'};
-    my $author = $args->{'author'} || $job_profile->{'author'};
-    my $sourceid = $args->{'sourceid'} || $job_profile->{'sourceid'};
-    my $destid = $args->{'destid'} || $job_profile->{'destid'};
+    my $begin = $args->{'begin'} || $jobProfile->{'begin'};
+    my $stop = $args->{'stop'} || $jobProfile->{'stop'};
+    my $type = $args->{'type'} || $jobProfile->{'type'};
+    my $author = $args->{'author'} || $jobProfile->{'author'};
+    my $sourceid = $args->{'sourceid'} || $jobProfile->{'sourceid'};
+    my $destid = $args->{'destid'} || $jobProfile->{'destid'};
 
-    my $status = $args->{'status'} || $job_profile->{'status'};
-    my $error = $args->{'error'} || $job_profile->{'error'};
-    my $message = $args->{'message'} || $job_profile->{'message'};
+    my $status = $args->{'status'} || $jobProfile->{'status'};
+    my $error = $args->{'error'} || $jobProfile->{'error'};
+    my $message = $args->{'message'} || $jobProfile->{'message'};
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -779,7 +779,7 @@ sub job_update {
     return undef;
 }
 
-sub job_delete {
+sub jobDelete {
     my ($self, $id) = @_;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -793,7 +793,7 @@ sub job_delete {
     return undef;
 }
 
-sub job_profile {
+sub jobProfile {
     my ($self, $id)  = @_;
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -813,7 +813,7 @@ sub job_profile {
     return undef;
 }
 
-sub job_cb {
+sub jobCB {
     my ($self, $req)  = @_;
 
     my $jobID = $req->param('jobid');
@@ -822,15 +822,15 @@ sub job_cb {
     return undef unless $jobID;
     return undef unless $magic;
 
-    my $job_profile = $self->jobProfile($jobID);
+    my $jobProfile = $self->jobProfile($jobID);
 
     my $error = $req->param('error');
     my $status = $req->param('status');
     my $message = $req->param('message');
 
-    $self->job_update($jobID, error => $error, stop => $self->timestamp) if $error;
-    $self->job_update($jobID, status => $status, stop => $self->timestamp) if $status;
-    $self->job_update($jobID, message => $message, stop => $self->timestamp) if $message;
+    $self->jobUpdate($jobID, error => $error, stop => $self->timestamp) if $error;
+    $self->jobUpdate($jobID, status => $status, stop => $self->timestamp) if $status;
+    $self->jobUpdate($jobID, message => $message, stop => $self->timestamp) if $message;
 
     return 1;
 }
@@ -838,7 +838,7 @@ sub job_cb {
 #--- SCHEDULE MODEL ---
 #----------------------
 
-sub schedule_list {
+sub scheduleList {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = $id" if $id;
@@ -857,7 +857,7 @@ sub schedule_list {
     return \@list;
 }
 
-sub schedule_profile {
+sub scheduleProfile {
     my ($self, $id)  = @_;
     return undef unless $id;
 
@@ -875,7 +875,7 @@ sub schedule_profile {
     return undef;
 }
 
-sub schedule_next_id {
+sub scheduleNextID {
     my $self = shift;
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
         or return undef;
@@ -890,10 +890,10 @@ sub schedule_next_id {
     return $id;
 }
 
-sub schedule_add {
+sub scheduleAdd {
     my ($self, $type, $sourceID, $destID, $subject, $mday, $wday, $hour, $min) = @_;
 
-    $self->app->log->debug("--- schedule_add: $type, $sourceID, $destID, $subject, $mday, $wday, $hour, $min");
+    $self->app->log->debug("--- scheduleAdd: $type, $sourceID, $destID, $subject, $mday, $wday, $hour, $min");
 
     return undef unless $type;
     return undef unless $sourceID;
@@ -904,7 +904,7 @@ sub schedule_add {
     return undef unless $hour;
     return undef unless $min;
 
-    my $id = $self->schedule_next_id;
+    my $id = $self->scheduleNextID;
     return undef unless $id;
 
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
@@ -919,7 +919,7 @@ sub schedule_add {
 }
 
 
-sub period_expand {
+sub periodExpand {
     my ($self, $def, $limit, $start) = @_;
     $limit = 100 unless defined $limit;
     $start = 1 unless defined $start;
@@ -964,7 +964,7 @@ sub period_expand {
     return \@out
 }
 
-sub period_compact {
+sub periodCompact {
     my ($self, $list) = @_;
     my %n;
     my $out;
@@ -977,7 +977,7 @@ sub period_compact {
     return $out;
 }
 
-sub period_match {
+sub periodMatch {
     my ($self, $num, $list) = @_;
     foreach my $elem (@{$list}) {
         return 1 if $num == $elem;
@@ -1015,99 +1015,99 @@ sub hello {
 #--- AGENT CONT ---
 #------------------
 
-sub agent_list {
+sub agentList {
     my $self = shift;
-    $self->render(template => 'agent_list');
+    $self->render(template => 'agentList');
 }
 
-sub agent_add {
+sub agentAdd {
     my $self = shift;
-    $self->render(template => 'agent_add', req => $self->req);
+    $self->render(template => 'agentAdd', req => $self->req);
 }
 
-sub agent_config {
+sub agentConfig {
     my $self = shift;
-    $self->render(template => 'agent_config', req => $self->req);
+    $self->render(template => 'agentConfig', req => $self->req);
 }
 
-sub agent_delete {
+sub agentDelete {
     my $self = shift;
-    $self->render(template => 'agent_delete', req => $self->req);
+    $self->render(template => 'agentDelete', req => $self->req);
 }
 
-sub agent_db_list {
+sub agentDBList {
     my $self = shift;
     my $id = $self->req->param('id');
-    $self->render(template => 'agent_db_list', req => $self->req);
+    $self->render(template => 'agentDBList', req => $self->req);
 }
 
-sub agent_db_create {
+sub agentDBCreate {
     my $self = shift;
-    $self->render(template => 'agent_db_create', req => $self->req);
+    $self->render(template => 'agentDBCreate', req => $self->req);
 }
 
-sub agent_db_drop {
+sub agentDBDrop {
     my $self = shift;
-    $self->render(template => 'agent_db_drop', req => $self->req);
+    $self->render(template => 'agentDBDrop', req => $self->req);
 }
 
-sub agent_db_rename {
+sub agentDBRename {
     my $self = shift;
-    $self->render(template => 'agent_db_rename', req => $self->req);
+    $self->render(template => 'agentDBRename', req => $self->req);
 }
 
-sub agent_db_copy {
+sub agentDBCopy {
     my $self = shift;
-    $self->render(template => 'agent_db_copy', req => $self->req);
+    $self->render(template => 'agentDBCopy', req => $self->req);
 }
 
-sub agent_db_dump {
+sub agentDBDump {
     my $self = shift;
-    $self->render(template => 'agent_db_dump', req => $self->req);
+    $self->render(template => 'agentDBDump', req => $self->req);
 }
 
-sub agent_db_restore {
+sub agentDBRestore {
     my $self = shift;
-    $self->render(template => 'agent_db_restore', req => $self->req);
+    $self->render(template => 'agentDBRestore', req => $self->req);
 }
 
 #------------------
 #--- STORE CONT ---
 #------------------
 
-sub store_list {
+sub storeList {
     my $self = shift;
-    $self->render(template => 'store_list');
+    $self->render(template => 'storeList');
 }
 
-sub store_add {
+sub storeAdd {
     my $self = shift;
-    $self->render(template => 'store_add', req => $self->req);
+    $self->render(template => 'storeAdd', req => $self->req);
 }
 
-sub store_config {
+sub storeConfig {
     my $self = shift;
-    $self->render(template => 'store_config', req => $self->req);
+    $self->render(template => 'storeConfig', req => $self->req);
 }
 
-sub store_delete {
+sub storeDelete {
     my $self = shift;
-    $self->render(template => 'store_delete', req => $self->req);
+    $self->render(template => 'storeDelete', req => $self->req);
 }
 
-sub store_data_list {
+sub storeDataList {
     my $self = shift;
-    $self->render(template => 'store_data_list', req => $self->req);
+    $self->render(template => 'storeDataList', req => $self->req);
 }
 
-sub store_data_delete {
+sub storeDataDelete {
     my $self = shift;
-    $self->render(template => 'store_data_delete', req => $self->req);
+    $self->render(template => 'storeDataDelete', req => $self->req);
 }
 
-sub store_data_download {
+sub storeDataDownload {
     my $self = shift;
-    $self->render(template => 'store_data_download', req => $self->req);
+    $self->render(template => 'storeDataDownload', req => $self->req);
 }
 
 
@@ -1115,23 +1115,23 @@ sub store_data_download {
 #--- XXXXX ---
 #-------------
 
-sub data_list {
+sub dataList {
     my $self = shift;
-    $self->render(template => 'data_list', req => $self->req);
+    $self->render(template => 'dataList', req => $self->req);
 }
 
 #----------------
 #--- JOB CONT ---
 #----------------
 
-sub job_list {
+sub jobList {
     my $self = shift;
-    $self->render(template => 'job_list', req => $self->req);
+    $self->render(template => 'jobList', req => $self->req);
 }
 
-sub job_cb {
+sub jobCB {
     my $self = shift;
-    $self->app->model->job_cb($self->req);
+    $self->app->model->jobCB($self->req);
     $self->render(json => { responce => 'success' } );
 }
 
@@ -1139,41 +1139,41 @@ sub job_cb {
 #--- SCHEDULE CONT ---
 #---------------------
 
-sub schedule_list {
+sub scheduleList {
     my $self = shift;
-    $self->render(template => 'schedule_list', req => $self->req);
+    $self->render(template => 'scheduleList', req => $self->req);
 }
 
-sub schedule_add {
+sub scheduleAdd {
     my $self = shift;
-    $self->render(template => 'schedule_add', req => $self->req);
+    $self->render(template => 'scheduleAdd', req => $self->req);
 }
 
-sub schedule_delete {
+sub scheduleDelete {
     my $self = shift;
-    $self->render(template => 'schedule_delete', req => $self->req);
+    $self->render(template => 'scheduleDelete', req => $self->req);
 }
 
-sub schedule_config {
+sub scheduleConfig {
     my $self = shift;
-    $self->render(template => 'schedule_config', req => $self->req);
+    $self->render(template => 'scheduleConfig', req => $self->req);
 }
 
 #--------------------
 #--- SESSION CONT ---
 #--------------------
 
-sub session_auth {
+sub sessionAuth {
     return 1 if shift->session('username');
     return undef;
 }
 
-sub session_deauth {
+sub sessionDeAuth {
     return 1 if shift->session(expires => 1);;
     return undef;
 }
 
-sub check_password {
+sub checkPassword {
     my ($self, $username, $password) = @_;
 
     return undef unless $username;
@@ -1201,12 +1201,12 @@ sub check_password {
 
 sub login {
     my $self = shift;
-    return $self->redirect_to('/hello') if $self->session_auth;
+    return $self->redirect_to('/hello') if $self->sessionAuth;
 
     my $username = $self->req->param('username') || undef;
     my $password = $self->req->param('password') || undef;
 
-    my $auth =  $self->check_password($username, $password);
+    my $auth =  $self->checkPassword($username, $password);
     if ($auth) {
         $self->session(username => $username);
         return $self->redirect_to('/hello');
@@ -1217,7 +1217,7 @@ sub login {
 
 sub logout {
     my $self = shift;
-    $self->session_deauth;
+    $self->sessionDeAuth;
     $self->render(template => 'login', req => $self->req);
 }
 #----------------
@@ -1410,62 +1410,61 @@ my $r = $app->routes;
 $r->add_condition(
     auth => sub {
         my ($route, $c, $captures, $hash) = @_;
-        return 1 if $c->session_auth;
+        return 1 if $c->sessionAuth;
         return undef;
     }
 );
 
-$r->any('/login')       ->to('controller#login');
-$r->any('/logout')      ->to('controller#logout');
-
-$r->any('/hello')               ->over('auth')->to('controller#hello');
+$r->any('/login')->to('Controller#login');
+$r->any('/logout')->to('Controller#logout');
+$r->any('/hello')->over('auth')->to('Controller#hello');
 # agent forms
-$r->any('/agent/list')          ->over('auth')->to('controller#agent_list');
+$r->any('/agent/list')->over('auth')->to('Controller#agentList');
 # agent handlers
-$r->any('/agent/add')           ->over('auth')->to('controller#agent_add');
-$r->any('/agent/config')        ->over('auth')->to('controller#agent_config');
-$r->any('/agent/delete')        ->over('auth')->to('controller#agent_delete');
+$r->any('/agent/add')->over('auth')->to('Controller#agentAdd');
+$r->any('/agent/config')->over('auth')->to('Controller#agentConfig');
+$r->any('/agent/delete')->over('auth')->to('Controller#agentDelete');
 # agent db forms
-$r->any('/agent/db/list')       ->over('auth')->to('controller#agent_db_list');
+$r->any('/agent/db/list')->over('auth')->to('Controller#agentDBList');
 # agent db handlers
-$r->any('/agent/db/create')     ->over('auth')->to('controller#agent_db_create');
-$r->any('/agent/db/drop')       ->over('auth')->to('controller#agent_db_drop');
-$r->any('/agent/db/copy')       ->over('auth')->to('controller#agent_db_copy');
-$r->any('/agent/db/rename')     ->over('auth')->to('controller#agent_db_rename');
-$r->any('/agent/db/dump')       ->over('auth')->to('controller#agent_db_dump');
-$r->any('/agent/db/restore')    ->over('auth')->to('controller#agent_db_restore');
+$r->any('/agent/db/create')->over('auth')->to('Controller#agentDBCreate');
+$r->any('/agent/db/drop')->over('auth')->to('Controller#agentDBDrop');
+$r->any('/agent/db/copy')->over('auth')->to('Controller#agentDBCopy');
+$r->any('/agent/db/rename')->over('auth')->to('Controller#agentDBRename');
+$r->any('/agent/db/dump')->over('auth')->to('Controller#agentDBDump');
+$r->any('/agent/db/restore')->over('auth')->to('Controller#agentDBRestore');
 
 # store forms
-$r->any('/store/list')          ->over('auth')->to('controller#store_list');
+$r->any('/store/list')->over('auth')->to('Controller#storeList');
 # store handlers
-$r->any('/store/add')           ->over('auth')->to('controller#store_add');
-$r->any('/store/config')        ->over('auth')->to('controller#store_config');
-$r->any('/store/delete')        ->over('auth')->to('controller#store_delete');
+$r->any('/store/add')->over('auth')->to('Controller#storeAdd');
+$r->any('/store/config')->over('auth')->to('Controller#storeConfig');
+$r->any('/store/delete')->over('auth')->to('Controller#storeDelete');
 # store data manipulation
-$r->any('/store/data/list')     ->over('auth')->to('controller#store_data_list');
-$r->any('/store/data/delete')   ->over('auth')->to('controller#store_data_delete');
-$r->any('/store/data/download') ->over('auth')->to('controller#store_data_download');
+$r->any('/store/data/list')->over('auth')->to('Controller#storeDataList');
+$r->any('/store/data/delete')->over('auth')->to('Controller#storeDataDelete');
+$r->any('/store/data/download')->over('auth')->to('Controller#storeDataDownload');
 
 # generic data list
-$r->any('/data/list')           ->over('auth')->to('controller#data_list');
+$r->any('/data/list')->over('auth')->to('Controller#dataList');
 # generic job list
-$r->any('/job/list')            ->over('auth')->to('controller#job_list');
+$r->any('/job/list')->over('auth')->to('Controller#jobList');
 
 
-$r->any('/schedule/list')       ->over('auth')->to('controller#schedule_list');
-$r->any('/schedule/add')        ->over('auth')->to('controller#schedule_add');
-$r->any('/schedule/delete')     ->over('auth')->to('controller#schedule_delete');
-$r->any('/schedule/config')     ->over('auth')->to('controller#schedule_config');
+$r->any('/schedule/list')->over('auth')->to('Controller#scheduleList');
+$r->any('/schedule/add')->over('auth')->to('Controller#scheduleAdd');
+$r->any('/schedule/delete')->over('auth')->to('Controller#scheduleDelete');
+$r->any('/schedule/config')->over('auth')->to('Controller#scheduleConfig');
 
 # callback handlers
-$r->any('/agent/job/cb')        ->to('controller#job_cb');
-$r->any('/store/job/cb')        ->to('controller#job_cb');
+$r->any('/agent/job/cb')->to('Controller#jobCB');
+$r->any('/store/job/cb')->to('Controller#jobCB');
 
 
 #$app->helper('reply.exception' => sub { my $c = shift; return $c->rendered(404); });
 $app->helper('reply.not_found' => sub {
         my $c = shift;
-        return $c->redirect_to('/login') unless $c->session_auth;
+        return $c->redirect_to('/login') unless $c->sessionAuth;
         $c->render(template => 'not_found.production');
 });
 
@@ -1509,23 +1508,23 @@ sub cron {
     my $last = time;
     my $stamp = $m->timestamp($last);
 
-    my $curr_sec = $m->currSec;
+    my $currSec = $m->currSec;
     $app->config(lastCron => $last);
 
-    my $schedule_list = $m->scheduleList;
-    my $curr_time = $m->currTime;
+    my $scheduleList = $m->scheduleList;
+    my $currTime = $m->currTime;
 
     $log->debug("Achtung: $stamp !");
-    foreach my $rec (@{$schedule_list}) {
+    foreach my $rec (@{$scheduleList}) {
         my $id = $rec->{'id'};
-        my $curr_sec = $curr_time->{'sec'};
-        my $currMin = $curr_time->{'min'};
+        my $currSec = $currTime->{'sec'};
+        my $currMin = $currTime->{'min'};
 
         my $recMin = $rec->{'min'};
         my $recHour = $rec->{'hour'};
 
-        $log->debug("--- Match id=$id $recMin == $currMin!") if $m->period_match($currMin, $m->period_expand($recMin, 59, 0));
-#        $log->debug("Unmatch id=$id!") unless $m->period_match($curr_time->{'min'}, $m->period_expand($recMin));
+        $log->debug("--- Match id=$id $recMin == $currMin!") if $m->periodMatch($currMin, $m->periodExpand($recMin, 59, 0));
+#        $log->debug("Unmatch id=$id!") unless $m->periodMatch($currTime->{'min'}, $m->periodExpand($recMin));
 
 #  "hour" => "6,23",
 #  "id" => 2,
@@ -1539,7 +1538,7 @@ sub cron {
 
     }
     $log->debug("");
-    sleep 60-$curr_sec;
+    sleep 60-$currSec;
 }
 
 $subprocess->run(

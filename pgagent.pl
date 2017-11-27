@@ -749,7 +749,7 @@ sub db_restore {
     my $self = shift;
 
 
-    my $req = $self->req
+    my $req = $self->req;
 
     my $dataname = $req->param('dataname');
     my $storename = $req->param('store');
@@ -999,26 +999,26 @@ $r->add_condition(
     }
 );
 
-$r->any('/hello')->to('Controller#hello');
-$r->any('/conf/dump')->over('auth')->to('Controller#conf_dump');
+$r->any('/hello')->to('controller#hello');
+$r->any('/conf/dump')->over('auth')->to('controller#conf_dump');
 
-$r->any('/db/list')->over('auth')->to('Controller#db_list');
-$r->any('/db/create')->over('auth')->to('Controller#db_create');
-$r->any('/db/drop')->over('auth')->to('Controller#db_drop');
-$r->any('/db/rename')->over('auth')->to('Controller#db_rename');
-$r->any('/db/copy')->over('auth')->to('Controller#db_copy');
-$r->any('/db/size')->over('auth')->to('Controller#db_size');
-$r->any('/db/dump')->over('auth')->to('Controller#db_dump');
-$r->any('/db/restore')->over('auth')->to('Controller#db_restore');
-$r->any('/db/exist')->over('auth')->to('Controller#db_exist');
-$r->any('/db/owner')->over('auth')->to('Controller#db_owner');
+$r->any('/db/list')->over('auth')->to('controller#db_list');
+$r->any('/db/create')->over('auth')->to('controller#db_create');
+$r->any('/db/drop')->over('auth')->to('controller#db_drop');
+$r->any('/db/rename')->over('auth')->to('controller#db_rename');
+$r->any('/db/copy')->over('auth')->to('controller#db_copy');
+$r->any('/db/size')->over('auth')->to('controller#db_size');
+$r->any('/db/dump')->over('auth')->to('controller#db_dump');
+$r->any('/db/restore')->over('auth')->to('controller#db_restore');
+$r->any('/db/exist')->over('auth')->to('controller#db_exist');
+$r->any('/db/owner')->over('auth')->to('controller#db_owner');
 
 
-$r->any('/role/list')->over('auth')->to('Controller#role_list');
-$r->any('/role/exist')->over('auth')->to('Controller#role_exist');
-$r->any('/role/password')->over('auth')->to('Controller#role_password');
-$r->any('/role/create')->over('auth')->to('Controller#role_create');
-$r->any('/role/drop')->over('auth')->to('Controller#role_drop');
+$r->any('/role/list')->over('auth')->to('controller#role_list');
+$r->any('/role/exist')->over('auth')->to('controller#role_exist');
+$r->any('/role/password')->over('auth')->to('controller#role_password');
+$r->any('/role/create')->over('auth')->to('controller#role_create');
+$r->any('/role/drop')->over('auth')->to('controller#role_drop');
 
 
 #----------------
