@@ -191,7 +191,7 @@ am__nobase_dist_pkgdata_DATA_DIST = pgmaster.sql public/css/app.css \
 	templs/agent_db_restore_.html.ep templs/data_list.html.ep \
 	templs/exception.development.html.ep \
 	templs/exception.production.html.ep templs/hello.html.ep \
-	templs/joblist.html.ep templs/login.html.ep \
+	templs/job_list.html.ep templs/login.html.ep \
 	templs/not_found.development.html.ep \
 	templs/not_found.production.html.ep \
 	templs/schedule_add.html.ep templs/schedule_list.html.ep \
@@ -383,7 +383,7 @@ nobase_dist_pkgdata_DATA = \
 	templs/exception.development.html.ep \
 	templs/exception.production.html.ep \
 	templs/hello.html.ep \
-	templs/joblist.html.ep \
+	templs/job_list.html.ep \
 	templs/login.html.ep \
 	templs/not_found.development.html.ep \
 	templs/not_found.production.html.ep \

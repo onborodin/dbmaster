@@ -100,7 +100,7 @@ nobase_dist_pkgdata_DATA = \
 	templs/exception.development.html.ep \
 	templs/exception.production.html.ep \
 	templs/hello.html.ep \
-	templs/joblist.html.ep \
+	templs/job_list.html.ep \
 	templs/login.html.ep \
 	templs/not_found.development.html.ep \
 	templs/not_found.production.html.ep \

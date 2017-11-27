@@ -1,4 +1,185 @@
-#!/usr/bin/env perl
+#!@PERL@
+
+#--------------
+#--- DAEMON ---
+#--------------
+
+package PGagent::Daemon;
+
+use strict;
+use warnings;
+use POSIX qw(getpid setuid setgid geteuid getegid);
+use Cwd qw(cwd getcwd chdir);
+use Mojo::Util qw(dumper);
+
+sub new {
+    my $class = shift;
+    my $self = {
+        pid => undef
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub fork {
+    my ($self, $user, $group) = shift;
+    my $pid = fork;
+    if ($pid > 0) {
+        exit;
+    }
+    chdir("/");
+    open(my $stdout, '>&', STDOUT); 
+    open(my $stderr, '>&', STDERR);
+    open(STDOUT, '>>', '/dev/null');
+    open(STDERR, '>>', '/dev/null');
+    $self->pid(getpid);
+    $self->pid;
+}
+
+sub pid {
+    my ($self, $pid) = @_;
+    return $self->{pid} unless $pid;
+    $self->{pid} = $pid if $pid;
+    $self;
+}
+
+1;
+
+#----------
+#--- DB ---
+#----------
+
+package PGagent::DB;
+
+use strict;
+use warnings;
+use DBI;
+
+sub new {
+    my ($class, %args) = @_;
+    my $self = {
+        hostname => $args{hostname},
+        username => $args{username},
+        password => $args{password},
+        database => $args{database},
+        engine => 'Pg',
+        error => ''
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub username {
+    my ($self, $username) = @_; 
+    return $self->{username} unless $username;
+    $self->{username} = $username;
+    $self;
+}
+
+sub password {
+    my ($self, $password) = @_; 
+    return $self->{password} unless $password;
+    $self->{password} = $password;
+    $self;
+}
+
+sub hostname {
+    my ($self, $hostname) = @_; 
+    return $self->{hostname} unless $hostname;
+    $self->{hostname} = $hostname;
+    $self;
+}
+
+sub database {
+    my ($self, $database) = @_; 
+    return $self->{database} unless $database;
+    $self->{database} = $database;
+    $self;
+}
+
+sub error {
+    my ($self, $error) = @_; 
+    return $self->{error} unless $error;
+    $self->{error} = $error;
+    $self;
+}
+
+sub engine {
+    my ($self, $engine) = @_; 
+    return $self->{engine} unless $engine;
+    $self->{engine} = $engine;
+    $self;
+}
+
+
+sub exec {
+    my ($self, $query) = @_;
+    return undef unless $query;
+
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $sth;
+    eval {
+        $sth = $dbi->prepare($query);
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $rows = $sth->execute;
+    my @list;
+
+    while (my $row = $sth->fetchrow_hashref) {
+        push @list, $row;
+    }
+    $sth->finish;
+    $dbi->disconnect;
+    \@list;
+}
+
+sub do {
+    my ($self, $query) = @_;
+    return undef unless $query;
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+    my $rows;
+    eval {
+        $rows = $dbi->do($query) or return undef;
+    };
+    $self->error($@);
+    return undef if $@;
+
+    $dbi->disconnect;
+    $rows*1;
+}
+
+1;
+
+#-------------
+#--- MODEL ---
+#-------------
 
 package PGmaster::Model;
 
@@ -12,16 +193,12 @@ use Mojo::Util qw(md5_sum dumper);
 use Socket;
 use POSIX;
 
-
 sub new {
     my ($class, $app, $dbhost, $dbuser, $dbpasswd, $dbname) = @_;
     my $self = {
         app => $app,
-        dbhost => $dbhost,
-        dsn => "dbi:Pg:dbname=$dbname;host=$dbhost",
-        dbuser => $dbuser,
-        dbpasswd => $dbpasswd,
-        dbname => $dbname
+
+
     };
     bless $self, $class;
     return $self;
@@ -1257,7 +1434,234 @@ use Sys::Hostname qw(hostname);
 use File::Basename qw(basename dirname);
 use Apache::Htpasswd;
 use Cwd qw(getcwd abs_path);
-use Time::Piece;
+
+my $appname = 'pgmaster';
+
+#--------------
+#--- GETOPT ---
+#--------------
+
+getopt
+    'h|help' => \my $help,
+    'c|config=s' => \my $conffile,
+    'f|nofork' => \my $nofork,
+    'u|user=s' => \my $user,
+    'g|group=s' => \my $group;
+
+
+if ($help) {
+    print qq(
+Usage: app [OPTIONS]
+
+Options
+    -h | --help           This help
+    -c | --config=path    Path to config file
+    -u | --user=user      System owner of process
+    -g | --group=group    System group 
+    -f | --nofork         Dont fork process
+
+The options override options from configuration file
+    )."\n";
+    exit 0;
+}
+
+#------------------
+#--- APP CONFIG ---
+#------------------
+
+my $server = Mojo::Server::Prefork->new;
+my $app = $server->build_app('PGagent');
+$app = $app->controller_class('PGagent::Controller');
+
+$app->secrets(['6d578e43ba88260e0375a1a35fd7954b']);
+$app->static->paths(['@APP_LIBDIR@/public']);
+$app->renderer->paths(['@APP_LIBDIR@/templs']);
+
+$app->config(conffile => $conffile || '@APP_CONFDIR@/pgagent.conf');
+$app->config(pwdfile => '@APP_CONFDIR@/pgagent.pw');
+$app->config(logfile => '@APP_LOGDIR@/pgagent.log');
+$app->config(loglevel => 'info');
+$app->config(pidfile => '@APP_RUNDIR@/pgagent.pid');
+$app->config(crtfile => '@APP_CONFDIR@/pgagent.crt');
+$app->config(keyfile => '@APP_CONFDIR@/pgagent.key');
+
+$app->config(user => $user || '@APP_USER@');
+$app->config(group => $group || '@APP_GROUP@');
+
+$app->config(listenaddr4 => '0.0.0.0');
+$app->config(listenaddr6 => '[::]');
+$app->config(listenport => '3001');
+
+$app->config(tmpdir => '/tmp');
+
+$app->config(pghost => '127.0.0.1');
+$app->config(pguser => 'postgres');
+$app->config(pgpwd => 'password');
+
+
+if (-r $app->config('conffile')) {
+    $app->log->debug("Load configuration from ".$app->config('conffile'));
+    $app->plugin('JSONConfig', { file => $app->config('conffile') });
+}
+
+#---------------
+#--- HELPERS ---
+#---------------
+
+$app->helper('reply.not_found' => sub {
+        my $c = shift; 
+        return $c->redirect_to('/login') unless $c->session('username'); 
+        $c->render(template => 'not_found.production');
+});
+
+$app->helper(
+    model => sub {
+        state $model = PGagent::Model->new(
+            $app,
+            $app->config("pghost"),
+            $app->config("pguser"),
+            $app->config("pgpwd")
+        );
+    }
+);
+
+#--------------
+#--- ROUTES ---
+#--------------
+
+my $r = $app->routes;
+
+$r->add_condition(
+    auth => sub {
+        my ($route, $c) = @_;
+        my $log = $c->app->log;
+        my $authstr = $c->req->headers->authorization;
+        my $pwdfile = $c->app->config('pwdfile');
+
+        my $a = PGagent::BasicAuth->new($pwdfile);
+
+        $log->info("Try auth user ". $a->username($authstr));
+        $a->auth($authstr);
+
+    }
+);
+
+
+
+#----------------
+#--- LISTENER ---
+#----------------
+
+my $tls = '?';
+$tls .= 'cert='.$app->config('crtfile');
+$tls .= '&key='.$app->config('keyfile');
+
+my $listen4;
+if ($app->config('listenaddr4')) {
+    $listen4 = "https://";
+    $listen4 .= $app->config('listenaddr4').':'.$app->config('listenport');
+    $listen4 .= $tls;
+}
+
+my $listen6;
+if ($app->config('listenaddr6')) {
+    $listen6 = "https://";
+    $listen6 .= $app->config('listenaddr6').':'.$app->config('listenport');
+    $listen6 .= $tls;
+}
+
+my @listen;
+push @listen, $listen4 if $listen4;
+push @listen, $listen6 if $listen6;
+
+$server->listen(\@listen);
+$server->heartbeat_interval(3);
+$server->heartbeat_timeout(60);
+
+#--------------
+#--- DAEMON ---
+#--------------
+
+unless ($nofork) {
+    my $d = PGagent::Daemon->new;
+    my $user = $app->config('user');
+    my $group = $app->config('group');
+    $d->fork;
+    $app->log(Mojo::Log->new( 
+                path => $app->config('logfile'),
+                level => $app->config('loglevel')
+    ));
+}
+
+$server->pid_file($app->config('pidfile'));
+
+#---------------
+#--- WEB LOG ---
+#---------------
+
+$app->hook(before_dispatch => sub {
+        my $c = shift;
+
+        my $remote_address = $c->tx->remote_address;
+        my $method = $c->req->method;
+
+        my $base = $c->req->url->base->to_string;
+        my $path = $c->req->url->path->to_string;
+        my $loglevel = $c->app->log->level;
+        my $url = $c->req->url->to_abs->to_string;
+
+        unless ($loglevel eq 'debug') {
+            #$c->app->log->info("$remote_address $method $base$path");
+            $c->app->log->info("$remote_address $method $url");
+        }
+        if ($loglevel eq 'debug') {
+            $c->app->log->debug("$remote_address $method $url");
+        }
+});
+
+#----------------------
+#--- SIGNAL HANDLER ---
+#----------------------
+
+local $SIG{HUP} = sub {
+    $app->log->info('Catch HUP signal'); 
+    $app->log(Mojo::Log->new(
+                    path => $app->config('logfile'),
+                    level => $app->config('loglevel')
+    ));
+};
+
+$server->run;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#--------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 my $appfile = abs_path(__FILE__);
 my $appname = basename($appfile, ".pl");
