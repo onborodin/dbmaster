@@ -744,7 +744,7 @@ sub job_update {
     return undef unless $id;
     return undef unless $self->job_exist($id);
 
-    my $job_profile = $self->jobProfile($id);
+    my $job_profile = $self->job_profile($id);
     my $args = \%args;
 
     my $begin = $args->{'begin'} || $job_profile->{'begin'};
@@ -822,7 +822,7 @@ sub job_cb {
     return undef unless $jobID;
     return undef unless $magic;
 
-    my $job_profile = $self->jobProfile($jobID);
+    my $job_profile = $self->job_profile($jobID);
 
     my $error = $req->param('error');
     my $status = $req->param('status');

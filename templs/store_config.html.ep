@@ -9,7 +9,7 @@
 % use strict;
 
 % my $m = $self->app->model;
-%
+
 % my $store_id = $req->param('id');
 % my $hostname = $req->param('hostname');
 % my $username = $req->param('username');
@@ -18,28 +18,28 @@
 % my $res = $m->store_config($store_id, $hostname, $username, $password);
 %
 % my $job_id = $m->job_create;
-%
+
 % $m->job_update(
 %     $job_id,
 %     type => 'storereconf',
-%     sourceid => $agent_id,
-%     destid => $agent_id,
+%     sourceid => $store_id,
+%     destid => $store_id,
 %     author => $c->session('username')
 % );
-%
-% do {
+
+% if ($res) {
     <div class="callout success">
         Store <%= $hostname %> was updated successful.
     </div>
 %   $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
-% } if $res;
-%
-% do {
+% }
+
+% unless ($res) {
     <div class="callout alert">
         Store <%= $hostname %> was updated unsuccessful.
     </div>
 %   $m->job_update($job_id, status => 'error', error => 'reconferror', stop => $m->timestamp);
-% } unless $res;
+% }
 
 <div class="text-center">
     <a class="button" href="/store/list">StoreList</a>

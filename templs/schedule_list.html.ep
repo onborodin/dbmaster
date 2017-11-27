@@ -35,8 +35,8 @@
 % my $num = 1;
 % foreach my $descr (@{$schedule_list}) {
 %   my $type = $descr->{'type'};
-%   my $sourceID = $descr->{'sourceid'};
-%   my $destID = $descr->{'destid'};
+%   my $source_id = $descr->{'sourceid'};
+%   my $dest_id = $descr->{'destid'};
 %   my $subject = $descr->{'subject'};
 %   my $mday = $descr->{'mday'};
 %   my $wday = $descr->{'wday'};
@@ -47,8 +47,8 @@
 %   my $dest = 'undef';
 
 %   if ($type eq 'dump') { 
-%        $source = $m->agent_hostname($sourceID) || 'undef';
-%        $dest = $m->store_hostname($destID) || 'undef'; 
+%        $source = $m->agent_hostname($source_id) || 'undef';
+%        $dest = $m->store_hostname($dest_id) || 'undef'; 
 %   }
     <tr>
         <td><%= $num %></td>

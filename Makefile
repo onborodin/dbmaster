@@ -168,11 +168,7 @@ am__nobase_dist_conf_DATA_DIST = pgagent.pw.example pgstore.pw.example \
 am__nobase_dist_pkgdata_DATA_DIST = pgmaster.sql public/css/app.css \
 	public/css/datatables.css public/css/datatables.min.css \
 	public/css/foundation-float.css \
-	public/css/foundation-float.min.css \
-	public/css/foundation-prototype.css \
-	public/css/foundation-prototype.min.css \
-	public/css/foundation-rtl.css \
-	public/css/foundation-rtl.min.css public/css/foundation.css \
+	public/css/foundation-float.min.css public/css/foundation.css \
 	public/css/foundation.min.css public/favicon.ico \
 	public/favicon.png public/icons/foundation-icons.css \
 	public/icons/foundation-icons.eot \
@@ -229,7 +225,7 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = aclocal-1.15
+ACLOCAL = ${SHELL} /home/ziggi/pgdumper/head/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 APP_CONFDIR = /usr/local/etc/pgdumper
@@ -239,9 +235,9 @@ APP_LIBDIR = /usr/local/share/pgdumper
 APP_LOGDIR = /var/log/pgdumper
 APP_RUNDIR = /var/run/pgdumper
 APP_USER = www
-AUTOCONF = autoconf
-AUTOHEADER = autoheader
-AUTOMAKE = automake-1.15
+AUTOCONF = ${SHELL} /home/ziggi/pgdumper/head/missing autoconf
+AUTOHEADER = ${SHELL} /home/ziggi/pgdumper/head/missing autoheader
+AUTOMAKE = ${SHELL} /home/ziggi/pgdumper/head/missing automake-1.15
 AWK = gawk
 CYGPATH_W = echo
 DEFS = -DPACKAGE_NAME=\"pgdumper\" -DPACKAGE_TARNAME=\"pgdumper\" -DPACKAGE_VERSION=\"0.01\" -DPACKAGE_STRING=\"pgdumper\ 0.01\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"pgdumper\" -DVERSION=\"0.01\" -DAPP_CONFDIR=\"/usr/local/etc/pgdumper\" -DAPP_LOGDIR=\"/var/log/pgdumper\" -DAPP_RUNDIR=\"/var/run/pgdumper\" -DPGSTORE_DATADIR=\"/var/pgstore\" -DAPP_USER=\"www\" -DAPP_GROUP=\"www\" -DAPP_LIBDIR=/usr/local/share/pgdumper -DAPP_EXECDIR=/usr/local/sbin
@@ -257,7 +253,7 @@ INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = makeinfo
+MAKEINFO = ${SHELL} /home/ziggi/pgdumper/head/missing makeinfo
 MKDIR_P = /usr/local/bin/gmkdir -p
 PACKAGE = pgdumper
 PACKAGE_BUGREPORT = 
@@ -347,10 +343,6 @@ nobase_dist_pkgdata_DATA = \
 	public/css/datatables.min.css \
 	public/css/foundation-float.css \
 	public/css/foundation-float.min.css \
-	public/css/foundation-prototype.css \
-	public/css/foundation-prototype.min.css \
-	public/css/foundation-rtl.css \
-	public/css/foundation-rtl.min.css \
 	public/css/foundation.css \
 	public/css/foundation.min.css \
 	public/favicon.ico \

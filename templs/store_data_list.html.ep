@@ -54,9 +54,9 @@
 %   $newName =~ s/[-\.: ]//g;
 %   $newName =~ s/[+]//g;
 
-%   my $modalID = md5_sum($dataname);
+%   my $modal_id = md5_sum($dataname);
 
-    <div class="reveal" id="modal-data-restore-<%= $modalID %>" data-reveal>
+    <div class="reveal" id="modal-data-restore-<%= $modal_id %>" data-reveal>
 
         <div class="text-center">
             <h5>Restore database <%= $dbname %> as <%= $newName %></h5>
@@ -85,30 +85,30 @@
 
             <p class="text-center">
                 <button type="submit" class="button success">Accept</button>
-                <button class="button" data-close="modal-data-restore-<%= $modalID %>" type="button">Escape</button>
+                <button class="button" data-close="modal-data-restore-<%= $modal_id %>" type="button">Escape</button>
             </p>
         </form>
-        <button class="close-button" data-close="modal-data-restore-<%= $modalID %>" type="button">&times;</button>
+        <button class="close-button" data-close="modal-data-restore-<%= $modal_id %>" type="button">&times;</button>
     </div>
 
-    <div class="reveal" id="modal-data-delete-<%= $modalID %>" data-reveal>
+    <div class="reveal" id="modal-data-delete-<%= $modal_id %>" data-reveal>
         <div class="text-center">
             <h5>Do you want to delete the data?</h5>
-            <a class="button" data-close="modal-data-delete-<%= $modalID %>">Escape</a>
+            <a class="button" data-close="modal-data-delete-<%= $modal_id %>">Escape</a>
             <a class="button alert" href="/store/data/delete?id=<%= $store_id %>&dataname=<%=  url_escape $dataname %>">Delete</a>
         </div>
-        <button class="close-button" data-close="modal-data-delete-<%= $modalID %>" type="button">&times;</button>
+        <button class="close-button" data-close="modal-data-delete-<%= $modal_id %>" type="button">&times;</button>
     </div>
 
-    <div class="reveal" id="modal-store-data-<%= $modalID %>" data-reveal>
+    <div class="reveal" id="modal-store-data-<%= $modal_id %>" data-reveal>
         <div class="text-center">
             <h5>Store <%= $store_hostname %></h5>
             <div class="stacked-for-small button-group">
-                <a class="button" href="#" data-open="modal-data-restore-<%= $modalID %>">Restore</a>
-                <a class="button alert" href="#" data-open="modal-data-delete-<%= $modalID %>">Delete</a>
+                <a class="button" href="#" data-open="modal-data-restore-<%= $modal_id %>">Restore</a>
+                <a class="button alert" href="#" data-open="modal-data-delete-<%= $modal_id %>">Delete</a>
             </div>
         </div>
-        <button class="close-button" data-close="modal-store-data-<%= $modalID %>" aria-label="Close modal" type="button">
+        <button class="close-button" data-close="modal-store-data-<%= $modal_id %>" aria-label="Close modal" type="button">
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
@@ -148,10 +148,10 @@
 %   my $tz = $data->{'tz'};
 %   my $source = $data->{'source'};
 
-%   my $modalID = md5_sum($dataname);
+%   my $modal_id = md5_sum($dataname);
     <tr>
         <td><%= $num %></td>
-        <td><a href="#" data-open="modal-store-data-<%= $modalID %>"><%= $dbname %></a></td>
+        <td><a href="#" data-open="modal-store-data-<%= $modal_id %>"><%= $dbname %></a></td>
         <td class="show-for-medium"><%= $m->strip_sec($stamp) %></td>
         <td class="show-for-large"><%= $m->strip_sec($datetime)." ".$tz %></td>
         <td><%= $m->size_m($size) %></td>

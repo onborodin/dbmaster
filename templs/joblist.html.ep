@@ -38,8 +38,8 @@
 % foreach my $job (@{$job_list}) {
 %   my $job_id = $job->{'id'};
 %   my $type = $job->{'type'};
-%   my $sourceID = $job->{'sourceid'};
-%   my $destID = $job->{'destid'};
+%   my $source_id = $job->{'sourceid'};
+%   my $dest_id = $job->{'destid'};
 %   my $sourcehost = '';
 %   my $desthost = '';
 %   my $status = $job->{'status'};
@@ -49,12 +49,12 @@
 %   my $author = $job->{'author'} || 'unkn';
 
 %   if ($type eq 'dbdump') { 
-%      $sourcehost = $m->agent_profile($sourceID)->{'hostname'} if $sourceID;
-%      $desthost = $m->store_profile($destID)->{'hostname'} if $destID;
+%      $sourcehost = $m->agent_profile($source_id)->{'hostname'} if $source_id;
+%      $desthost = $m->store_profile($dest_id)->{'hostname'} if $dest_id;
 %   }
 
 %   if ($type eq 'dbcopy' || $type eq 'dbrename' || $type eq 'dbdrop') { 
-%      $sourcehost = $m->agent_profile($sourceID)->{'hostname'} if $sourceID;
+%      $sourcehost = $m->agent_profile($source_id)->{'hostname'} if $source_id;
 %      $desthost = '';
 %   }
 

@@ -168,11 +168,7 @@ am__nobase_dist_conf_DATA_DIST = pgagent.pw.example pgstore.pw.example \
 am__nobase_dist_pkgdata_DATA_DIST = pgmaster.sql public/css/app.css \
 	public/css/datatables.css public/css/datatables.min.css \
 	public/css/foundation-float.css \
-	public/css/foundation-float.min.css \
-	public/css/foundation-prototype.css \
-	public/css/foundation-prototype.min.css \
-	public/css/foundation-rtl.css \
-	public/css/foundation-rtl.min.css public/css/foundation.css \
+	public/css/foundation-float.min.css public/css/foundation.css \
 	public/css/foundation.min.css public/favicon.ico \
 	public/favicon.png public/icons/foundation-icons.css \
 	public/icons/foundation-icons.eot \
@@ -347,10 +343,6 @@ nobase_dist_conf_DATA = pgagent.pw.example pgstore.pw.example \
 @PGMASTER_TRUE@	public/css/datatables.min.css \
 @PGMASTER_TRUE@	public/css/foundation-float.css \
 @PGMASTER_TRUE@	public/css/foundation-float.min.css \
-@PGMASTER_TRUE@	public/css/foundation-prototype.css \
-@PGMASTER_TRUE@	public/css/foundation-prototype.min.css \
-@PGMASTER_TRUE@	public/css/foundation-rtl.css \
-@PGMASTER_TRUE@	public/css/foundation-rtl.min.css \
 @PGMASTER_TRUE@	public/css/foundation.css \
 @PGMASTER_TRUE@	public/css/foundation.min.css \
 @PGMASTER_TRUE@	public/favicon.ico \

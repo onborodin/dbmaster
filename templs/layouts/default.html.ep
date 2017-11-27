@@ -101,18 +101,14 @@
         <div class="row">&nbsp;</div>
         <div class="row">
 <!- end of head template ->
-
 <%= content %>
-
 <!- begin of tail template ->
             </div>
         </div>
         <hr/>
         <div class="row">
-            <p class="text-center"><small>Made by <a href="http://wiki.unix7.org">Borodin Oleg</a></small></p>
+            <p class="text-center">Made by <a href="http://wiki.unix7.org">Borodin Oleg</a></p>
         </div>
-
-
 
         <script src="/js/app.js"></script>
     </body>

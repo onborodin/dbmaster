@@ -60,10 +60,6 @@ nobase_dist_pkgdata_DATA = \
 	public/css/datatables.min.css \
 	public/css/foundation-float.css \
 	public/css/foundation-float.min.css \
-	public/css/foundation-prototype.css \
-	public/css/foundation-prototype.min.css \
-	public/css/foundation-rtl.css \
-	public/css/foundation-rtl.min.css \
 	public/css/foundation.css \
 	public/css/foundation.min.css \
 	public/favicon.ico \
