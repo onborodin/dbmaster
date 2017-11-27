@@ -705,22 +705,12 @@ sub job_create {
 
 sub job_list {
     my $self = shift;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select id,
                     to_char(begin, 'YYYY-MM-DD HH24:MI:SS TZ') as begin,
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
                     author, type, sourceid, destid, status, error, message, magic from job
                         order by id desc limit 100";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my @list;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @list, $row;
-    }
-    $sth->finish;
-    $dbi->disconnect;
-    return \@list;
+    $self->db->exec($query);
 }
 
 sub job_next_id {
@@ -735,8 +725,8 @@ sub job_next_id {
 sub job_exist {
     my ($self, $id)  = @_;
     my $query = "select id from job where id = $id limit 1";
-    my $rows = $self->db->exec($query);
-    $id = $rows->[0]{'id'};
+    my $row = $self->db->exec1($query);
+    $id = $row->{'id'};
     return undef unless $id;
     $id;
 }
@@ -799,9 +789,9 @@ sub job_profile {
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
                     author, type, sourceid, destid, status, error, message, magic from job where id = $id limit 1";
 
-    my $rows = $self->db->exec($query);
-    return undef unless $rows;
-    $rows->[0];
+    my $row = $self->db->exec1($query);
+    return undef unless $row;
+    $row;
 }
 
 sub job_cb {
@@ -833,52 +823,24 @@ sub schedule_list {
     my ($self, $id)  = @_;
     my $where = '';
     $where = "where id = $id" if $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select * from schedule $where order by id";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-
-    my @list;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @list, $row;
-    }
-    $sth->finish;
-    $dbi->disconnect;
-    return \@list;
+    $self->db->exec($query);
 }
 
 sub schedule_profile {
     my ($self, $id)  = @_;
     return undef unless $id;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select * from schedule where id = $id limit 1";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-
-    $sth->finish;
-    $dbi->disconnect;
-
-    return $row if $row;
-    return undef;
+    $self->db->exec1($query);
 }
 
 sub schedule_next_id {
     my $self = shift;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select id from schedule order by id desc limit 1";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
+    my $row = $self->db->exec1($query);
     my $id = $row->{'id'};
     $id++;
-    $sth->finish;
-    $dbi->disconnect;
-    return $id;
+    $id;
 }
 
 sub schedule_add {
@@ -908,7 +870,6 @@ sub schedule_add {
     return $id if $rows*1 > 0;
     return undef;
 }
-
 
 sub period_expand {
     my ($self, $def, $limit, $start) = @_;

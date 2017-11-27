@@ -198,7 +198,7 @@ am__nobase_dist_pkgdata_DATA_DIST = pgmaster.sql public/css/app.css \
 	templs/store_add.html.ep templs/store_delete.html.ep \
 	templs/store_list.html.ep templs/store_config.html.ep \
 	templs/store_data_delete.html.ep \
-	templs/store_data_list.html.ep
+	templs/store_data_list.html.ep templs/layouts/default.html.ep
 DATA = $(nobase_dist_conf_DATA) $(nobase_dist_pkgdata_DATA) \
 	$(nobase_systemd_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
@@ -396,7 +396,9 @@ nobase_dist_pkgdata_DATA = \
 	templs/store_list.html.ep \
 	templs/store_config.html.ep \
 	templs/store_data_delete.html.ep \
-	templs/store_data_list.html.ep
+	templs/store_data_list.html.ep \
+	\
+	templs/layouts/default.html.ep
 
 all: all-am
 
