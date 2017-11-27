@@ -40,60 +40,63 @@ PATH: ~/bin
 ## Core tests. ##
 ## ----------- ##
 
-configure:1794: checking for a BSD-compatible install
-configure:1862: result: /usr/bin/install -c
-configure:1873: checking whether build environment is sane
-configure:1928: result: yes
-configure:2079: checking for a thread-safe mkdir -p
-configure:2118: result: /usr/local/bin/gmkdir -p
-configure:2125: checking for gawk
-configure:2141: found /usr/local/bin/gawk
-configure:2152: result: gawk
-configure:2163: checking whether make sets $(MAKE)
-configure:2185: result: yes
-configure:2276: checking for perl
-configure:2292: found /usr/local/bin/perl
-configure:2304: result: true
-configure:2319: checking for perl
-configure:2337: found /usr/local/bin/perl
-configure:2349: result: /usr/local/bin/perl
-configure:2363: checking build system type
-configure:2377: result: amd64-unknown-freebsd11.1
-configure:2397: checking host system type
-configure:2410: result: amd64-unknown-freebsd11.1
-configure:2729: checking for perl module POSIX
-configure:2737: result: ok
-configure:2729: checking for perl module Apache::Htpasswd
-configure:2737: result: ok
-configure:2729: checking for perl module DBI
-configure:2737: result: ok
-configure:2729: checking for perl module File::Basename
-configure:2737: result: ok
-configure:2729: checking for perl module File::stat
-configure:2737: result: ok
-configure:2729: checking for perl module Filesys::Df
-configure:2737: result: ok
-configure:2729: checking for perl module Sys::Hostname
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::Base
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::Home
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::IOLoop::Subprocess
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::JSON
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::Server::Prefork
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::UserAgent
-configure:2737: result: ok
-configure:2729: checking for perl module Mojo::Util
-configure:2737: result: ok
-configure:2729: checking for perl module EV
-configure:2737: result: ok
-configure:2889: checking that generated files are newer than configure
-configure:2895: result: done
-configure:2923: creating ./config.status
+configure:1801: checking for a BSD-compatible install
+configure:1869: result: /usr/bin/install -c
+configure:1880: checking whether build environment is sane
+configure:1935: result: yes
+configure:1973: WARNING: 'missing' script is too old or missing
+configure:2086: checking for a thread-safe mkdir -p
+configure:2125: result: /usr/local/bin/gmkdir -p
+configure:2132: checking for gawk
+configure:2148: found /usr/local/bin/gawk
+configure:2159: result: gawk
+configure:2170: checking whether make sets $(MAKE)
+configure:2192: result: yes
+configure:2221: checking whether make supports nested variables
+configure:2238: result: yes
+configure:2369: checking for perl
+configure:2385: found /usr/local/bin/perl
+configure:2397: result: true
+configure:2412: checking for perl
+configure:2430: found /usr/local/bin/perl
+configure:2442: result: /usr/local/bin/perl
+configure:2456: checking build system type
+configure:2470: result: amd64-unknown-freebsd11.1
+configure:2490: checking host system type
+configure:2503: result: amd64-unknown-freebsd11.1
+configure:2822: checking for perl module POSIX
+configure:2830: result: ok
+configure:2822: checking for perl module Apache::Htpasswd
+configure:2830: result: ok
+configure:2822: checking for perl module DBI
+configure:2830: result: ok
+configure:2822: checking for perl module File::Basename
+configure:2830: result: ok
+configure:2822: checking for perl module File::stat
+configure:2830: result: ok
+configure:2822: checking for perl module Filesys::Df
+configure:2830: result: ok
+configure:2822: checking for perl module Sys::Hostname
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::Base
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::Home
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::IOLoop::Subprocess
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::JSON
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::Server::Prefork
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::UserAgent
+configure:2830: result: ok
+configure:2822: checking for perl module Mojo::Util
+configure:2830: result: ok
+configure:2822: checking for perl module EV
+configure:2830: result: ok
+configure:2982: checking that generated files are newer than configure
+configure:2988: result: done
+configure:3016: creating ./config.status
 
 ## ---------------- ##
 ## Cache variables. ##
@@ -113,13 +116,18 @@ ac_cv_path_mkdir=/usr/local/bin/gmkdir
 ac_cv_prog_AWK=gawk
 ac_cv_prog_HAVE_PERL=true
 ac_cv_prog_make_make_set=yes
+am_cv_make_support_nested_variables=yes
 
 ## ----------------- ##
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/missing --run aclocal-1.12'
+ACLOCAL='aclocal-1.15'
 AMTAR='$${TAR-tar}'
+AM_BACKSLASH='\'
+AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
+AM_DEFAULT_VERBOSITY='1'
+AM_V='$(V)'
 APP_CONFDIR='/usr/local/etc/pgdumper'
 APP_EXECDIR='/usr/local/sbin'
 APP_GROUP='www'
@@ -127,9 +135,9 @@ APP_LIBDIR='/usr/local/share/pgdumper'
 APP_LOGDIR='/var/log/pgdumper'
 APP_RUNDIR='/var/run/pgdumper'
 APP_USER='www'
-AUTOCONF='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/missing --run autoconf'
-AUTOHEADER='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/missing --run autoheader'
-AUTOMAKE='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/missing --run automake-1.12'
+AUTOCONF='autoconf'
+AUTOHEADER='autoheader'
+AUTOMAKE='automake-1.15'
 AWK='gawk'
 CYGPATH_W='echo'
 DEFS='-DPACKAGE_NAME=\"pgdumper\" -DPACKAGE_TARNAME=\"pgdumper\" -DPACKAGE_VERSION=\"0.01\" -DPACKAGE_STRING=\"pgdumper\ 0.01\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"pgdumper\" -DVERSION=\"0.01\" -DAPP_CONFDIR=\"/usr/local/etc/pgdumper\" -DAPP_LOGDIR=\"/var/log/pgdumper\" -DAPP_RUNDIR=\"/var/run/pgdumper\" -DPGSTORE_DATADIR=\"/var/pgstore\" -DAPP_USER=\"www\" -DAPP_GROUP=\"www\" -DAPP_LIBDIR=/usr/local/share/pgdumper -DAPP_EXECDIR=/usr/local/sbin'
@@ -148,7 +156,7 @@ LIBS=''
 LINUX_OS_FALSE=''
 LINUX_OS_TRUE='#'
 LTLIBOBJS=''
-MAKEINFO='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/missing --run makeinfo'
+MAKEINFO='makeinfo'
 MKDIR_P='/usr/local/bin/gmkdir -p'
 PACKAGE='pgdumper'
 PACKAGE_BUGREPORT=''
@@ -190,7 +198,7 @@ host_vendor='unknown'
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/install-sh'
+install_sh='${SHELL} /home/ziggi/pmm2/mojoapps/pgdumper/head/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localedir='${datarootdir}/locale'
@@ -246,16 +254,16 @@ generated by GNU Autoconf 2.69.  Invocation command line was
 
 on think.unix7.org
 
-config.status:774: creating Makefile
-config.status:774: creating pgstore
-config.status:774: creating pgagent
-config.status:774: creating pgmaster
-config.status:774: creating rc.d/pgagent
-config.status:774: creating rc.d/pgstore
-config.status:774: creating rc.d/pgmaster
-config.status:774: creating pgagent.service
-config.status:774: creating pgstore.service
-config.status:774: creating pgmaster.service
+config.status:778: creating Makefile
+config.status:778: creating pgstore
+config.status:778: creating pgagent
+config.status:778: creating pgmaster
+config.status:778: creating rc.d/pgagent
+config.status:778: creating rc.d/pgstore
+config.status:778: creating rc.d/pgmaster
+config.status:778: creating pgagent.service
+config.status:778: creating pgstore.service
+config.status:778: creating pgmaster.service
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -272,7 +280,7 @@ generated by GNU Autoconf 2.69.  Invocation command line was
 
 on think.unix7.org
 
-config.status:774: creating pgstore
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -289,7 +297,7 @@ generated by GNU Autoconf 2.69.  Invocation command line was
 
 on think.unix7.org
 
-config.status:774: creating pgstore
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -306,432 +314,7 @@ generated by GNU Autoconf 2.69.  Invocation command line was
 
 on think.unix7.org
 
-config.status:774: creating pgstore
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
-
-## ---------------------- ##
-## Running config.status. ##
-## ---------------------- ##
-
-This file was extended by pgdumper config.status 0.01, which was
-generated by GNU Autoconf 2.69.  Invocation command line was
-
-  CONFIG_FILES    = 
-  CONFIG_HEADERS  = 
-  CONFIG_LINKS    = 
-  CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
-
-on think.unix7.org
-
-config.status:774: creating pgmaster
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -748,7 +331,7 @@ generated by GNU Autoconf 2.69.  Invocation command line was
 
 on think.unix7.org
 
-config.status:774: creating pgstore
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -761,11 +344,11 @@ generated by GNU Autoconf 2.69.  Invocation command line was
   CONFIG_HEADERS  = 
   CONFIG_LINKS    = 
   CONFIG_COMMANDS = 
-  $ ./config.status pgagent
+  $ ./config.status pgstore
 
 on think.unix7.org
 
-config.status:774: creating pgagent
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -778,11 +361,11 @@ generated by GNU Autoconf 2.69.  Invocation command line was
   CONFIG_HEADERS  = 
   CONFIG_LINKS    = 
   CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
+  $ ./config.status pgstore
 
 on think.unix7.org
 
-config.status:774: creating pgmaster
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -795,11 +378,11 @@ generated by GNU Autoconf 2.69.  Invocation command line was
   CONFIG_HEADERS  = 
   CONFIG_LINKS    = 
   CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
+  $ ./config.status pgstore
 
 on think.unix7.org
 
-config.status:774: creating pgmaster
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -812,11 +395,11 @@ generated by GNU Autoconf 2.69.  Invocation command line was
   CONFIG_HEADERS  = 
   CONFIG_LINKS    = 
   CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
+  $ ./config.status pgstore
 
 on think.unix7.org
 
-config.status:774: creating pgmaster
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -829,11 +412,11 @@ generated by GNU Autoconf 2.69.  Invocation command line was
   CONFIG_HEADERS  = 
   CONFIG_LINKS    = 
   CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
+  $ ./config.status pgstore
 
 on think.unix7.org
 
-config.status:774: creating pgmaster
+config.status:778: creating pgstore
 
 ## ---------------------- ##
 ## Running config.status. ##
@@ -846,8 +429,688 @@ generated by GNU Autoconf 2.69.  Invocation command line was
   CONFIG_HEADERS  = 
   CONFIG_LINKS    = 
   CONFIG_COMMANDS = 
-  $ ./config.status pgmaster
+  $ ./config.status pgstore
 
 on think.unix7.org
 
-config.status:774: creating pgmaster
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by pgdumper config.status 0.01, which was
+generated by GNU Autoconf 2.69.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status pgstore
+
+on think.unix7.org
+
+config.status:778: creating pgstore

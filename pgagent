@@ -128,11 +128,13 @@ sub dbSize {
     my ($self, $dbname) = @_;
     return undef unless $dbname;
     return -1 unless $self->dbExist($dbname);
+
     my $db = DBI->connect($self->dsn, $self->username, $self->password) or return -1;
     my $query = "select pg_database_size('$dbname');";
     my $sth = $db->prepare($query);
     my $rows = $sth->execute;
     my $row = $sth->fetchrow_array;
+
     $sth->finish;
     $db->disconnect;
     my $dbsize = int($row);
@@ -151,9 +153,11 @@ sub dbList {
     my $sth = $db->prepare($query);
     my $rows = $sth->execute or return undef;
     my @dblist;
+
     while (my $row = $sth->fetchrow_hashref) {
         push @dblist, $row;
     }
+
     $sth->finish;
     $db->disconnect;
     return \@dblist;
@@ -163,9 +167,11 @@ sub dbCreate {
     my ($self, $dbname) = @_;
     return undef unless $dbname;
     return 1 if $self->dbExist($dbname);
+
     my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
     my $query = "create database $dbname;";
     my $rows = $db->do($query) or return undef;
+
     $db->disconnect;
     return 1 if $rows;
     return undef;
@@ -175,10 +181,12 @@ sub dbDrop {
     my ($self, $dbname) = @_;
     return undef unless $self->dbExist($dbname);
     return undef unless $dbname;
+
     my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
     my $query = "drop database $dbname;";
     my $rows = $db->do($query);
     $db->disconnect;
+
     return 1 if $rows;
     return undef;
 }
@@ -188,10 +196,12 @@ sub dbRename {
     return undef unless $self->dbExist($dbname);
     return undef unless $dbname;
     return undef unless $newname;
+
     my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
     my $query = "alter database $dbname rename to $newname;";
     my $rows = $db->do($query);
     $db->disconnect;
+
     return 1 if $rows;
     return undef;
 }
