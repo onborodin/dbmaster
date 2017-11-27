@@ -218,7 +218,6 @@ sub data_list {
     my $self = shift;
 
     my $datadir = $self->app->config("datadir");
-
     return $self->render(json => { datalist => undef, success => false }) unless -d $datadir;
     return $self->render(json => { datalist => undef, success => false }) unless -r $datadir;
 

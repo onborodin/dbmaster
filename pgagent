@@ -1,4 +1,255 @@
-#!/usr/bin/env perl
+#!/usr/local/bin/perl
+
+#------------
+#--- AUTH ---
+#------------
+
+package PGagent::BasicAuth;
+
+use strict;
+use warnings;
+use POSIX qw(getpid setuid setgid geteuid getegid);
+use Cwd qw(cwd getcwd chdir);
+use Mojo::Util qw(md5_sum b64_decode dumper);
+use Apache::Htpasswd;
+
+sub new {
+    my ($class, $pwdfile) = @_;
+    my $self = {
+        pwdfile => $pwdfile,
+        errstr => undef
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub pwdfile {
+    my ($self, $pwdfile) = @_;
+    return $self->{pwdfile} unless $pwdfile;
+    $self->{pwdfile} = $pwdfile if $pwdfile;
+    $self;
+}
+
+sub auth {
+    my ($self, $authstr) = @_;
+    return undef unless $authstr;
+
+    my $hash = $self->split($authstr);
+    return undef unless $hash;
+    return undef unless -r $self->{pwdfile};
+
+    my $res = undef;
+    eval {
+        my $ht = Apache::Htpasswd->new( { passwdFile => $self->pwdfile, ReadOnly => 1 } );
+        $res = $ht->htCheckPassword(
+                            $hash->{username},
+                            $hash->{password}
+        );
+    };
+    return undef if $@;
+    $res;
+}
+
+sub username {
+    my ($self, $authstr) = @_;
+    return undef unless $authstr;
+    my $hash = $self->split($authstr);
+    return undef unless $hash;
+    $hash->{username} if $hash;
+}
+
+sub split {
+    my ($self, $authstr) = @_;
+    return undef unless $authstr;
+
+    my ($type, $enc) = split /\s+/, $authstr;
+    return undef unless ($type eq 'Basic' && $enc);
+
+    my ($username, $password) = split /:/, b64_decode($enc);
+    return undef unless ($username && $password);
+
+    { username => $username, password => $password };
+}
+
+1;
+
+
+#--------------
+#--- DAEMON ---
+#--------------
+
+package PGagent::Daemon;
+
+use strict;
+use warnings;
+use POSIX qw(getpid setuid setgid geteuid getegid);
+use Cwd qw(cwd getcwd chdir);
+use Mojo::Util qw(dumper);
+
+sub new {
+    my $class = shift;
+    my $self = {
+        pid => undef
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub fork {
+    my ($self, $user, $group) = shift;
+    my $pid = fork;
+    if ($pid > 0) {
+        exit;
+    }
+    chdir("/");
+    open(my $stdout, '>&', STDOUT); 
+    open(my $stderr, '>&', STDERR);
+    open(STDOUT, '>>', '/dev/null');
+    open(STDERR, '>>', '/dev/null');
+    $self->pid(getpid);
+    $self->pid;
+}
+
+sub pid {
+    my ($self, $pid) = @_;
+    return $self->{pid} unless $pid;
+    $self->{pid} = $pid if $pid;
+    $self;
+}
+
+1;
+
+#----------
+#--- DB ---
+#----------
+
+package PGagent::DB;
+
+use strict;
+use warnings;
+use DBI;
+
+sub new {
+    my ($class, %args) = @_;
+    my $self = {
+        hostname => $args{hostname},
+        username => $args{username},
+        password => $args{password},
+        database => $args{database},
+        engine => 'Pg',
+        error => ''
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub username {
+    my ($self, $username) = @_; 
+    return $self->{username} unless $username;
+    $self->{username} = $username;
+    $self;
+}
+
+sub password {
+    my ($self, $password) = @_; 
+    return $self->{password} unless $password;
+    $self->{password} = $password;
+    $self;
+}
+
+sub hostname {
+    my ($self, $hostname) = @_; 
+    return $self->{hostname} unless $hostname;
+    $self->{hostname} = $hostname;
+    $self;
+}
+
+sub database {
+    my ($self, $database) = @_; 
+    return $self->{database} unless $database;
+    $self->{database} = $database;
+    $self;
+}
+
+sub error {
+    my ($self, $error) = @_; 
+    return $self->{error} unless $error;
+    $self->{error} = $error;
+    $self;
+}
+
+sub engine {
+    my ($self, $engine) = @_; 
+    return $self->{engine} unless $engine;
+    $self->{engine} = $engine;
+    $self;
+}
+
+
+sub exec {
+    my ($self, $query) = @_;
+    return undef unless $query;
+
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $sth;
+    eval {
+        $sth = $dbi->prepare($query);
+    };
+    $self->error($@);
+    return undef if $@;
+
+    my $rows = $sth->execute;
+    my @list;
+
+    while (my $row = $sth->fetchrow_hashref) {
+        push @list, $row;
+    }
+    $sth->finish;
+    $dbi->disconnect;
+    \@list;
+}
+
+sub do {
+    my ($self, $query) = @_;
+    return undef unless $query;
+    my $dsn = 'dbi:'.$self->engine.
+                ':dbname='.$self->database.
+                ';host='.$self->hostname;
+    my $dbi;
+    eval {
+        $dbi = DBI->connect($dsn, $self->username, $self->password, { 
+            RaiseError => 1,
+            PrintError => 0,
+            AutoCommit => 1 
+        });
+    };
+    $self->error($@);
+    return undef if $@;
+    my $rows;
+    eval {
+        $rows = $dbi->do($query) or return undef;
+    };
+    $self->error($@);
+    return undef if $@;
+
+    $dbi->disconnect;
+    $rows*1;
+}
+
+1;
 
 #-------------
 #--- MODEL ---
@@ -13,52 +264,53 @@ use Data::Dumper;
 use DBI;
 use Mojo::UserAgent;
 use Mojo::Util qw(dumper);
-use Mojo::JSON qw(encode_json decode_json);
+use Mojo::JSON qw(encode_json decode_json true false);
 use POSIX;
 use Socket;
 
 sub new {
-    my ($class, $app, $pghost, $username, $password) = @_;
+    my ($class, $app, $dbhost, $dbuser, $dbpwd) = @_;
     my $self = {
         app => $app,
-        pghost => $pghost,
-        dsn => "dbi:Pg:dbname=postgres;host=$pghost",
-        username => $username,
-        password => $password,
+        db => PGagent::DB->new(
+                        hostname => $dbhost,
+                        username => $dbuser,
+                        password => $dbpwd,
+                        database => 'postgres',
+        )
     };
     bless $self, $class;
     return $self;
 }
 
-sub username {
-    return shift->{username}; 
-}
-sub password {
-    return shift->{password}; 
-}
-sub dsn {
-    return shift->{dsn}; 
-}
-sub pghost {
-    return shift->{pghost}; 
-}
 sub app {
     return shift->{app}; 
 }
 
-sub storeAlive {
+sub db {
+    return shift->{db}; 
+}
+
+sub log {
+    return shift->app->log; 
+}
+
+
+sub store_alive {
     my ($self, $hostname) = @_;
     return undef unless $hostname;
+
     my $ua = Mojo::UserAgent->new;
     my $tx = $ua->get("https://$hostname:3002/hello");
     $ua = $ua->connect_timeout(5)->request_timeout(5);;
+
     my $res;
     eval { $res = decode_json($tx->result->body); };
     return 1 if $res->{'message'} eq 'hello';
     return undef;
 }
 
-sub storePut {
+sub store_put {
     my ($self, $datafile, $storename, $storeuser, $storepwd) = @_;
     my $ua = Mojo::UserAgent->new(max_redirects => 5);
     $ua = $ua->connect_timeout(15)->request_timeout(15);;
@@ -68,12 +320,12 @@ sub storePut {
 
     return undef unless -f $datafile;
     return undef unless -r $datafile;
-    return undef unless $self->storeAlive($storename);
+    return undef unless $self->store_alive($storename);
 
-    $self->app->log->info("storePut: Start upload $datafile to store $storename");
+    $self->app->log->info("store_put: Start upload $datafile to store $storename");
     my $tx = $ua->post("https://$storeuser:$storepwd\@$storename:3002/data/put" =>
                             form => { data => { file => $datafile }} );
-    $self->app->log->info("storePut: End upload $datafile to store $storename");
+    $self->app->log->info("store_put: End upload $datafile to store $storename");
 
     my $res;
     eval { $res = $tx->result; };
@@ -81,11 +333,11 @@ sub storePut {
     return undef;
 }
 
-sub storeGet {
+sub store_get {
     my ($self, $dataset, $storename, $storeuser, $storepwd) = @_;
     return undef unless $dataset;
     return undef unless $storename;
-    return undef unless $self->storeAlive($storename);
+    return undef unless $self->store_alive($storename);
 
     $storeuser = 'undef' unless $storeuser;
     $storepwd = 'undef' unless $storepwd;
@@ -96,14 +348,14 @@ sub storeGet {
     return undef unless -w $tmpdir;
 
     my $datafile = "$tmpdir/rest".."$dataset";
-    $self->app->log->info("storeGet: Start download $dataset from store $storename to $datafile");
+    $self->app->log->info("store_get: Start download $dataset from store $storename to $datafile");
 
     my $ua = Mojo::UserAgent->new(max_redirects => 5);
     $ua = $ua->connect_timeout(30)->request_timeout(30);;
 
     my $tx = $ua->get("https://$storeuser:$storepwd\@$storename:3002/data/get?dataname=$dataset");
     $tx->result->content->asset->move_to($datafile);
-    $self->app->log->info("storeGet: End download $dataset from store $storename");
+    $self->app->log->info("store_get: End download $dataset from store $storename");
 
     return $datafile if -r $datafile;
     unlink $datafile; return undef;
@@ -114,132 +366,89 @@ sub storeGet {
 #--- DB MODEL ----
 #-----------------
 
-sub dbExist {
+sub db_exist {
     my ($self, $dbname) = @_;
     return undef unless $dbname;
-    my $dblist = $self->dbList;
-    foreach my $db (@{$dblist}) {
+    my $dblist = $self->db_list;
+    foreach my $db (@$dblist) {
         return 1 if $db->{"name"} eq $dbname;
     }
     return undef;
 }
 
-sub dbSize {
+sub db_size {
     my ($self, $dbname) = @_;
     return undef unless $dbname;
-    return -1 unless $self->dbExist($dbname);
+    return undef unless $self->db_exist($dbname);
 
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return -1;
-    my $query = "select pg_database_size('$dbname');";
-    my $sth = $db->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_array;
-
-    $sth->finish;
-    $db->disconnect;
-    my $dbsize = int($row);
-    return $dbsize;
+    my $query = "select pg_database_size('$dbname') as size;";
+    my $res = $self->db->exec($query);
+    $res->[0]{size};
 }
 
-sub dbList {
+sub db_list {
     my $self = shift;
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return -1;
-
-    my $query = "select d.datname as name, pg_database_size(d.datname) as size, u.usename as owner, 
-                s.numbackends as numbackends
-                from pg_database d, pg_user u, pg_stat_database s 
-                where d.datdba = u.usesysid and d.datname = s.datname order by d.datname;";
-
-    my $sth = $db->prepare($query);
-    my $rows = $sth->execute or return undef;
-    my @dblist;
-
-    while (my $row = $sth->fetchrow_hashref) {
-        push @dblist, $row;
-    }
-
-    $sth->finish;
-    $db->disconnect;
-    return \@dblist;
+    my $query = "select d.datname as name,
+                        pg_database_size(d.datname) as size,
+                        u.usename as owner,
+                        s.numbackends as numbackends
+                 from pg_database d, pg_user u, pg_stat_database s
+                 where d.datdba = u.usesysid and d.datname = s.datname
+                 order by d.datname;";
+    $self->db->exec($query);
 }
 
-sub dbCreate {
+sub db_create {
     my ($self, $dbname) = @_;
     return undef unless $dbname;
-    return 1 if $self->dbExist($dbname);
-
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
-    my $query = "create database $dbname;";
-    my $rows = $db->do($query) or return undef;
-
-    $db->disconnect;
-    return 1 if $rows;
-    return undef;
+    return undef if $self->db_exist($dbname);
+    my $query = "create database $dbname";
+    $self->db->do($query);
+    $self->db_exist($dbname);
 }
 
-sub dbDrop {
+sub db_drop {
     my ($self, $dbname) = @_;
-    return undef unless $self->dbExist($dbname);
     return undef unless $dbname;
-
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
-    my $query = "drop database $dbname;";
-    my $rows = $db->do($query);
-    $db->disconnect;
-
-    return 1 if $rows;
-    return undef;
+    return undef unless $self->db_exist($dbname);
+    my $query = "drop database $dbname";
+    $self->db->do($query);
+    return undef if $self->db_exist($dbname);
+    $dbname;
 }
 
-sub dbRename {
+sub db_rename {
     my ($self, $dbname, $newname) = @_;
-    return undef unless $self->dbExist($dbname);
     return undef unless $dbname;
     return undef unless $newname;
+    return undef unless $self->db_exist($dbname);
 
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
     my $query = "alter database $dbname rename to $newname;";
-    my $rows = $db->do($query);
-    $db->disconnect;
-
-    return 1 if $rows;
-    return undef;
+    $self->db->do($query);
 }
 
-sub dbCopy {
+sub db_copy {
     my ($self, $dbname, $newname) = @_;
     return undef unless $dbname;
     return undef unless $newname;
-    return undef unless $self->dbExist($dbname);
-    return undef if $self->dbExist($newname);
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
+    return undef unless $self->db_exist($dbname);
+    return undef if $self->db_exist($newname);
+
     my $query = "create database $newname template $dbname;";
-    my $rows = $db->do($query) or return undef;
-    $db->disconnect;
-    return 1 if $rows;
-    return undef;
+    $self->db->do($query);
+    $self->db_exist($newname);
 }
 
 
-sub dbDump {
-    my ($self, $dbname) = @_;
+sub db_dump {
+    my ($self, $dbname, $hostname, $tmpdir) = @_;
 
     return undef unless $dbname;
-    return undef unless $self->dbExist($dbname);
+    return undef unless $self->db_exist($dbname);
 
-    my $tmpdir = "/".$self->app->config("tmpdir");
+    return undef unless -d $tmpdir;
+    return undef unless -w $tmpdir;
 
-    do {
-        $self->app->log->error("Error: tmpdir $tmpdir not exist");
-        return undef; 
-    } unless -d $tmpdir;
-
-    do {
-        $self->app->log->error("Error: Cannot write to tmpdir $tmpdir");
-        return undef; 
-    } unless -w $tmpdir;
-
-    my $hostname = $self->app->config("hostname");
     my $timestamp = strftime("%Y%m%d-%H%M%S-%Z", localtime(time));
     my $dbdump = "$tmpdir/$dbname--$timestamp--$hostname.sqlz";
 
@@ -247,36 +456,23 @@ sub dbDump {
     my $pghost = $self->pghost;
     my $username = $self->username;
 
-    my $dbsize = $self->dbSize($dbname);
-
-    $self->app->log->info("dbDump: Start dump database $dbname with db size $dbsize");
     my $out = qx/PGPASSWORD=$password pg_dump -h $pghost -U $username -Fc -f $dbdump $dbname 2>&1/;
     my $retcode = $?;
 
-    my $dumpstat = stat($dbdump);
-    my $dumpsize = $dumpstat->size;
-    $self->app->log->info("dbDump: End dump database $dbname to $dbdump with size $dumpsize");
-
     return $dbdump if $retcode == 0;
-    return undef;
+    undef;
 }
 
-sub dbRestore {
+sub db_restore {
     my ($self, $filename, $dbname) = @_;
     return undef unless $dbname;
     return undef unless $filename;
     return undef unless -r $filename;
     return undef unless -s $filename;
-    do {
-        $self->app->log->warning("+++ dbRestore: Database $dbname yet exist");
-        return undef;
-    } if $self->dbExist($dbname);
-    do { 
-        $self->app->log->warning("!!! dbRestore: Cannot create database $dbname");
-        return undef;
-    } unless $self->dbCreate($dbname);
 
-    $self->app->log->info("--- dbRestore: Start restore database $dbname from $filename");
+    return undef if $self->db_exist($dbname);
+
+    return undef unless $self->db_create($dbname);
 
     my $password = $self->password;
     my $pghost = $self->pghost;
@@ -285,104 +481,76 @@ sub dbRestore {
     my $out = qx/PGPASSWORD=$password pg_restore -j 4 -h $pghost -U $username -Fc -d $dbname $filename 2>&1/;
     my $retcode = $?;
 
-    do {
-        $self->app->log->info("!!! dbRestore: Error restore $dbname");
-        $self->dbDrop($dbname) if $self->dbExist($dbname);
-    } if $retcode > 1;
-
-    my $dbsize = $self->dbSize($dbname);
-    $self->app->log->info("--- dbRestore: End restore database $dbname with size $dbsize");
-    return $dbname;
+    if ($retcode > 1) {
+        $self->db_drop($dbname) if $self->db_exist($dbname);
+        return undef;
+    }
+    $dbname;
 }
+
+sub db_owner {
+    my ($self, $dbname) = @_;
+    return undef unless $dbname;
+    return undef unless $self->db_exist($dbname);
+    my $query = "select u.usename as username, d.datname as dbname 
+                        from pg_database d, pg_user u 
+                        where d.datdba = u.usesysid and d.datname = '$dbname' limit 1";
+    $self->db->exec($query);
+}
+
 
 #-------------------
 #--- ROLE MODEL ----
 #-------------------
 
-sub dbOwner {
-    my ($self, $dbname) = @_;
-    return undef unless $dbname;
-    return undef unless $self->dbExist($dbname);
 
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
-    my $query = "select u.usename as username, d.datname as dbname 
-                        from pg_database d, pg_user u 
-                        where d.datdba = u.usesysid and d.datname = '$dbname' limit 1;";
-    my $sth = $db->prepare($query);
-    my $rows = $sth->execute  or return undef;
-    my $row = $sth->fetchrow_hashref;
-    $db->disconnect;
-    return $row if $row;
-    return undef;
-}
-
-sub roleList {
+sub role_list {
     my $self = shift;
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
-    my $query = "select usename as rolename from pg_user;";
-    my $sth = $db->prepare($query);
-    my $rows = $sth->execute  or return undef;
-    my @rolelist;
-    while (my $row = $sth->fetchrow_hashref) {
-        push @rolelist, $row;
-    }
-    $sth->finish;
-    $db->disconnect;
-    return \@rolelist;
+    my $query = "select usename as rolename from pg_user order by rolename";
+    $self->db->exec($query);
 }
 
-sub roleExist {
-    my ($self, $rolename) = @_;
-    return undef unless $rolename;
-    my $rolelist = $self->roleList;
-    foreach my $role (@{$rolelist}) {
-        return 1 if $rolename eq $role->{'rolename'};
+sub role_exist {
+    my ($self, $role) = @_;
+    return undef unless $role;
+    my $list = $self->role_list;
+    foreach my $name (@{$self->role_list}) {
+        return $name->{rolename} if $name->{rolename} eq $role;
     }
     return undef;
 }
 
-sub roleCreate {
+sub role_create {
     my ($self, $rolename, $password) = @_;
     return undef unless $password;
     return undef unless $rolename;
-    return undef unless $self->roleExist($rolename);
+    return undef unless $self->role_exist($rolename);
 
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
     my $query = "create user '$rolename' encrypted password '$password';";
-    my $rows = $db->do($query);
-    $db->disconnect;
-
-    return 1 if $rows;
-    return undef;
+    $self->db->do($query);
+    $self->role_exist($rolename);
 }
 
-sub roleDrop {
+sub role_drop {
     my ($self, $rolename) = @_;
     return undef unless $rolename;
-    return undef unless $self->roleExist($rolename);
+    return undef unless $self->role_exist($rolename);
 
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
     my $query = "drop user '$rolename';";
-    my $rows = $db->do($query);
-    $db->disconnect;
-
-    return 1 if $rows;
-    return undef;
+    $self->db->do($query);
+    return undef if $self->role_exist($rolename);
+    $rolename;
 }
 
-sub rolePassword {
+sub role_password {
     my ($self, $rolename, $password) = @_;
     return undef unless $password;
     return undef unless $rolename;
-    return undef unless $self->roleExist($rolename);
+    return undef unless $self->role_exist($rolename);
 
-    my $db = DBI->connect($self->dsn, $self->username, $self->password) or return undef;
-    my $query = "alter role $rolename encrypted password '$password';";
-    my $rows = $db->do($query);
-    $db->disconnect;
-
-    return 1 if $rows;
-    return undef;
+    my $query = "alter role $rolename encrypted password '$password'";
+    $self->db->do($query);
+    $self->role_exist($rolename);
 }
 
 1;
@@ -398,131 +566,98 @@ use strict;
 use warnings;
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::Util qw(dumper);
-use Mojo::JSON qw(encode_json decode_json);
+use Mojo::JSON qw(encode_json decode_json true false);
 use Mojo::IOLoop::Subprocess;
 use Apache::Htpasswd;
 
 sub hello {
     my $self = shift;
-    $self->render( json => { message => 'hello', result => "success" } );
+    $self->render(json => { message => 'hello', success => true });
 }
 
-sub confDump {
+sub db_list {
     my $self = shift;
-    $self->render( json => $self->app->config );
+    $self->render(json => { dblist => $self->app->model->db_list, success => true });
 }
 
-sub dbList {
-    my $self = shift;
-    $self->render(
-        json => { dblist => $self->app->model->dbList }
-    );
-}
-
-sub dbSize {
+sub db_size {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    ) unless $dbname;
-    my $dbsize = $self->app->model->dbSize($dbname);
-    $self->render( 
-        json => { name => $dbname, size => $dbsize }
-    );
+    return $self->render(json => { success => false, dbname => $dbname }) unless $dbname;
+
+    my $dbsize = $self->app->model->db_size($dbname);
+    $self->render(json => { name => $dbname, size => $dbsize });
 }
 
-sub dbCreate {
+sub db_create {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-        ) unless $dbname;
-    my $res = $self->app->model->dbCreate($dbname);
+    return $self->render(json => { success => false }) unless $dbname;
 
-    return $self->render(
-            json => { result => "success", dbname => $dbname }
-    ) if $res;
+    my $res = $self->app->model->db_create($dbname);
 
-    return $self->render(
-        json => { result => "mistake", dbname => $dbname }
-    );
+    return $self->render(json => { success => true }) if $res;
+    return $self->render(json => { success => false });
 }
 
-sub dbDrop {
+sub db_drop {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-        ) unless $dbname;
-    my $res = $self->app->model->dbDrop($dbname);
-    return $self->render(
-            json => { result => "success", dbname => $dbname }
-    ) if $res;
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    );
+
+    return $self->render(json => { success => false }) unless $dbname;
+
+    my $res = $self->app->model->db_drop($dbname);
+
+    return $self->render(json => { success => false }) unless $res;
+    return $self->render(json => { success => true });
 }
 
-sub dbRename {
+sub db_rename {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
     my $newname = $self->req->param('newname');
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    ) unless $dbname;
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    ) unless $newname;
-    my $res = $self->app->model->dbRename($dbname, $newname);
 
-    my $dbsize = $self->app->model->dbSize($dbname) if $res;
+    return $self->render(json => { success => false }) unless $dbname;
+    return $self->render(json => { success => false }) unless $newname;
 
-    return $self->render(
-            json => { result => "success", dbname => $dbname, dbsize => $dbsize}
-    ) if $res;
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    );
+    my $res = $self->app->model->db_rename($dbname, $newname);
+    my $dbsize = $self->app->model->db_size($dbname) if $res;
+
+    return $self->render(json => { success => true }) if $res;
+    return $self->render(json => { success => false });
 }
 
-
-sub dbCopy {
+sub db_copy {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
     my $newname = $self->req->param('newname');
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    ) unless $dbname;
-    return $self->render(
-            json => { result => "mistake", dbname => $dbname }
-    ) unless $newname;
-    my $res = $self->app->model->dbCopy($dbname, $newname);
-    my $dbsize = $self->app->model->dbSize($dbname) if $res;
-    return $self->render(
-            json => {result => "success", dbname => $dbname, dbsize => $dbsize}
-    ) if $res;
-    return $self->render(
-        json => { result => "mistake", dbname => $dbname }
-    );
+    return $self->render(json => { success => false }) unless $dbname;
+    return $self->render(json => { success => false }) unless $newname;
+
+    my $res = $self->app->model->db_copy($dbname, $newname);
+    my $dbsize = $self->app->model->db_size($dbname) if $res;
+
+    return $self->render(json => { success => true, dbsize => $dbsize}) if $res;
+    return $self->render(json => { success => false});
 }
 
-sub dbExist {
+sub db_exist {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
     return $self->render(
-            json => { result => "mistake", dbname => '' }
+            json => { success => false, dbname => '' }
     ) unless $dbname;
-    my $res = $self->app->model->dbExist($dbname);
-    my $dbsize = $self->app->model->dbSize($dbname) if $res;
+    my $res = $self->app->model->db_exist($dbname);
+    my $dbsize = $self->app->model->db_size($dbname) if $res;
     return $self->render(
-            json => { result => "success", dbname => $dbname, dbsize => $dbsize}
+            json => { success => true, dbname => $dbname, dbsize => $dbsize}
     ) if $res;
     return $self->render(
-            json => { result => "mistake", dbname => $dbname }
+            json => { success => false, dbname => $dbname }
     );
 }
 
-sub masterCB {
+sub master_cb {
     my ($self, $master, $jobID, $magic, $status, $error, $result) = @_;
 
     return undef unless $master;
@@ -544,7 +679,7 @@ sub masterCB {
     $param .= "&result=success";
 
     my $url = "https://$master:3003/agent/job/cb?$param";
-    $self->app->log->debug("masterCB: Master callback URL $url");
+    $self->app->log->debug("master_cb: Master callback URL $url");
 
     my $tx = $ua->get($url);
     my $body;
@@ -556,7 +691,7 @@ sub masterCB {
 }
 
 
-sub dbDump {
+sub db_dump {
     my $self = shift;
     my $dbname = $self->req->param('dbname');
 
@@ -569,185 +704,160 @@ sub dbDump {
     my $magic = $self->req->param('magic');
 
     return $self->render(
-            json => { response => "mistake", dbname => '' }
+            json => { success => false, dbname => '' }
     ) unless $dbname;
     return $self->render(
-            json => { response => "mistake", dbname => $dbname }
-    ) unless $self->app->model->dbExist($dbname);
+            json => { success => false, dbname => $dbname }
+    ) unless $self->app->model->db_exist($dbname);
 
     my $subprocess = Mojo::IOLoop::Subprocess->new;
-    $self->app->log->info("dbDump: Begin dump database $dbname in subprocess"); 
+    $self->app->log->info("db_dump: Begin dump database $dbname in subprocess"); 
     $subprocess->run(
         sub {
             my $subprocess = shift;
-            my $filename = $self->app->model->dbDump($dbname);
+            my $filename = $self->app->model->db_dump($dbname);
             do { 
                 unlink $filename; 
-                $self->masterCB($master, $jobID, $magic, "dumperr", "dumperr", "mistake");
+                $self->master_cb($master, $jobID, $magic, "dumperr", "dumperr", 'mistake');
                 return undef; 
             } unless $filename;
 
-            my $resCB = $self->masterCB($master, $jobID, $magic, "dumped", "noerr", "success");
-            my $storeRes = $self->app->model->storePut($filename, $storename, $storelogin, $storepwd);
+            my $resCB = $self->master_cb($master, $jobID, $magic, "dumped", "noerr", 'success');
+            my $storeRes = $self->app->model->store_put($filename, $storename, $storelogin, $storepwd);
 
             do { 
                 unlink $filename;
-                $self->masterCB($master, $jobID, $magic, "storeerr", "storeerr", "mistake");
+                $self->master_cb($master, $jobID, $magic, "storeerr", "storeerr", 'mistake');
                 return undef; 
             } unless $storeRes;
 
-            $self->masterCB($master, $jobID, $magic, "stored", "noerr", "success");
+            $self->master_cb($master, $jobID, $magic, "stored", "noerr", 'success');
             unlink $filename;
             return 1;
         },
         sub {
             my ($subprocess, $err, @results) = @_;
             my $pid = $subprocess->pid;
-            $self->app->log->info("dbDump: End dump subprocess $pid for dump database $dbname");
+            $self->app->log->info("db_dump: End dump subprocess $pid for dump database $dbname");
         }
     );
     $subprocess->ioloop->start unless $subprocess->ioloop->is_running;
-    $self->render(json => { result => "success", $dbname => $dbname } );
+    $self->render(json => { success => true, $dbname => $dbname } );
 }
 
-sub dbRestore {
+sub db_restore {
     my $self = shift;
-    my $dataname = $self->req->param('dataname');
 
-    my $storename = $self->req->param('store');
-    my $storelogin = $self->req->param('storelogin');
-    my $storepwd = $self->req->param('storepwd');
 
-    my $newname = $self->req->param('newname');
+    my $req = $self->req
 
-    my $master = $self->req->param('master');
-    my $jobID = $self->req->param('jobid');
-    my $magic = $self->req->param('magic');
+    my $dataname = $req->param('dataname');
+    my $storename = $req->param('store');
+    my $storelogin = $req->param('storelogin');
+    my $storepwd = $req->param('storepwd');
 
-    return $self->render(
-            json => { response => "mistake", dataname => '' }
-    ) unless ($dataname and $storename and $storelogin);
+    my $newname = $req->param('newname');
 
-    return $self->render(
-            json => { response => "mistake", dataname => '' }
-    ) unless ($storepwd and $newname and $jobID and $master and $magic);
+    my $master = $req->param('master');
+    my $jobID = $req->param('jobid');
+    my $magic = $req->param('magic');
 
-    return $self->render(
-        json => { response => "mistake", dataname => '' }
-    ) unless $self->app->model->storeAlive($storename);
+    my $m = $self->app->model;
+
+
+    return $self->render(json => { success => false }) unless ($dataname and $storename and $storelogin);
+    return $self->render(json => { success => false }) unless ($storepwd and $newname and $jobID and $master and $magic);
+    return $self->render(json => { success => false }) unless $m->store_alive($storename);
 
     my $subprocess = Mojo::IOLoop::Subprocess->new;
-    $self->app->log->info("dbRestore: Begin restore db from $dataname in subprocess"); 
 
     $subprocess->run(
         sub {
             my $subprocess = shift;
-            $self->masterCB($master, $jobID, $magic, "dataget", "noerr", "success");
+            $self->master_cb($master, $jobID, $magic, "dataget", "noerr", 'success');
 
-            my $datafile = $self->app->model->storeGet($dataname, $storename, $storelogin, $storepwd);
+            my $datafile = $m->store_get($dataname, $storename, $storelogin, $storepwd);
 
-            do {
+            unless ($datafile || -s $datafile) {
                 unlink $dataname;
-                $self->masterCB($master, $jobID, $magic, "geterr", "geterr", "mistake");
-                return undef; 
-            } unless ($datafile || -s $datafile);
-            $self->masterCB($master, $jobID, $magic, "datagot", "noerr", "success");
+                $self->master_cb($master, $jobID, $magic, "geterr", "geterr", 'mistake');
+                return undef;
+            }
 
-            my $newdbname = $self->app->model->dbRestore($datafile, $newname);
+            $self->master_cb($master, $jobID, $magic, "datagot", "noerr", 'success');
 
-            do {
+            my $newdbname = $m->db_restore($datafile, $newname);
+
+            unless ($newdbname) {
                 unlink $dataname;
-                $self->masterCB($master, $jobID, $magic, "resterr", "resterr", "mistake");
+                $self->master_cb($master, $jobID, $magic, "resterr", "resterr", 'mistake');
                 return undef; 
-            } unless $newdbname;
+            };
 
-            $self->masterCB($master, $jobID, $magic, "done", "noerr", "success");
-            return 1;
+            $self->master_cb($master, $jobID, $magic, "done", "noerr", 'success');
+            1;
+
         },
         sub {
             my ($subprocess, $err, @results) = @_;
             my $pid = $subprocess->pid;
-            $self->app->log->info("dbRestore: End restore subprocess $pid for dataset $dataname");
+            $self->app->log->info("db_restore: End restore subprocess $pid for dataset $dataname");
         }
     );
     $subprocess->ioloop->start unless $subprocess->ioloop->is_running;
-    $self->render(
-        json => { result => "success", dataname => $dataname }
-    );
+
+    $self->render(json => { success => true });
 }
 
-sub roleList {
+sub role_list {
     my $self = shift;
-    $self->render(
-        json => { result => "success", role => $self->app->model->roleList }
-    );
+    $self->render(json => { success => true, role => $self->app->model->role_list });
 }
 
-sub roleExist {
+sub role_exist {
     my $self = shift;
     my $rolename = $self->req->param('rolename');
 
-    return $self->render(
-            json => { result => "mistake", rolename => undef }
-    )  unless $rolename;
+    return $self->render(json => { success => false, rolename => undef })  unless $rolename;
 
-    my $res = $self->app->model->roleExist($rolename);
+    my $res = $self->app->model->role_exist($rolename);
 
-    return $self->render(
-            json => { result => "success", rolename => $rolename }
-    ) if $res;
-
-    $self->render(
-            json => { result => "mistake", rolename => $rolename }
-    );
+    return $self->render(json => { success => true, rolename => $rolename }) if $res;
+    $self->render(json => { success => false, rolename => $rolename });
 }
 
-sub rolePassword {
+sub role_password {
     my $self = shift;
     my $rolename = $self->req->param('rolename');
 
-    return $self->render(
-            json => { result => "mistake", rolename => undef }
-    ) unless $rolename;
-
-    $self->render(
-            json => { result => "success", rolename => $rolename }
-    );
+    return $self->render(json => { success => false, rolename => undef }) unless $rolename;
+    # dummy
+    $self->render(json => { success => true, rolename => $rolename });
 }
 
-sub roleCreate {
+sub role_create {
     my $self = shift;
     my $rolename = $self->req->param('rolename');
-    return $self->render(
-            json => { result => "mistake", rolename => undef }
-    )  unless $rolename;
-    $self->render(
-            json => { result => "success", rolename => $rolename }
-    );
+    return $self->render(json => { success => false, rolename => undef })  unless $rolename;
+    $self->render(json => { success => true, rolename => $rolename });
 }
 
-sub roleDrop {
+sub role_drop {
     my $self = shift;
     my $rolename = $self->req->param('rolename');
 
-    return $self->render(
-            json => { result => "mistake", rolename => undef }
-    )  unless $rolename;
-
-    $self->render(
-            json => { result => "success", rolename => $rolename }
-    );
+    return $self->render(json => { success => false, rolename => undef })  unless $rolename;
+    $self->render(json => { success => true, rolename => $rolename });
 }
 
 1;
 
-#------------
+#-----------
 #--- APP ---
-#------------
+#-----------
 
 package PGagent;
 
-use utf8;
 use strict;
 use warnings;
 use Mojo::Base 'Mojolicious';
@@ -758,37 +868,34 @@ sub startup {
 
 1;
 
+#-------------
 #------------
 #--- MAIN ---
 #------------
+#-------------
 
 use strict;
 use warnings;
-use utf8;
 
 use POSIX qw(setuid setgid tzset tzname strftime);
 use Mojo::Server::Prefork;
 use Mojo::IOLoop::Subprocess;
-use Mojo::Util qw(monkey_patch b64_encode b64_decode md5_sum getopt dumper);
+use Mojo::Util qw(md5_sum b64_decode getopt dumper);
 use Sys::Hostname qw(hostname);
 use File::Basename qw(basename dirname);
 use Apache::Htpasswd;
 use Cwd qw(getcwd abs_path);
+use EV;
 
-my $appfile = abs_path(__FILE__);
-my $appname = basename($appfile, ".pl");
-$0 = $appfile;
+my $appname = 'pgdumper';
+
+#--------------
+#--- GETOPT ---
+#--------------
 
 getopt
     'h|help' => \my $help,
-    '4|ipv4listen=s' => \my $ipv4listen,
-    '6|ipv6listen=s' => \my $ipv6listen,
     'c|config=s' => \my $conffile,
-    'p|pwdfile=s' => \my $pwdfile,
-    'd|tmpdir=s' => \my $tmpdir,
-    'l|logfile=s' => \my $logfile,
-    'i|pidfile=s' => \my $pidfile,
-    'v|loglevel=s' => \my $loglevel,
     'f|nofork' => \my $nofork,
     'u|user=s' => \my $user,
     'g|group=s' => \my $group;
@@ -799,87 +906,65 @@ if ($help) {
 Usage: app [OPTIONS]
 
 Options
-    -h | --help                      This help
-    -4 | --ipv4listen=address:port      Listen address and port, defaults 127.0.0.1:5100
-    -6 | --ipv6listen=[address]:port    Listen address and port, defaults [::1]:5100
-
+    -h | --help           This help
     -c | --config=path    Path to config file
-    -p | --pwdfile=path   Path to user password file
-    -d | --tmpdir=path    Path to application files 
-    -l | --logfile=path   Path to log file
-    -i | --pidfile=path   Path to process ID file
-    -v | --loglevel=level  Verbose level: debug, info, warn, error, fatal
     -u | --user=user      System owner of process
     -g | --group=group    System group 
-    -f | --nofork         Dont fork process, for debugging
-All path option override option from configuration file
+    -f | --nofork         Dont fork process
 
+The options override options from configuration file
     )."\n";
     exit 0;
 }
 
-
+#------------------
+#--- APP CONFIG ---
+#------------------
 
 my $server = Mojo::Server::Prefork->new;
 my $app = $server->build_app('PGagent');
 $app = $app->controller_class('PGagent::Controller');
 
+$app->secrets(['6d578e43ba88260e0375a1a35fd7954b']);
+$app->static->paths(['/usr/local/share/pgdumper/public']);
+$app->renderer->paths(['/usr/local/share/pgdumper/templs']);
 
-$app->config(
-    hostname => hostname,
-    tmpdir => $tmpdir || "/tmp",
-    listenIPv4 => "0.0.0.0",
-    listenIPv6 => "[::]",
-    listenPort => "3001",
-    pghost => "127.0.0.1",
-    pguser => "postgres",
-    pgpasswd => "password",
-    pwdfile => $pwdfile || "/usr/local/etc/pgdumper/$appname.pw",
-    pidfile => $pidfile || "/var/run/pgdumper/$appname.pid",
-    logfile => $logfile || "/var/log/pgdumper/$appname.log",
-    conffile => "/usr/local/etc/pgdumper/$appname.conf",
-    maxrequestsize => 1024*1024*1024,
-    tlscert => "/usr/local/etc/pgdumper/$appname.crt",
-    tlskey => "/usr/local/etc/pgdumper/$appname.key",
-    appuser => $user || "www",
-    appgroup => $group || "www",
-    mode => 'production',
-    loglevel => $loglevel || 'info',
-    timezone => 'Europe/Moscow',
-);
+$app->config(conffile => $conffile || '/usr/local/etc/pgdumper/pgagent.conf');
+$app->config(pwdfile => '/usr/local/etc/pgdumper/pgagent.pw');
+$app->config(logfile => '/var/log/pgdumper/pgagent.log');
+$app->config(loglevel => 'info');
+$app->config(pidfile => '/var/run/pgdumper/pgagent.pid');
+$app->config(crtfile => '/usr/local/etc/pgdumper/pgagent.crt');
+$app->config(keyfile => '/usr/local/etc/pgdumper/pgagent.key');
 
-$conffile = $app->config('conffile');
-do {
-    $app->log->debug("Load configuration from $conffile ");
-    my $config = $app->plugin( 'JSONConfig', { file => $conffile } );
-} if -r $conffile;
+$app->config(user => $user || 'www');
+$app->config(group => $group || 'www');
 
-$ENV{TZ} = $app->config('timezone');;
-tzset;
+$app->config(listenaddr4 => '0.0.0.0');
+$app->config(listenaddr6 => '[::]');
+$app->config(listenport => '3001');
 
-my $tlscert = $app->config('tlscert');
-my $tlskey = $app->config('tlskey');
-$tmpdir = $app->config('tmpdir');
-my $rundir = dirname ($app->config('pidfile'));
-my $logdir = dirname ($app->config('logfile'));
-$pwdfile = $app->config('pwdfile');
+$app->config(tmpdir => '/tmp');
 
-do { print "Error: Cannot write to tmp direcory $tmpdir\n"; exit 1; } unless -w $tmpdir;
-do { print "Error: Cannot write to run direcory $rundir\n"; exit 1; } unless -w $rundir;
-do { print "Error: Cannot write to log direcory $logdir\n"; exit 1; } unless -w $logdir;
+$app->config(pghost => '127.0.0.1');
+$app->config(pguser => 'postgres');
+$app->config(pgpwd => 'password');
 
-do { print "Error: Cannot read TLS certificate $tlscert\n"; exit 1; } unless -r $tlscert;
-do { print "Error: Cannot read TLS key $tlskey\n"; exit 1; } unless -r $tlskey;
-do { print "Error: Cannot read password file $pwdfile\n"; exit 1; } unless -r $pwdfile;
 
-my $appUser = $app->config('appuser');
-my $appGroup = $app->config('appgroup');
+if (-r $app->config('conffile')) {
+    $app->log->debug("Load configuration from ".$app->config('conffile'));
+    $app->plugin('JSONConfig', { file => $app->config('conffile') });
+}
 
-my $appUID = getpwnam($appUser);
-my $appGID = getgrnam($appGroup);
+#---------------
+#--- HELPERS ---
+#---------------
 
-do { print "System user $appUser not exist.\n"; exit 1; } unless $appUID;
-do { print "System group $appGroup not exist.\n"; exit 1; } unless $appGID;
+$app->helper('reply.not_found' => sub {
+        my $c = shift; 
+        return $c->redirect_to('/login') unless $c->session('username'); 
+        $c->render(template => 'not_found.production');
+});
 
 $app->helper(
     model => sub {
@@ -887,131 +972,137 @@ $app->helper(
             $app,
             $app->config("pghost"),
             $app->config("pguser"),
-            $app->config("pgpasswd")
+            $app->config("pgpwd")
         );
     }
 );
+
+
+#--------------
+#--- ROUTES ---
+#--------------
 
 my $r = $app->routes;
 
 $r->add_condition(
     auth => sub {
-        my ($route, $c, $captures, $hash) = @_;
-        my $authStr = $c->req->headers->authorization;
-        return undef unless $authStr;
+        my ($route, $c) = @_;
+        my $log = $c->app->log;
+        my $authstr = $c->req->headers->authorization;
+        my $pwdfile = $c->app->config('pwdfile');
 
-        my ($authType, $encAuthPair) = split / /, $authStr;
-        return undef unless ($authType eq 'Basic' && $encAuthPair);
+        my $a = PGagent::BasicAuth->new($pwdfile);
 
-        my ($username, $password) = split /:/, b64_decode($encAuthPair);
-        $c->app->log->debug("Receive auth pair: '$username:$password'");
-        return undef unless ($username && $password);
+        $log->info("Try auth user ". $a->username($authstr));
+        $a->auth($authstr);
 
-        my $passwdFile = $c->app->config('pwdfile');
-        do { 
-            $c->app->log->error("Cannot read password file '$passwdFile'");
-            return undef;
-        } unless -r $passwdFile;
-
-        my $result = undef;
-        eval {
-            my $ht = Apache::Htpasswd->new({ passwdFile => $passwdFile, ReadOnly => 1 });
-            $result = $ht->htCheckPassword($username, $password);
-        };
-        do { $c->app->log->debug("Auth module error: $@"); return undef; } if $@;
-
-        return 1 if $result;
-        $c->app->log->info("Bad auth from ".$c->tx->remote_address);
-        return undef;
     }
 );
 
 $r->any('/hello')->to('Controller#hello');
-$r->any('/conf/dump')->over('auth')->to('Controller#confDump');
+$r->any('/conf/dump')->over('auth')->to('Controller#conf_dump');
 
-$r->any('/db/list')->over('auth')->to('Controller#dbList');
-$r->any('/db/create')->over('auth')->to('Controller#dbCreate');
-$r->any('/db/drop')->over('auth')->to('Controller#dbDrop');
-$r->any('/db/rename')->over('auth')->to('Controller#dbRename');
-$r->any('/db/copy')->over('auth')->to('Controller#dbCopy');
-$r->any('/db/size')->over('auth')->to('Controller#dbSize');
-$r->any('/db/dump')->over('auth')->to('Controller#dbDump');
-$r->any('/db/restore')->over('auth')->to('Controller#dbRestore');
-$r->any('/db/exist')->over('auth')->to('Controller#dbExist');
-$r->any('/db/owner')->over('auth')->to('Controller#dbOwner');
+$r->any('/db/list')->over('auth')->to('Controller#db_list');
+$r->any('/db/create')->over('auth')->to('Controller#db_create');
+$r->any('/db/drop')->over('auth')->to('Controller#db_drop');
+$r->any('/db/rename')->over('auth')->to('Controller#db_rename');
+$r->any('/db/copy')->over('auth')->to('Controller#db_copy');
+$r->any('/db/size')->over('auth')->to('Controller#db_size');
+$r->any('/db/dump')->over('auth')->to('Controller#db_dump');
+$r->any('/db/restore')->over('auth')->to('Controller#db_restore');
+$r->any('/db/exist')->over('auth')->to('Controller#db_exist');
+$r->any('/db/owner')->over('auth')->to('Controller#db_owner');
 
 
-$r->any('/role/list')->over('auth')->to('Controller#roleList');
-$r->any('/role/exist')->over('auth')->to('Controller#roleExist');
-$r->any('/role/password')->over('auth')->to('Controller#rolePassword');
-$r->any('/role/create')->over('auth')->to('Controller#roleCreate');
-$r->any('/role/drop')->over('auth')->to('Controller#roleDrop');
+$r->any('/role/list')->over('auth')->to('Controller#role_list');
+$r->any('/role/exist')->over('auth')->to('Controller#role_exist');
+$r->any('/role/password')->over('auth')->to('Controller#role_password');
+$r->any('/role/create')->over('auth')->to('Controller#role_create');
+$r->any('/role/drop')->over('auth')->to('Controller#role_drop');
 
-$app->mode($app->config("mode"));
-$app->secrets([ md5_sum(localtime(time)) ]);
+
+#----------------
+#--- LISTENER ---
+#----------------
+
+my $tls = '?';
+$tls .= 'cert='.$app->config('crtfile');
+$tls .= '&key='.$app->config('keyfile');
+
+my $listen4;
+if ($app->config('listenaddr4')) {
+    $listen4 = "https://";
+    $listen4 .= $app->config('listenaddr4').':'.$app->config('listenport');
+    $listen4 .= $tls;
+}
+
+my $listen6;
+if ($app->config('listenaddr6')) {
+    $listen6 = "https://";
+    $listen6 .= $app->config('listenaddr6').':'.$app->config('listenport');
+    $listen6 .= $tls;
+}
+
+my @listen;
+push @listen, $listen4 if $listen4;
+push @listen, $listen6 if $listen6;
+
+$server->listen(\@listen);
+$server->heartbeat_interval(3);
+$server->heartbeat_timeout(60);
+
+#--------------
+#--- DAEMON ---
+#--------------
+
+unless ($nofork) {
+    my $d = PGagent::Daemon->new;
+    my $user = $app->config('user');
+    my $group = $app->config('group');
+    $d->fork;
+    $app->log(Mojo::Log->new( 
+                path => $app->config('logfile'),
+                level => $app->config('loglevel')
+    ));
+}
+
+$server->pid_file($app->config('pidfile'));
+
+#---------------
+#--- WEB LOG ---
+#---------------
 
 $app->hook(before_dispatch => sub {
         my $c = shift;
 
-        my $remoteIPaddr = $c->tx->remote_address;
+        my $remote_address = $c->tx->remote_address;
         my $method = $c->req->method;
 
         my $base = $c->req->url->base->to_string;
         my $path = $c->req->url->path->to_string;
-
         my $loglevel = $c->app->log->level;
+        my $url = $c->req->url->to_abs->to_string;
+
         unless ($loglevel eq 'debug') {
-            $c->app->log->info("$method $base$path from $remoteIPaddr");
+            #$c->app->log->info("$remote_address $method $base$path");
+            $c->app->log->info("$remote_address $method $url");
         }
         if ($loglevel eq 'debug') {
-            my $url = $c->req->url->to_abs->to_string;
-            $c->app->log->debug("$method $url from $remoteIPaddr");
+            $c->app->log->debug("$remote_address $method $url");
         }
 });
 
-$app->log(Mojo::Log->new(level => $app->config('loglevel')));
+#----------------------
+#--- SIGNAL HANDLER ---
+#----------------------
 
+local $SIG{HUP} = sub {
+    $app->log->info('Catch HUP signal'); 
+    $app->log(Mojo::Log->new(
+                    path => $app->config('logfile'),
+                    level => $app->config('loglevel')
+    ));
+};
 
-$app->helper('reply.exception' => sub { my $c = shift; return $c->rendered(404); });
-$app->helper('reply.not_found' => sub { my $c = shift; return $c->rendered(404); });
-
-my $tlsParam .= '?';
-$tlsParam .= 'cert='.$tlscert;
-$tlsParam .= '&key='.$tlskey;
-
-my $listenPort = $app->config('listenPort');
-my $listenIPv4 = $app->config('listenIPv4');
-my $listenIPv6 = $app->config('listenIPv6');
-
-$server->listen([
-    "https://$listenIPv4:$listenPort$tlsParam",
-]);
-
-$server->heartbeat_interval(3);
-$server->heartbeat_timeout(60);
-$server->pid_file($app->config('pidfile'));
-
-unless ($nofork) {
-    my $pid = fork;
-    if ($pid == 0) {
-        setuid($appUID) if $appUID;
-        setgid($appGID) if $appGID;
-        $app->log(Mojo::Log->new( path => $app->config('logfile') ));
-        open (my $STDOUT2, '>&', STDOUT); open (STDOUT, '>>', '/dev/null');
-        open (my $STDERR2, '>&', STDERR); open (STDERR, '>>', '/dev/null');
-        chdir($tmpdir);
-        local $SIG{HUP} = sub {
-                $app->log->info('Catch HUP signal'); 
-                $app->log(Mojo::Log->new(
-                        path => $app->config('logfile'),
-                        level => $app->config('loglevel'),
-                ));
-        };
-        $server->run;
-    }
-} else {
-    setuid($appUID) if $appUID;
-    setgid($appGID) if $appGID;
-    $server->run;
-}
+$server->run;
 #EOF
