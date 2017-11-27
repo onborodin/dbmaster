@@ -304,17 +304,11 @@ sub agent_list {
 sub agent_exist {
     my ($self, $hostname)  = @_;
     return undef unless $hostname;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select id from agent where hostname = '$hostname' limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    $sth->finish;
-    $dbi->disconnect;
-    my $id = $row->{'id'};
-    return $id if $id;
-    return undef;
+    my $rows = $self->db->exec($query);
+    my $id = $rows->[0]{'id'};
+    return undef unless $id;
+    $id;
 }
 
 sub agent_hostname {
@@ -357,40 +351,20 @@ sub agent_profile {
 sub agent_info {
     my ($self, $id)  = @_;
     return undef unless $id;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
     my $query = "select sum(d.size) as sum , count(d.name) as count
                     from agent a, db d
-                    where a.id = d.agentid and a.id = $id;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-
-    $sth->finish;
-    $dbi->disconnect;
-
-    $row->{'sum'} ||= 0;
-    return $row if $row;
-    return undef;
+                    where a.id = d.agentid and a.id = $id limit 1";
+    my $res = $self->db->exec($query);
+    $res->[0];
 }
 
 sub agent_next_id {
     my $self = shift;
-
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select id from agent order by id desc limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    my $id = $row->{'id'};
-
-    $sth->finish;
-    $dbi->disconnect;
+    my $rows = $self->db->exec($query);
+    my $id = $rows->[0]{'id'};
     $id++;
-
-    return $id;
+    $id;
 }
 
 sub agent_add {
@@ -399,43 +373,29 @@ sub agent_add {
     return undef unless $username;
     return undef unless $password;
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-         or return undef;
     my $id = $self->agent_next_id;
     my $query = "insert into agent (id, hostname, username, password)
                     values ($id, '$hostname', '$username', '$password');";
-    my $rows = $dbi->do($query) or return undef;
-    $dbi->disconnect;
-
-    return $id if $rows*1 > 0;
-    return undef;
+    $self->db->do($query);
+    $self->agent_exist($hostname);
 }
 
 sub agent_delete {
     my ($self, $id) = @_;
     return undef unless $id;
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "delete from agent where id = $id;";
-    my $rows = $dbi->do($query) or return undef;
-
-    $dbi->disconnect;
-    return $rows*1;
+    $self->db->do($query);
 }
 
 sub agent_config {
     my ($self, $id, $hostname, $username, $password) = @_;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "update agent set
                     hostname = '$hostname',
                     username = '$username',
                     password = '$password'
                     where id = $id;";
-    my $rows = $dbi->do($query) or return undef;
-    $dbi->disconnect;
-    return $rows*1;
+    $self->db->do($query);
 }
 
 sub agent_alive {
@@ -479,7 +439,7 @@ sub agent_db_list {
 sub agent_db_update {
     my ($self, $id) = @_;
     return undef unless $id;
-    my $agent_profile = $self->agentProfile($id) or return undef;
+    my $agent_profile = $self->agent_profile($id) or return undef;
 
     my $hostname = $agent_profile->{'hostname'} || 'undef';
     my $username = $agent_profile->{'username'} || 'undef';
@@ -814,7 +774,7 @@ sub data_list {
 sub job_create {
     my ($self, @args) = @_;
 
-    my $id = $self->job_nextID;
+    my $id = $self->job_next_id;
 
     my $begin = strftime("%Y-%m-%d %H:%M:%S %Z", localtime(time));
     my $stop = '1970-01-01 00:00:00 UTC';
@@ -827,14 +787,9 @@ sub job_create {
     my $message = "Job record created";
     my $magic = md5_sum(localtime(time));
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-         or return undef;
     my $query = "insert into job (id, begin, stop, author, type, sourceid, destid, status, error, message, magic)
                     values ($id, '$begin', '$stop', '$author', '$type', $sourceid, $destid, '$status', '$error', '$message', '$magic');";
-    my $rows = $dbi->do($query) or return undef;
-    $dbi->disconnect;
-    return $id if $rows*1 > 0;
-    return undef;
+    $self->db->do($query);
 }
 
 sub job_list {
@@ -857,34 +812,22 @@ sub job_list {
     return \@list;
 }
 
-sub job_nextID {
+sub job_next_id {
     my $self = shift;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select id from job order by id desc limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    my $id = $row->{'id'};
+    my $rows = $self->db->exec($query);
+    my $id = $rows->[0]{'id'};
     $id++;
-    $sth->finish;
-    $dbi->disconnect;
-    return $id;
+    $id;
 }
 
 sub job_exist {
     my ($self, $id)  = @_;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
     my $query = "select id from job where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
-    $sth->finish;
-    $dbi->disconnect;
-    $id = $row->{'id'};
-    return $id if $id;
-    return undef;
+    my $rows = $self->db->exec($query);
+    $id = $rows->[0]{'id'};
+    return undef unless $id;
+    $id;
 }
 
 sub job_update {
@@ -907,9 +850,6 @@ sub job_update {
     my $error = $args->{'error'} || $job_profile->{'error'};
     my $message = $args->{'message'} || $job_profile->{'message'};
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
     my $query = "update job set
                     begin = '$begin',
                     stop = '$stop',
@@ -922,10 +862,9 @@ sub job_update {
                     message = '$message'
                         where id = $id;";
 
-    my $rows = $dbi->do($query) or return undef;
-    $dbi->disconnect;
-    return $id if $rows;
-    return undef;
+    my $rows = $self->db->do($query);
+    return undef unless $rows;
+    $id;
 }
 
 sub job_delete {
@@ -945,21 +884,13 @@ sub job_delete {
 sub job_profile {
     my ($self, $id)  = @_;
 
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
     my $query = "select id, to_char(begin, 'YYYY-MM-DD HH24:MI:SS TZ') as begin,
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
                     author, type, sourceid, destid, status, error, message, magic from job where id = $id limit 1;";
-    my $sth = $dbi->prepare($query);
-    my $rows = $sth->execute;
-    my $row = $sth->fetchrow_hashref;
 
-    $sth->finish;
-    $dbi->disconnect;
-
-    return $row if $row;
-    return undef;
+    my $rows = $self->db->exec($query);
+    return undef unless $rows;
+    $rows->[0];
 }
 
 sub job_cb {
@@ -1496,50 +1427,50 @@ $r->add_condition(
     }
 );
 
-$r->any('/login')->to('Controller#login');
-$r->any('/logout')->to('Controller#logout');
-$r->any('/hello')->over('auth')->to('Controller#hello');
+$r->any('/login')->to('controller#login');
+$r->any('/logout')->to('controller#logout');
+$r->any('/hello')->over('auth')->to('controller#hello');
 # agent forms
-$r->any('/agent/list')->over('auth')->to('Controller#agentList');
+$r->any('/agent/list')->over('auth')->to('controller#agent_list');
 # agent handlers
-$r->any('/agent/add')->over('auth')->to('Controller#agentAdd');
-$r->any('/agent/config')->over('auth')->to('Controller#agentConfig');
-$r->any('/agent/delete')->over('auth')->to('Controller#agentDelete');
+$r->any('/agent/add')->over('auth')->to('controller#agent_add');
+$r->any('/agent/config')->over('auth')->to('controller#agent_config');
+$r->any('/agent/delete')->over('auth')->to('controller#agent_delete');
 # agent db forms
-$r->any('/agent/db/list')->over('auth')->to('Controller#agentDBList');
+$r->any('/agent/db/list')->over('auth')->to('controller#agent_db_list');
 # agent db handlers
-$r->any('/agent/db/create')->over('auth')->to('Controller#agentDBCreate');
-$r->any('/agent/db/drop')->over('auth')->to('Controller#agentDBDrop');
-$r->any('/agent/db/copy')->over('auth')->to('Controller#agentDBCopy');
-$r->any('/agent/db/rename')->over('auth')->to('Controller#agentDBRename');
-$r->any('/agent/db/dump')->over('auth')->to('Controller#agentDBDump');
-$r->any('/agent/db/restore')->over('auth')->to('Controller#agentDBRestore');
+$r->any('/agent/db/create')->over('auth')->to('controller#agent_db_create');
+$r->any('/agent/db/drop')->over('auth')->to('controller#agent_db_drop');
+$r->any('/agent/db/copy')->over('auth')->to('controller#agent_db_copy');
+$r->any('/agent/db/rename')->over('auth')->to('controller#agent_db_rename');
+$r->any('/agent/db/dump')->over('auth')->to('controller#agent_db_dump');
+$r->any('/agent/db/restore')->over('auth')->to('controller#agent_db_restore');
 
 # store forms
-$r->any('/store/list')->over('auth')->to('Controller#storeList');
+$r->any('/store/list')->over('auth')->to('controller#store_list');
 # store handlers
-$r->any('/store/add')->over('auth')->to('Controller#storeAdd');
-$r->any('/store/config')->over('auth')->to('Controller#storeConfig');
-$r->any('/store/delete')->over('auth')->to('Controller#storeDelete');
+$r->any('/store/add')->over('auth')->to('controller#store_add');
+$r->any('/store/config')->over('auth')->to('controller#store_config');
+$r->any('/store/delete')->over('auth')->to('controller#store_delete');
 # store data manipulation
-$r->any('/store/data/list')->over('auth')->to('Controller#storeDataList');
-$r->any('/store/data/delete')->over('auth')->to('Controller#storeDataDelete');
-$r->any('/store/data/download')->over('auth')->to('Controller#storeDataDownload');
+$r->any('/store/data/list')->over('auth')->to('controller#store_data_list');
+$r->any('/store/data/delete')->over('auth')->to('controller#store_data_delete');
+$r->any('/store/data/download')->over('auth')->to('controller#store_data_download');
 
 # generic data list
-$r->any('/data/list')->over('auth')->to('Controller#dataList');
+$r->any('/data/list')->over('auth')->to('controller#data_list');
 # generic job list
-$r->any('/job/list')->over('auth')->to('Controller#jobList');
+$r->any('/job/list')->over('auth')->to('controller#job_list');
 
 
-$r->any('/schedule/list')->over('auth')->to('Controller#scheduleList');
-$r->any('/schedule/add')->over('auth')->to('Controller#scheduleAdd');
-$r->any('/schedule/delete')->over('auth')->to('Controller#scheduleDelete');
-$r->any('/schedule/config')->over('auth')->to('Controller#scheduleConfig');
+$r->any('/schedule/list')->over('auth')->to('controller#schedule_list');
+$r->any('/schedule/add')->over('auth')->to('controller#schedule_add');
+$r->any('/schedule/delete')->over('auth')->to('controller#schedule_delete');
+$r->any('/schedule/config')->over('auth')->to('controller#schedule_config');
 
 # callback handlers
-$r->any('/agent/job/cb')->to('Controller#jobCB');
-$r->any('/store/job/cb')->to('Controller#jobCB');
+$r->any('/agent/job/cb')->to('controller#job_cb');
+$r->any('/store/job/cb')->to('controller#job_cb');
 
 #----------------
 #--- LISTENER ---
