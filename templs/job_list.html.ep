@@ -3,8 +3,6 @@
 %#
 % layout 'default';
 % title 'Dumper';
-% use utf8;
-% use strict;
 % use Switch;
 % use Mojo::Util qw(dumper);
 

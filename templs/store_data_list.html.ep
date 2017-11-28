@@ -5,8 +5,6 @@
 % title 'Dumper';
 % use Mojo::Util qw(dumper md5_sum url_escape);
 
-% use utf8;
-% use strict;
 
 % sub _stripDate {
 %   my $a = substr shift, 0, 16;

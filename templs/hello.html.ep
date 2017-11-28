@@ -3,8 +3,6 @@
 % use Mojo::Util qw(b64_encode b64_decode md5_sum dumper);
 % use Encode qw(decode encode);
 
-% use utf8;
-% use strict;
 
 <h5 class="text-center">Hello, body! How are you there?</h5>
 

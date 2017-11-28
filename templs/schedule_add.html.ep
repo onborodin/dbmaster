@@ -1,8 +1,6 @@
 %#
 %# $Id$
 %#
-% use utf8;
-% use strict;
 % use Mojo::Util qw(dumper);
 
 % layout 'default';

@@ -6,8 +6,6 @@
 % use Mojo::Util qw(dumper url_escape);
 % use Mojo::JSON qw(decode_json);
 
-% use utf8;
-% use strict;
 
 % my $m = $self->app->model;
 

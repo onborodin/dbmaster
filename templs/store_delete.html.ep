@@ -5,8 +5,6 @@
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
 % use Encode qw(decode encode);
-% use utf8;
-% use strict;
 
 % my $m = $self->app->model;
 % my $store_id = $req->param('id');

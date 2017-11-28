@@ -5,8 +5,6 @@
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
 % use Mojo::JSON qw(encode_json decode_json true false);
-% use utf8;
-% use strict;
 
 % my $m = $self->app->model;
 
