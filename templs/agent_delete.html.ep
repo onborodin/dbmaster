@@ -3,11 +3,8 @@
 %#
 % layout 'default';
 % title 'Dumper';
-% use Mojo::Util qw(dumper);
-% use Encode qw(decode encode);
 
-% use utf8;
-% use strict;
+% use Mojo::Util qw(dumper);
 
 % my $m = $self->app->model;
 
@@ -23,19 +20,19 @@
 %    author => $c->session('username')
 % );
 
-% do {
+% if ($res) {
     <div class="callout success">
         Agent id <%= $agent_id %> was deleted successful.
     </div>
 %   $m->job_update($job_id, status => 'done', error => 'noerr', stop => $m->timestamp);
-% } if $res;
+% }
 
-% do {
+% unless ($res) {
     <div class="callout alert">
         Agent id <%= $agent_id %> was deleted unsuccessful.
     </div>
 %   $m->job_update($job_id, status => 'error', error => 'agentdelerr', stop => $m->timestamp);
-% } unless $res;
+% }
 
 <div class="text-center">
     <a class="button" href="/agent/list">Agent List</a>

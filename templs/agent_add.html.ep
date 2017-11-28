@@ -4,17 +4,14 @@
 % layout 'default';
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
-%
-% use utf8;
-% use strict;
-%
+
 % my $hostname = $req->param('hostname');
 % my $username = $req->param('username');
 % my $password = $req->param('password');
-%
+
 % my $m = $self->app->model;
 % my $agent_id = $m->agent_exist($hostname);
-%
+
 % my $job_id = $m->job_create;
 % $m->job_update(
 %    $job_id, 
@@ -23,7 +20,7 @@
 %    destid => $agent_id, 
 %    author => $c->session('username')
 % );
-%
+
 % if ($agent_id) {
     <div class="callout alert">
         Agent <%= $hostname %> yet exist.

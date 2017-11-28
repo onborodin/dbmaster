@@ -4,7 +4,7 @@
 % layout 'default';
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
-% use Mojo::JSON qw(j encode_json decode_json);
+% use Mojo::JSON qw(encode_json decode_json true false);
 % use utf8;
 % use strict;
 
@@ -64,12 +64,12 @@
 %     my $body = $ua->get("https://$agent_username:$agent_password\@$agent_hostname:3001/db/dump?$param")->result->body;
 %     my $res = decode_json($body);
 %
-%     if ( $res->{'result'} eq 'success' ) {
+%     if ($res->{success}) {
         <div class="callout success">
             Agent <%= $agent_hostname %> now will create dump of database <%= $dbname %> as job <%= $job_id %>.
         </div>
 %     }
-%     if ( $res->{'result'} ne 'success' ) {
+%     unless ($res->{success}) {
         <div class="callout alert">
             Agent <%= $agent_hostname %> not correct responded for the request.
             Job <%= $job_id %> was cancel.

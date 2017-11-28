@@ -4,11 +4,8 @@
 % layout 'default';
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
-% use Mojo::JSON qw(j encode_json decode_json);
-%
-% use utf8;
-% use strict;
-%
+% use Mojo::JSON qw(j encode_json decode_json true false);
+
 % my $m = $self->app->model;
 
 % my $dbname = $req->param('dbname') || undef;
@@ -41,7 +38,7 @@
 % eval { $body = $tx->result->body };
 % my $res = decode_json($body);
 
-% if ($res->{'result'} eq 'success') {
+% if ($res->{success}) {
     <div class="callout success">
         Agent <%= $agent_hostname %> copy database <%= $dbname %> to <%= $newname %>  as job <%= $job_id %>.
     </div>
@@ -49,7 +46,7 @@
 %   $m->agent_db_update($agent_id);
 % }
 
-% if ($res->{'result'} ne 'success') {
+% if ($res->{success}) {
     <div class="callout alert">
         Agent <%= $agent_hostname %> cannot copy <%= $dbname %>. 
         Job <%= $job_id %> was cancel.

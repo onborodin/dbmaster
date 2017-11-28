@@ -4,10 +4,7 @@
 % layout 'default';
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
-% use Mojo::JSON qw(j encode_json decode_json);
-
-% use utf8;
-% use strict;
+% use Mojo::JSON qw(encode_json decode_json true false);
 
 % my $m = $self->app->model;
 
@@ -77,14 +74,14 @@
 %     eval { $body = $tx->result->body };
 %     my $res = decode_json($body);
 
-%     if ( $res->{'result'} eq 'success' ) {
+%     if ( $res->{success} ) {
         <div class="callout success">
             Agent <%= $agent_hostname %> now restore database <%= $dbname %> as job <%= $job_id %>.
         </div>
 %       $m->job_update($job_id, status => 'pushjob', error => 'noerr', stop => $m->timestamp);
 %     }
 
-%     if ( $res->{'result'} ne 'success' ) {
+%     if ( $res->{success} ) {
         <div class="callout alert">
             Agent <%= $agent_hostname %> not correct responded for the request.
             Job <%= $job_id %> was cancel.

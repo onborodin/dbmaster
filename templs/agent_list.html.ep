@@ -3,10 +3,8 @@
 %#
 % layout 'default';
 % title 'Dumper';
+
 % use Mojo::Util qw(b64_encode b64_decode md5_sum dumper);
-% use Encode qw(decode encode);
-% use utf8;
-% use strict;
 
 % my $m = $self->app->model;
 % my $agent_list = $m->agent_list;

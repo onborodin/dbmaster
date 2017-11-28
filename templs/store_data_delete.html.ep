@@ -40,7 +40,7 @@
 % $body ||= '{"result":"mistake"}';
 % my $res = decode_json($body);
 
-% if ($res->{'result'} eq 'success') {
+% if ($res->{success}) {
     <div class="callout success">
         Store <%= $store_hostname %> deleted <%= $dataname %> as job <%= $job_id %>.
     </div>
@@ -48,7 +48,7 @@
 %   $m->job_update($job_id, status => 'deleted', error => 'noerr', stop => $m->timestamp);
 % }
 
-% if ($res->{'result'} ne 'success') {
+% if ($res->{success}) {
     <div class="callout alert">
         Agent <%= $store_hostname %> cannot delete <%= $dataname %>. 
         Job <%= $job_id %> was cancel.
