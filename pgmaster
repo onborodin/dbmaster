@@ -607,7 +607,7 @@ sub store_data_update {
 
     my $ua = Mojo::UserAgent->new(max_redirects => 2) or return undef;
     $ua = $ua->connect_timeout(5);
-    my $tx = $ua->get("https://$username:$password\@$hostname:3002/store/list");
+    my $tx = $ua->get("https://$username:$password\@$hostname:3002/data/list");
 
     my $res = undef;
     eval { $res = decode_json($tx->result->body); };

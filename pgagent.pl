@@ -132,10 +132,10 @@ use DBI;
 sub new {
     my ($class, %args) = @_;
     my $self = {
-        hostname => $args{hostname},
-        username => $args{username},
-        password => $args{password},
-        database => $args{database},
+        hostname => $args{hostname} || 'localhost',
+        username => $args{username} || 'postgres',
+        password => $args{password} || 'password',
+        database => $args{database} || 'postgres',
         engine => 'Pg',
         error => ''
     };
@@ -294,17 +294,20 @@ sub new {
 }
 
 sub app {
-    return shift->{app}; 
+    shift->{app}; 
 }
 
 sub db {
-    return shift->{db}; 
+    shift->{db}; 
 }
 
 sub log {
-    return shift->app->log; 
+    shift->app->log; 
 }
 
+sub hello {
+    "hello!";
+}
 
 sub store_alive {
     my ($self, $hostname) = @_;
@@ -435,6 +438,7 @@ sub db_rename {
 
     my $query = "alter database $dbname rename to $newname;";
     $self->db->do($query);
+    $self->db_exist($newname);
 }
 
 sub db_copy {
@@ -607,7 +611,7 @@ sub db_create {
     my $res = $self->app->model->db_create($dbname);
 
     return $self->render(json => { success => true }) if $res;
-    return $self->render(json => { success => false });
+    $self->render(json => { success => false });
 }
 
 sub db_drop {
@@ -631,7 +635,6 @@ sub db_rename {
     return $self->render(json => { success => false }) unless $newname;
 
     my $res = $self->app->model->db_rename($dbname, $newname);
-    my $dbsize = $self->app->model->db_size($dbname) if $res;
 
     return $self->render(json => { success => true }) if $res;
     return $self->render(json => { success => false });
@@ -939,7 +942,7 @@ $app->renderer->paths(['@APP_LIBDIR@/templs']);
 $app->config(conffile => $conffile || '@APP_CONFDIR@/pgagent.conf');
 $app->config(pwdfile => '@APP_CONFDIR@/pgagent.pw');
 $app->config(logfile => '@APP_LOGDIR@/pgagent.log');
-$app->config(loglevel => 'info');
+$app->config(loglevel => 'debug');
 $app->config(pidfile => '@APP_RUNDIR@/pgagent.pid');
 $app->config(crtfile => '@APP_CONFDIR@/pgagent.crt');
 $app->config(keyfile => '@APP_CONFDIR@/pgagent.key');
@@ -973,7 +976,7 @@ $app->helper('reply.not_found' => sub { my $c = shift; return $c->rendered(404);
 
 $app->helper(
     model => sub {
-        my $db => PGagent::DB->new(
+        my $db = PGagent::DB->new(
                         hostname => $app->config("pghost"),
                         username => $app->config("pguser"),
                         password => $app->config("pgpwd"),
@@ -1008,23 +1011,23 @@ $r->add_condition(
 $r->any('/hello')->to('controller#hello');
 $r->any('/conf/dump')->over('auth')->to('controller#conf_dump');
 
-$r->any('/db/list')->over('auth')->to('controller#db_list');
-$r->any('/db/create')->over('auth')->to('controller#db_create');
-$r->any('/db/drop')->over('auth')->to('controller#db_drop');
-$r->any('/db/rename')->over('auth')->to('controller#db_rename');
-$r->any('/db/copy')->over('auth')->to('controller#db_copy');
-$r->any('/db/size')->over('auth')->to('controller#db_size');
-$r->any('/db/dump')->over('auth')->to('controller#db_dump');
-$r->any('/db/restore')->over('auth')->to('controller#db_restore');
-$r->any('/db/exist')->over('auth')->to('controller#db_exist');
-$r->any('/db/owner')->over('auth')->to('controller#db_owner');
+$r->any('/db/list')     ->over('auth')->to('controller#db_list');
+$r->any('/db/create')   ->over('auth')->to('controller#db_create');
+$r->any('/db/drop')     ->over('auth')->to('controller#db_drop');
+$r->any('/db/rename')   ->over('auth')->to('controller#db_rename');
+$r->any('/db/copy')     ->over('auth')->to('controller#db_copy');
+$r->any('/db/size')     ->over('auth')->to('controller#db_size');
+$r->any('/db/dump')     ->over('auth')->to('controller#db_dump');
+$r->any('/db/restore')  ->over('auth')->to('controller#db_restore');
+$r->any('/db/exist')    ->over('auth')->to('controller#db_exist');
+$r->any('/db/owner')    ->over('auth')->to('controller#db_owner');
 
 
-$r->any('/role/list')->over('auth')->to('controller#role_list');
-$r->any('/role/exist')->over('auth')->to('controller#role_exist');
+$r->any('/role/list')   ->over('auth')->to('controller#role_list');
+$r->any('/role/exist')  ->over('auth')->to('controller#role_exist');
 $r->any('/role/password')->over('auth')->to('controller#role_password');
-$r->any('/role/create')->over('auth')->to('controller#role_create');
-$r->any('/role/drop')->over('auth')->to('controller#role_drop');
+$r->any('/role/create') ->over('auth')->to('controller#role_create');
+$r->any('/role/drop')   ->over('auth')->to('controller#role_drop');
 
 
 #----------------

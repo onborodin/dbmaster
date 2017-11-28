@@ -45,9 +45,9 @@
 %   $m->job_update($job_id, status => 'deleted', error => 'noerr', stop => $m->timestamp);
 % }
 
-% if ($res->{success}) {
+% unless ($res->{success}) {
     <div class="callout alert">
-        Agent <%= $store_hostname %> cannot delete <%= $dataname %>. 
+        Store <%= $store_hostname %> cannot delete <%= $dataname %>. 
         Job <%= $job_id %> was cancel.
     </div>
 %   $m->job_update($job_id, status => 'pushjob', error => 'pusherr', stop => $m->timestamp);

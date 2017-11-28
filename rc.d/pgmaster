@@ -13,7 +13,9 @@ rcvar="pgmaster_enable"
 
 pidfile="/var/run/pgdumper"/pgmaster.pid
 command="/usr/local/sbin/${name}"
-command_args=""
+procname="/usr/local/sbin/${name}"
+command_interpreter="/usr/local/bin/perl"
+
 
 load_rc_config ${name}
 

@@ -414,7 +414,7 @@ $app->config(group => $group || '@APP_GROUP@');
 
 $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenaddr6 => '[::]');
-$app->config(listenport => '3001');
+$app->config(listenport => '3002');
 
 $app->config(datadir => '@PGSTORE_DATADIR@');
 
@@ -446,7 +446,6 @@ $r->add_condition(
         my $a = PGstore::BasicAuth->new($pwdfile);
         $log->info("Try auth user ". $a->username($authstr));
         $a->auth($authstr);
-
     }
 );
 
