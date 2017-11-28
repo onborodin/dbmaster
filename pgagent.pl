@@ -309,6 +309,19 @@ sub hello {
     "hello!";
 }
 
+
+sub pgpasswd {
+    shift->db->password;
+}
+
+sub pguser {
+    shift->db->username;
+}
+
+sub pghost {
+    shift->db->hostname;
+}
+
 sub store_alive {
     my ($self, $hostname) = @_;
     return undef unless $hostname;
@@ -466,9 +479,9 @@ sub db_dump {
     my $timestamp = strftime("%Y%m%d-%H%M%S-%Z", localtime(time));
     my $dbdump = "$tmpdir/$dbname--$timestamp--$hostname.sqlz";
 
-    my $password = $self->password;
+    my $password = $self->pgpasswd;
     my $pghost = $self->pghost;
-    my $username = $self->username;
+    my $username = $self->pguser;
 
     my $out = qx/PGPASSWORD=$password pg_dump -h $pghost -U $username -Fc -f $dbdump $dbname 2>&1/;
     my $retcode = $?;
@@ -488,9 +501,9 @@ sub db_restore {
 
     return undef unless $self->db_create($dbname);
 
-    my $password = $self->password;
+    my $password = $self->pgpasswd;
     my $pghost = $self->pghost;
-    my $username = $self->username;
+    my $username = $self->pguser;
 
     my $out = qx/PGPASSWORD=$password pg_restore -j 4 -h $pghost -U $username -Fc -d $dbname $filename 2>&1/;
     my $retcode = $?;
@@ -579,8 +592,8 @@ use utf8;
 use strict;
 use warnings;
 use Mojo::Base 'Mojolicious::Controller';
-use Mojo::Util qw(dumper);
 use Mojo::JSON qw(encode_json decode_json true false);
+use Mojo::Util qw(dumper);
 use Mojo::IOLoop::Subprocess;
 use Apache::Htpasswd;
 
@@ -671,10 +684,10 @@ sub db_exist {
 }
 
 sub master_cb {
-    my ($self, $master, $jobID, $magic, $status, $error, $result) = @_;
+    my ($self, $master, $job_id, $magic, $status, $error, $result) = @_;
 
     return undef unless $master;
-    return undef unless $jobID;
+    return undef unless $job_id;
     return undef unless $magic;
     return undef unless $status;
 
@@ -686,13 +699,13 @@ sub master_cb {
 
     my $param;
     $param .= "&master=$master";
-    $param .= "&jobid=$jobID";
+    $param .= "&jobid=$job_id";
     $param .= "&magic=$magic";
     $param .= "&status=$status";
-    $param .= "&result=success";
+    $param .= "&success=true";
 
     my $url = "https://$master:3003/agent/job/cb?$param";
-    $self->app->log->debug("master_cb: Master callback URL $url");
+    $self->app->log->debug("master_cb: master callback $url");
 
     my $tx = $ua->get($url);
     my $body;
@@ -713,8 +726,11 @@ sub db_dump {
     my $storepwd = $self->req->param('storepwd');
 
     my $master = $self->req->param('master');
-    my $jobID = $self->req->param('jobid');
+    my $job_id = $self->req->param('jobid');
     my $magic = $self->req->param('magic');
+
+    my $hostname = $self->app->config('hostname');
+    my $tmpdir = $self->app->config('tmpdir');
 
     return $self->render(
             json => { success => false, dbname => '' }
@@ -724,29 +740,37 @@ sub db_dump {
     ) unless $self->app->model->db_exist($dbname);
 
     my $subprocess = Mojo::IOLoop::Subprocess->new;
+
     $self->app->log->info("db_dump: Begin dump database $dbname in subprocess"); 
     $subprocess->run(
         sub {
             my $subprocess = shift;
-            my $filename = $self->app->model->db_dump($dbname);
-            do { 
+
+            $self->app->log->info("db_dump subprocess: Begin dump database $dbname"); 
+            my $filename = $self->app->model->db_dump($dbname, $hostname, $tmpdir);
+            $self->app->log->info("db_dump subprocess: Done dump database $dbname, result is file $filename"); 
+
+            unless ($filename) { 
                 unlink $filename; 
-                $self->master_cb($master, $jobID, $magic, "dumperr", "dumperr", 'mistake');
-                return undef; 
-            } unless $filename;
+                $self->master_cb($master, $job_id, $magic, "dumperr", "dumperr", 'mistake');
+                return undef;
+            }
 
-            my $resCB = $self->master_cb($master, $jobID, $magic, "dumped", "noerr", 'success');
-            my $storeRes = $self->app->model->store_put($filename, $storename, $storelogin, $storepwd);
+            my $res_cb = $self->master_cb($master, $job_id, $magic, "dumped", "noerr", 'success');
 
-            do { 
+            $self->app->log->info("db_dump subprocess: Begin store database $dbname"); 
+            my $store_res = $self->app->model->store_put($filename, $storename, $storelogin, $storepwd);
+            $self->app->log->info("db_dump subprocess: Done store database $dbname with store responce $store_res"); 
+
+            unless ($store_res) {
                 unlink $filename;
-                $self->master_cb($master, $jobID, $magic, "storeerr", "storeerr", 'mistake');
+                $self->master_cb($master, $job_id, $magic, "storeerr", "storeerr", 'mistake');
                 return undef; 
-            } unless $storeRes;
+            }
 
-            $self->master_cb($master, $jobID, $magic, "stored", "noerr", 'success');
+            $self->master_cb($master, $job_id, $magic, "stored", "noerr", 'success');
             unlink $filename;
-            return 1;
+            1;
         },
         sub {
             my ($subprocess, $err, @results) = @_;
@@ -755,7 +779,7 @@ sub db_dump {
         }
     );
     $subprocess->ioloop->start unless $subprocess->ioloop->is_running;
-    $self->render(json => { success => true, $dbname => $dbname } );
+    $self->render(json => { success => true, dbname => $dbname } );
 }
 
 sub db_restore {
@@ -772,13 +796,13 @@ sub db_restore {
     my $newname = $req->param('newname');
 
     my $master = $req->param('master');
-    my $jobID = $req->param('jobid');
+    my $job_id = $req->param('jobid');
     my $magic = $req->param('magic');
 
     my $m = $self->app->model;
 
     return $self->render(json => { success => false }) unless ($dataname and $storename and $storelogin);
-    return $self->render(json => { success => false }) unless ($storepwd and $newname and $jobID and $master and $magic);
+    return $self->render(json => { success => false }) unless ($storepwd and $newname and $job_id and $master and $magic);
     return $self->render(json => { success => false }) unless $m->store_alive($storename);
 
     my $subprocess = Mojo::IOLoop::Subprocess->new;
@@ -786,27 +810,27 @@ sub db_restore {
     $subprocess->run(
         sub {
             my $subprocess = shift;
-            $self->master_cb($master, $jobID, $magic, "dataget", "noerr", 'success');
+            $self->master_cb($master, $job_id, $magic, "dataget", "noerr", 'success');
 
             my $datafile = $m->store_get($dataname, $storename, $storelogin, $storepwd);
 
             unless ($datafile || -s $datafile) {
                 unlink $dataname;
-                $self->master_cb($master, $jobID, $magic, "geterr", "geterr", 'mistake');
+                $self->master_cb($master, $job_id, $magic, "geterr", "geterr", 'mistake');
                 return undef;
             }
 
-            $self->master_cb($master, $jobID, $magic, "datagot", "noerr", 'success');
+            $self->master_cb($master, $job_id, $magic, "datagot", "noerr", 'success');
 
             my $newdbname = $m->db_restore($datafile, $newname);
 
             unless ($newdbname) {
                 unlink $dataname;
-                $self->master_cb($master, $jobID, $magic, "resterr", "resterr", 'mistake');
+                $self->master_cb($master, $job_id, $magic, "resterr", "resterr", 'mistake');
                 return undef; 
             };
 
-            $self->master_cb($master, $jobID, $magic, "done", "noerr", 'success');
+            $self->master_cb($master, $job_id, $magic, "done", "noerr", 'success');
             1;
 
         },
@@ -959,6 +983,8 @@ $app->config(tmpdir => '/tmp');
 $app->config(pghost => '127.0.0.1');
 $app->config(pguser => 'postgres');
 $app->config(pgpwd => 'password');
+
+$app->config(hostname => hostname);
 
 
 if (-r $app->config('conffile')) {

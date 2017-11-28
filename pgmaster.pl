@@ -701,6 +701,7 @@ sub job_create {
     my $query = "insert into job (id, begin, stop, author, type, sourceid, destid, status, error, message, magic)
                     values ($id, '$begin', '$stop', '$author', '$type', $sourceid, $destid, '$status', '$error', '$message', '$magic')";
     $self->db->do($query);
+    $id;
 }
 
 sub job_list {
@@ -716,9 +717,9 @@ sub job_list {
 sub job_next_id {
     my $self = shift;
     my $query = "select id from job order by id desc limit 1";
-    my $rows = $self->db->exec($query);
-    my $id = $rows->[0]{'id'};
-    $id++;
+    my $row = $self->db->exec1($query);
+    my $id = $row->{'id'} || 0;
+    $id += 1;
     $id;
 }
 
@@ -762,9 +763,7 @@ sub job_update {
                     error = '$error',
                     message = '$message'
                         where id = $id";
-
     my $rows = $self->db->do($query);
-    return undef unless $rows;
     $id;
 }
 
@@ -844,13 +843,11 @@ sub schedule_next_id {
 }
 
 sub schedule_add {
-    my ($self, $type, $sourceID, $destID, $subject, $mday, $wday, $hour, $min) = @_;
-
-    $self->app->log->debug("--- schedule_add: $type, $sourceID, $destID, $subject, $mday, $wday, $hour, $min");
+    my ($self, $type, $source_id, $dest_id, $subject, $mday, $wday, $hour, $min) = @_;
 
     return undef unless $type;
-    return undef unless $sourceID;
-    return undef unless $destID;
+    return undef unless $source_id;
+    return undef unless $dest_id;
     return undef unless $subject;
     return undef unless $mday;
     return undef unless $wday;
@@ -863,7 +860,7 @@ sub schedule_add {
     my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
          or return undef;
     my $query = "insert into schedule (id, type, sourceid, destid, subject, mday, wday, hour, min)
-                    values ($id, '$type', $sourceID, $destID, '$subject', '$mday', '$wday', '$hour', '$min')";
+                    values ($id, '$type', $source_id, $dest_id, '$subject', '$mday', '$wday', '$hour', '$min')";
     my $rows = $dbi->do($query) or return undef;
     $dbi->disconnect;
 

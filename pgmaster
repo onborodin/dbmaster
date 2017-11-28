@@ -701,6 +701,7 @@ sub job_create {
     my $query = "insert into job (id, begin, stop, author, type, sourceid, destid, status, error, message, magic)
                     values ($id, '$begin', '$stop', '$author', '$type', $sourceid, $destid, '$status', '$error', '$message', '$magic')";
     $self->db->do($query);
+    $id;
 }
 
 sub job_list {
@@ -716,9 +717,10 @@ sub job_list {
 sub job_next_id {
     my $self = shift;
     my $query = "select id from job order by id desc limit 1";
-    my $rows = $self->db->exec($query);
-    my $id = $rows->[0]{'id'};
-    $id++;
+    my $row = $self->db->exec1($query);
+    my $id = $row->{'id'} || 0;
+    $id += 1;
+    $self->app->log->info("--- job_next_id: id=$id ---");
     $id;
 }
 
@@ -763,8 +765,8 @@ sub job_update {
                     message = '$message'
                         where id = $id";
 
+    $self->app->log->info("--- job_update: query $query ---");
     my $rows = $self->db->do($query);
-    return undef unless $rows;
     $id;
 }
 
