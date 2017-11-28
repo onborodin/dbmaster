@@ -11,12 +11,12 @@
 % my $dbname = $req->param('dbname') || undef;
 % my $agent_id = $req->param('agentid') || undef;
 % my $store_id = $req->param('storeid') || undef;
-%
+
 % my $agent_profile = $m->agent_profile($agent_id);
 % my $agent_hostname = $agent_profile->{'hostname'} || '';
 % my $agent_username = $agent_profile->{'username'} || '';
 % my $agent_password = $agent_profile->{'password'} || '';
-%
+
 % my $store_profile = $m->store_profile($store_id);
 % my $store_hostname = $store_profile->{'hostname'} || '';
 % my $store_username = $store_profile->{'username'} || '';
@@ -49,7 +49,7 @@
 
 % if ($agent_alive && $store_alive) {
 %     my $ua = Mojo::UserAgent->new(max_redirects => 5);
-%
+
 %     my $param = "dbname=$dbname";
 %     $param = $param."&store=$store_hostname";
 %     $param = $param."&storelogin=$store_username";
@@ -57,11 +57,11 @@
 %     $param = $param."&master=$masterHostname";
 %     $param = $param."&jobid=$job_id";
 %     $param = $param."&magic=$jobMagic";
-%
+
 %     $m->job_update($job_id, status => 'pushjob');
 %     my $body = $ua->get("https://$agent_username:$agent_password\@$agent_hostname:3001/db/dump?$param")->result->body;
 %     my $res = decode_json($body);
-%
+
 %     if ($res->{success}) {
         <div class="callout success">
             Agent <%= $agent_hostname %> now will create dump of database <%= $dbname %> as job <%= $job_id %>.

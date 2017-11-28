@@ -9,7 +9,7 @@
 % my $hostname = $req->param('hostname');
 % my $username = $req->param('username');
 % my $password = $req->param('password');
-%
+
 % my $m = $self->app->model;
 % my $res = $m->agent_config($agent_id, $hostname, $username, $password);
 

@@ -5,7 +5,6 @@
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
 
-
 % my $m = $self->app->model;
 
 % my $store_id = $req->param('id');
@@ -14,7 +13,7 @@
 % my $password = $req->param('password');
 
 % my $res = $m->store_config($store_id, $hostname, $username, $password);
-%
+
 % my $job_id = $m->job_create;
 
 % $m->job_update(

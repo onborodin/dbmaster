@@ -33,7 +33,6 @@
 
 % my $body;
 % eval { $body = $tx->result->body };
-% $body ||= '{"result":"mistake"}';
 % my $res = decode_json($body);
 
 % if ($res->{success}) {

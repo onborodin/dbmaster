@@ -16,9 +16,9 @@
 % my $min = $req->param('min');
 
 % my $m = $self->app->model;
-%
+
 % my $job_id = $m->job_create;
-%
+
 % $m->job_update(
 %    $job_id, 
 %    type => 'scheduleadd',
@@ -26,7 +26,7 @@
 %    destid => $dest_id, 
 %    author => $c->session('username')
 % );
-%
+
 % my $schedule_id = $m->schedule_add($type, $source_id, $dest_id, $subject, $mday, $wday, $hour, $min);
 
 % if ($schedule_id) {
