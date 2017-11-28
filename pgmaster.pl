@@ -378,9 +378,8 @@ sub agent_next_id {
     my $self = shift;
     my $query = "select id from agent order by id desc limit 1";
     my $row = $self->db->exec1($query);
-    my $id = $row->{'id'};
-    $id++;
-    $id;
+    my $id = $row->{'id'} || 0;
+    $id += 1;
 }
 
 sub agent_add {
@@ -554,9 +553,8 @@ sub store_next_id {
     my $self = shift;
     my $query = "select id from store order by id desc limit 1";
     my $row = $self->db->exec1($query);
-    my $id = $row->{'id'};
-    $id++;
-    $id;
+    my $id = $row->{'id'} || 0;
+    $id += 1;
 }
 
 sub store_add {
@@ -720,7 +718,6 @@ sub job_next_id {
     my $row = $self->db->exec1($query);
     my $id = $row->{'id'} || 0;
     $id += 1;
-    $id;
 }
 
 sub job_exist {
@@ -769,21 +766,13 @@ sub job_update {
 
 sub job_delete {
     my ($self, $id) = @_;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
     my $query = "delete from job where id = $id";
-    my $rows = $dbi->do($query) or return undef;
-
-    $dbi->disconnect;
-
-    return $rows if $rows;
-    return undef;
+    $self->db->do($query);
+    $id;
 }
 
 sub job_profile {
     my ($self, $id)  = @_;
-
     my $query = "select id, to_char(begin, 'YYYY-MM-DD HH24:MI:SS TZ') as begin,
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
                     author, type, sourceid, destid, status, error, message, magic from job where id = $id limit 1";
@@ -796,23 +785,22 @@ sub job_profile {
 sub job_cb {
     my ($self, $req)  = @_;
 
-    my $jobID = $req->param('jobid');
+    my $job_id = $req->param('jobid');
     my $magic = $req->param('magic');
 
-    return undef unless $jobID;
+    return undef unless $job_id;
     return undef unless $magic;
 
-    my $job_profile = $self->job_profile($jobID);
+    my $job_profile = $self->job_profile($job_id);
 
     my $error = $req->param('error');
     my $status = $req->param('status');
     my $message = $req->param('message');
 
-    $self->job_update($jobID, error => $error, stop => $self->timestamp) if $error;
-    $self->job_update($jobID, status => $status, stop => $self->timestamp) if $status;
-    $self->job_update($jobID, message => $message, stop => $self->timestamp) if $message;
-
-    return 1;
+    $self->job_update($job_id, error => $error, stop => $self->timestamp) if $error;
+    $self->job_update($job_id, status => $status, stop => $self->timestamp) if $status;
+    $self->job_update($job_id, message => $message, stop => $self->timestamp) if $message;
+    1;
 }
 #----------------------
 #--- SCHEDULE MODEL ---
