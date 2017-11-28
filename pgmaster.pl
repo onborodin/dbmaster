@@ -1455,6 +1455,12 @@ $sub->run(
         my $loop = Mojo::IOLoop->singleton;
         my $id = $loop->recurring(
             10 => sub {
+                my $cron = $app->cron;
+                my $m = $app->model;
+                foreach my $rec (@{$m->schedule_list}) {
+                    $app->log->info(dumper($rec));
+
+                }
                 my $res = $app->cron->ping;
                 $app->log->info($res);
             }
