@@ -368,12 +368,12 @@ sub parse_label {
 sub timestamp {
     my ($self, $timenum) = shift;
     $timenum = time unless $timenum;
-    return strftime("%Y-%m-%d %H:%M:%S %Z", localtime($timenum));
+    strftime("%Y-%m-%d %H:%M:%S %Z", localtime($timenum));
 }
 
 sub curr_sec {
     my $self = shift;
-    return strftime("%S", localtime(time));
+    strftime("%S", localtime(time));
 }
 
 sub curr_time {
@@ -387,7 +387,7 @@ sub curr_time {
     $time{month} = strftime("%m", localtime($time));
     $time{yarth} = strftime("%Y", localtime($time));
     $time{wday} = strftime("%u", localtime($time));
-    return \%time;
+    \%time;
 }
 
 sub size_hr {
@@ -404,19 +404,19 @@ sub size_wp {
     $out =~ s/(\d{9})$/.$1/g if $size > 1000*1000*1000;
     $out =~ s/(\d{6})$/.$1/g if $size > 1000*1000;
     $out =~ s/(\d{3})$/.$1/g if $size > 1000;
-    return $out;
+    $out;
 }
 
 sub size_m {
     my ($self, $size) = @_;
-    return int($size/(1024*1024)+0.5);
+    int($size/(1024*1024)+0.5);
 }
 
 sub strip_sec {
     my ($self, $s) = @_;
     my $a = substr $s, 0, 16;
     $a =~ s/\//-/g;
-    return $a;
+    $a;
 }
 
 #-------------------
@@ -1455,6 +1455,24 @@ $sub->run(
         my $loop = Mojo::IOLoop->singleton;
         my $id = $loop->recurring(
             10 => sub {
+                my $cron = $app->cron;
+                my $m = $app->model;
+                foreach my $rec (@{$m->schedule_list}) {
+
+                    my $curr_time = $m->curr_time;
+                    $app->log->info(dumper($curr_time));
+
+                    my $dest_id = $rec->{destid};
+                    my $source_id = $rec->{sourceid};
+                    my $mday  = $rec->{mday};
+                    my $wday  = $rec->{wday};
+                    my $hour  = $rec->{hour};
+                    my $min  = $rec->{min};
+
+                    my $type  = $rec->{type};
+                    my $subject  = $rec->{subject};
+
+                }
                 my $res = $app->cron->ping;
                 $app->log->info($res);
             }
