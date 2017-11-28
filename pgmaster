@@ -1,5 +1,102 @@
 #!/usr/local/bin/perl
 
+
+#------------
+#--- CRON ---
+#------------
+
+package PGmaster::Cron;
+
+use strict;
+use warnings;
+
+sub new {
+    my ($class, $app) = @_;
+    my $self = {
+        app => $app
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub ping {
+    my $self = shift;
+    "Pong!";
+}
+
+sub app {
+    my $self = shift;
+    $self->{app};
+}
+
+sub period_expand {
+    my ($self, $def, $limit, $start) = @_;
+    $limit = 100 unless defined $limit;
+    $start = 1 unless defined $start;
+    my @list = split ',', $def;
+    my @out;
+    my %n;
+    foreach my $sub (@list) {
+        if (my ($num) = $sub =~ m/^(\d+)$/ ) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+        }
+        elsif (my ($begin, $end) = $sub =~ /^(\d+)[-. ]+(\d+)$/) {
+            foreach my $num ($begin..$end) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+            }
+        }
+        elsif (my ($inc) = $sub =~ /^[*]\/(\d+)$/) {
+            my $num = $start;
+            while ($num <= $limit) {
+                next if $num < $start;
+                push @out, $num unless $n{$num};
+                $num += $inc;
+            }
+        }
+        elsif ($sub =~ /^[*]$/) {
+            my $num = $start;
+            my $inc = 1;
+            while ($num <= $limit) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $num += $inc;
+            }
+        }
+    }
+    @out = sort { $a <=> $b } @out;
+    return \@out
+}
+
+sub period_compact {
+    my ($self, $list) = @_;
+    my %n;
+    my $out;
+    foreach my $num (@{$list}) { $n{$num} = 1; }
+    foreach my $num (sort { $a <=> $b } (keys %n)) {
+        $out .= $num."-" if $n{$num+1} && not $n{$num-1};
+        $out .= $num."," unless $n{$num+1};
+    }
+    $out =~ s/,$//;
+    return $out;
+}
+
+sub period_match {
+    my ($self, $num, $list) = @_;
+    foreach my $elem (@{$list}) {
+        return 1 if $num == $elem;
+    }
+    return undef;
+}
+
+1;
+
 #--------------
 #--- DAEMON ---
 #--------------
@@ -380,7 +477,6 @@ sub agent_next_id {
     my $row = $self->db->exec1($query);
     my $id = $row->{'id'} || 0;
     $id += 1;
-    $id;
 }
 
 sub agent_add {
@@ -719,7 +815,6 @@ sub job_next_id {
     my $row = $self->db->exec1($query);
     my $id = $row->{'id'} || 0;
     $id += 1;
-    $id;
 }
 
 sub job_exist {
@@ -768,21 +863,13 @@ sub job_update {
 
 sub job_delete {
     my ($self, $id) = @_;
-    my $dbi = DBI->connect($self->dsn, $self->dbuser, $self->dbpasswd)
-        or return undef;
-
     my $query = "delete from job where id = $id";
-    my $rows = $dbi->do($query) or return undef;
-
-    $dbi->disconnect;
-
-    return $rows if $rows;
-    return undef;
+    $self->db->do($query);
+    $id;
 }
 
 sub job_profile {
     my ($self, $id)  = @_;
-
     my $query = "select id, to_char(begin, 'YYYY-MM-DD HH24:MI:SS TZ') as begin,
                     to_char(stop, 'YYYY-MM-DD HH24:MI:SS TZ') as stop,
                     author, type, sourceid, destid, status, error, message, magic from job where id = $id limit 1";
@@ -795,23 +882,22 @@ sub job_profile {
 sub job_cb {
     my ($self, $req)  = @_;
 
-    my $jobID = $req->param('jobid');
+    my $job_id = $req->param('jobid');
     my $magic = $req->param('magic');
 
-    return undef unless $jobID;
+    return undef unless $job_id;
     return undef unless $magic;
 
-    my $job_profile = $self->job_profile($jobID);
+    my $job_profile = $self->job_profile($job_id);
 
     my $error = $req->param('error');
     my $status = $req->param('status');
     my $message = $req->param('message');
 
-    $self->job_update($jobID, error => $error, stop => $self->timestamp) if $error;
-    $self->job_update($jobID, status => $status, stop => $self->timestamp) if $status;
-    $self->job_update($jobID, message => $message, stop => $self->timestamp) if $message;
-
-    return 1;
+    $self->job_update($job_id, error => $error, stop => $self->timestamp) if $error;
+    $self->job_update($job_id, status => $status, stop => $self->timestamp) if $status;
+    $self->job_update($job_id, message => $message, stop => $self->timestamp) if $message;
+    1;
 }
 #----------------------
 #--- SCHEDULE MODEL ---
@@ -864,72 +950,6 @@ sub schedule_add {
     $dbi->disconnect;
 
     return $id if $rows*1 > 0;
-    return undef;
-}
-
-sub period_expand {
-    my ($self, $def, $limit, $start) = @_;
-    $limit = 100 unless defined $limit;
-    $start = 1 unless defined $start;
-    my @list = split ',', $def;
-    my @out;
-    my %n;
-    foreach my $sub (@list) {
-        if (my ($num) = $sub =~ m/^(\d+)$/ ) {
-                next if $num < $start;
-                next if $num > $limit;
-                push @out, $num unless $n{$num};
-                $n{$num} = 1;
-        }
-        elsif (my ($begin, $end) = $sub =~ /^(\d+)[-. ]+(\d+)$/) {
-            foreach my $num ($begin..$end) {
-                next if $num < $start;
-                next if $num > $limit;
-                push @out, $num unless $n{$num};
-                $n{$num} = 1;
-            }
-        }
-        elsif (my ($inc) = $sub =~ /^[*]\/(\d+)$/) {
-            my $num = $start;
-            while ($num <= $limit) {
-                next if $num < $start;
-                push @out, $num unless $n{$num};
-                $num += $inc;
-            }
-        }
-        elsif ($sub =~ /^[*]$/) {
-            my $num = $start;
-            my $inc = 1;
-            while ($num <= $limit) {
-                next if $num < $start;
-                next if $num > $limit;
-                push @out, $num unless $n{$num};
-                $num += $inc;
-            }
-        }
-    }
-    @out = sort { $a <=> $b } @out;
-    return \@out
-}
-
-sub period_compact {
-    my ($self, $list) = @_;
-    my %n;
-    my $out;
-    foreach my $num (@{$list}) { $n{$num} = 1; }
-    foreach my $num (sort { $a <=> $b } (keys %n)) {
-        $out .= $num."-" if $n{$num+1} && not $n{$num-1};
-        $out .= $num."," unless $n{$num+1};
-    }
-    $out =~ s/,$//;
-    return $out;
-}
-
-sub period_match {
-    my ($self, $num, $list) = @_;
-    foreach my $elem (@{$list}) {
-        return 1 if $num == $elem;
-    }
     return undef;
 }
 
@@ -1282,6 +1302,11 @@ $app->helper(
     }
 );
 
+$app->helper(
+    cron => sub {
+        state $cron = PGmaster::Cron->new($app);
+});
+
 #--------------
 #--- ROUTES ---
 #--------------
@@ -1422,6 +1447,38 @@ local $SIG{HUP} = sub {
                     level => $app->config('loglevel')
     ));
 };
+
+my $sub = Mojo::IOLoop::Subprocess->new;
+$sub->run(
+    sub {
+        my $subproc = shift;
+        my $loop = Mojo::IOLoop->singleton;
+        my $id = $loop->recurring(
+            10 => sub {
+                my $res = $app->cron->ping;
+                $app->log->info($res);
+            }
+        );
+        $loop->start unless $loop->is_running;
+        1;
+    },
+    sub {
+        my ($subprocess, $err, @results) = @_;
+        $app->log->info('Exit subprocess');
+        1;
+    }
+);
+
+my $pid = $sub->pid;
+$app->log->info("Subrocess $pid start ");
+
+$server->on(
+    finish => sub {
+        my ($prefork, $graceful) = @_;
+        $app->log->info("Subrocess $pid stop");
+        kill('INT', $pid);
+    }
+);
 
 $server->run;
 

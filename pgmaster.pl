@@ -1,5 +1,102 @@
 #!@PERL@
 
+
+#------------
+#--- CRON ---
+#------------
+
+package PGmaster::Cron;
+
+use strict;
+use warnings;
+
+sub new {
+    my ($class, $app) = @_;
+    my $self = {
+        app => $app
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub ping {
+    my $self = shift;
+    "Pong!";
+}
+
+sub app {
+    my $self = shift;
+    $self->{app};
+}
+
+sub period_expand {
+    my ($self, $def, $limit, $start) = @_;
+    $limit = 100 unless defined $limit;
+    $start = 1 unless defined $start;
+    my @list = split ',', $def;
+    my @out;
+    my %n;
+    foreach my $sub (@list) {
+        if (my ($num) = $sub =~ m/^(\d+)$/ ) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+        }
+        elsif (my ($begin, $end) = $sub =~ /^(\d+)[-. ]+(\d+)$/) {
+            foreach my $num ($begin..$end) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+            }
+        }
+        elsif (my ($inc) = $sub =~ /^[*]\/(\d+)$/) {
+            my $num = $start;
+            while ($num <= $limit) {
+                next if $num < $start;
+                push @out, $num unless $n{$num};
+                $num += $inc;
+            }
+        }
+        elsif ($sub =~ /^[*]$/) {
+            my $num = $start;
+            my $inc = 1;
+            while ($num <= $limit) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $num += $inc;
+            }
+        }
+    }
+    @out = sort { $a <=> $b } @out;
+    return \@out
+}
+
+sub period_compact {
+    my ($self, $list) = @_;
+    my %n;
+    my $out;
+    foreach my $num (@{$list}) { $n{$num} = 1; }
+    foreach my $num (sort { $a <=> $b } (keys %n)) {
+        $out .= $num."-" if $n{$num+1} && not $n{$num-1};
+        $out .= $num."," unless $n{$num+1};
+    }
+    $out =~ s/,$//;
+    return $out;
+}
+
+sub period_match {
+    my ($self, $num, $list) = @_;
+    foreach my $elem (@{$list}) {
+        return 1 if $num == $elem;
+    }
+    return undef;
+}
+
+1;
+
 #--------------
 #--- DAEMON ---
 #--------------
@@ -856,72 +953,6 @@ sub schedule_add {
     return undef;
 }
 
-sub period_expand {
-    my ($self, $def, $limit, $start) = @_;
-    $limit = 100 unless defined $limit;
-    $start = 1 unless defined $start;
-    my @list = split ',', $def;
-    my @out;
-    my %n;
-    foreach my $sub (@list) {
-        if (my ($num) = $sub =~ m/^(\d+)$/ ) {
-                next if $num < $start;
-                next if $num > $limit;
-                push @out, $num unless $n{$num};
-                $n{$num} = 1;
-        }
-        elsif (my ($begin, $end) = $sub =~ /^(\d+)[-. ]+(\d+)$/) {
-            foreach my $num ($begin..$end) {
-                next if $num < $start;
-                next if $num > $limit;
-                push @out, $num unless $n{$num};
-                $n{$num} = 1;
-            }
-        }
-        elsif (my ($inc) = $sub =~ /^[*]\/(\d+)$/) {
-            my $num = $start;
-            while ($num <= $limit) {
-                next if $num < $start;
-                push @out, $num unless $n{$num};
-                $num += $inc;
-            }
-        }
-        elsif ($sub =~ /^[*]$/) {
-            my $num = $start;
-            my $inc = 1;
-            while ($num <= $limit) {
-                next if $num < $start;
-                next if $num > $limit;
-                push @out, $num unless $n{$num};
-                $num += $inc;
-            }
-        }
-    }
-    @out = sort { $a <=> $b } @out;
-    return \@out
-}
-
-sub period_compact {
-    my ($self, $list) = @_;
-    my %n;
-    my $out;
-    foreach my $num (@{$list}) { $n{$num} = 1; }
-    foreach my $num (sort { $a <=> $b } (keys %n)) {
-        $out .= $num."-" if $n{$num+1} && not $n{$num-1};
-        $out .= $num."," unless $n{$num+1};
-    }
-    $out =~ s/,$//;
-    return $out;
-}
-
-sub period_match {
-    my ($self, $num, $list) = @_;
-    foreach my $elem (@{$list}) {
-        return 1 if $num == $elem;
-    }
-    return undef;
-}
-
 #-----------------
 #--- MODEL END ---
 #-----------------
@@ -1271,6 +1302,11 @@ $app->helper(
     }
 );
 
+$app->helper(
+    cron => sub {
+        state $cron = PGmaster::Cron->new($app);
+});
+
 #--------------
 #--- ROUTES ---
 #--------------
@@ -1411,6 +1447,38 @@ local $SIG{HUP} = sub {
                     level => $app->config('loglevel')
     ));
 };
+
+my $sub = Mojo::IOLoop::Subprocess->new;
+$sub->run(
+    sub {
+        my $subproc = shift;
+        my $loop = Mojo::IOLoop->singleton;
+        my $id = $loop->recurring(
+            10 => sub {
+                my $res = $app->cron->ping;
+                $app->log->info($res);
+            }
+        );
+        $loop->start unless $loop->is_running;
+        1;
+    },
+    sub {
+        my ($subprocess, $err, @results) = @_;
+        $app->log->info('Exit subprocess');
+        1;
+    }
+);
+
+my $pid = $sub->pid;
+$app->log->info("Subrocess $pid start ");
+
+$server->on(
+    finish => sub {
+        my ($prefork, $graceful) = @_;
+        $app->log->info("Subrocess $pid stop");
+        kill('INT', $pid);
+    }
+);
 
 $server->run;
 
