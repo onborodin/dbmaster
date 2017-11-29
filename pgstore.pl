@@ -283,7 +283,7 @@ sub data_put {
 
         $self->app->log->info("data_put: try to upload dataset $filename with datasize $datasize");
 
-        my $dataname = filename =~ s/^[ \.]+/_/gr;
+        my $dataname = $filename =~ s/^[ \.]+/_/gr;
 
         my $df = df("$datadir", 1);
         return $self->render(json => { success => false }) if $df->{bfree}+1 < $datasize;
