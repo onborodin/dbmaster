@@ -998,6 +998,11 @@ if (-r $app->config('conffile')) {
     $app->log->debug("main: Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
+
+
+$app->max_request_size($app->config("maxrequestsize"));
+
+
 #----------------
 #--- TIMEZONE ---
 #----------------

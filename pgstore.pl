@@ -297,10 +297,14 @@ sub data_put {
 
         my $st = stat($datafile);
         my $realsize = $st->size;
-        do {
-            unlink $dataname;
+
+        if ($datasize != $realsize) {
+
+            unlink $datafile;
+            $self->app->log->info("data_put: Remove datafile $datafile because partial upload");
             next;
-        } if $datasize != $realsize;
+        }
+        $self->app->log->info("data_put: Done upload dataset $filename to file $datafile");
         push @filenames, { name => $dataname, size => $datasize, realsize => $realsize, realname => $datafile };
     }
 
