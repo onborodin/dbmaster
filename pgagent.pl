@@ -374,17 +374,17 @@ sub store_get {
     return undef unless -w $tmpdir;
 
     my $datafile = "$tmpdir/restore-$dataset";
-    $self->app->log->info("store_get: start download $dataset from store $storename to $datafile");
+    $self->app->log->info("store_get: Start download $dataset from store $storename to $datafile");
 
     my $ua = Mojo::UserAgent->new(max_redirects => 5);
     $ua = $ua->connect_timeout(30)->request_timeout(30);;
 
     $dataset = url_escape($dataset);
     my $tx = $ua->get("https://$storeuser:$storepwd\@$storename:3002/data/get?dataname=$dataset");
-    $self->app->log->info("store_get: done download $dataset from store $storename");
+    $self->app->log->info("store_get: Done download $dataset from store $storename");
 
     $tx->result->content->asset->move_to($datafile);
-    $self->app->log->info("store_get: moved $dataset to $datafile");
+    $self->app->log->info("store_get: Moved $dataset to $datafile");
 
     return $datafile if -r $datafile;
     unlink $datafile;
@@ -995,7 +995,7 @@ $app->config(hostname => hostname);
 
 
 if (-r $app->config('conffile')) {
-    $app->log->debug("Load configuration from ".$app->config('conffile'));
+    $app->log->debug("main: Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
 #----------------
