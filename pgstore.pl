@@ -15,6 +15,7 @@ use Cwd qw(cwd getcwd chdir);
 use Mojo::Util qw(md5_sum b64_decode dumper);
 use Apache::Htpasswd;
 
+
 sub new {
     my ($class, $pwdfile) = @_;
     my $self = {
@@ -130,6 +131,7 @@ package PGstore::Controller;
 use utf8;
 use strict;
 use warnings;
+#use Encode qw(decode encode);
 use Mojo::Base 'Mojolicious::Controller';
 use Mojo::Util qw(md5_sum dumper quote encode url_unescape);
 use Mojo::JSON qw(encode_json decode_json false true);
@@ -138,7 +140,7 @@ use Filesys::Df;
 use File::stat;
 use POSIX;
 
-sub renderFile {
+sub render_file {
     my $self = shift;
     my %args = @_;
     utf8::decode($args{filename}) if $args{filename} && !utf8::is_utf8($args{filename});
@@ -172,22 +174,24 @@ sub renderFile {
         $self->app->log->error('You must provide "data" or "filepath" option');
         return;
     }
-    # Set response headers
+    # set response headers
     my $headers = $self->res->content->headers();
 
     $filename = quote($filename); # quote the filename, per RFC 5987
     $filename = encode("UTF-8", $filename);
 
+    $self->app->log->info("render_file: send data as filename $filename");
+
     $headers->add( 'Content-Type', $content_type . '; name=' . $filename );
     $headers->add( 'Content-Disposition', $content_disposition . '; filename=' . $filename );
 
-    # Range, partially based on Mojolicious::Static
+    # range, partially based on Mojolicious::Static
     if ( my $range = $self->req->headers->range ) {
         my $start = 0;
         my $size  = $asset->size;
         my $end   = $size - 1 >= 0 ? $size - 1 : 0;
 
-        # Check range
+        # check range
         if ( $range =~ m/^bytes=(\d+)-(\d+)?/ && $1 <= $end ) {
             $start = $1;
             $end = $2 if defined $2 && $2 <= $end;
@@ -196,17 +200,17 @@ sub renderFile {
             $headers->add( 'Content-Length' => $end - $start + 1 );
             $headers->add( 'Content-Range'  => "bytes $start-$end/$size" );
         } else {
-            # Not satisfiable
+            # not satisfiable
             return $self->rendered(416);
         }
-        # Set range for asset
+        # set range for asset
         $asset->start_range($start)->end_range($end);
     } else {
         $headers->add( 'Content-Length' => $asset->size );
     }
-    # Stream content directly from file
+    # stream content directly from file
     $self->res->content->asset($asset);
-    return $self->rendered($status);
+    $self->rendered($status);
 }
 
 sub hello {
@@ -245,16 +249,19 @@ sub data_get {
     my $self = shift;
 
     my $dataname = $self->req->param('dataname');
-    return $self->rendered(404) unless $dataname;
 
-    $dataname = url_unescape($dataname);
+    $self->app->log->debug("data_get: try to get data $dataname");
+
+    return $self->rendered(404) unless $dataname;
 
     my $datadir = $self->app->config("datadir");
 
     my $file = "$datadir/$dataname";
+
     return $self->rendered(404) unless -r $file;
     return $self->rendered(404) unless -f $file;
-    $self->renderFile(filepath => "$file");
+
+    $self->render_file(filepath => "$file");
 }
 
 sub data_put {

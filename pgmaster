@@ -1265,7 +1265,7 @@ $app->config(user => $user || 'www');
 $app->config(group => $group || 'www');
 
 $app->config(listenaddr4 => '0.0.0.0');
-$app->config(listenaddr6 => '[::]');
+#$app->config(listenaddr6 => '[::]');
 $app->config(listenport => '3003');
 
 $app->config(tmpdir => '/tmp');
@@ -1488,12 +1488,12 @@ $sub->run(
                         && $cron->period_match($c_wday, $list_wday)
                         && $cron->period_match($c_mday, $list_mday)) {
 
-                        $log->debug("--- Match type=$type subject=$subject id=$id :  $min == $c_min ");
-
-                        if ($m->agent_alive($source_id)) {
-                                my $hostname = $m->agent_hostname($source_id);
-                                $log->debug("--- Agent $hostname is alive!");
-                        }
+#                        $log->debug("--- Match type=$type subject=$subject id=$id :  $min == $c_min ");
+#
+#                        if ($m->agent_alive($source_id)) {
+#                                my $hostname = $m->agent_hostname($source_id);
+#                                $log->debug("--- Agent $hostname is alive!");
+#                        }
                     }
 
                 }
