@@ -266,45 +266,48 @@ sub data_get {
 
 sub data_put {
     my $self = shift;
-
     my $datadir = $self->app->config("datadir");
 
     $self->app->log->info("data_put: Start put data to dir $datadir");
 
-    return $self->render(json => { datalist => undef, success => false, reason => 'datadir not exist' }) unless -d $datadir;
-    return $self->render(json => { datalist => undef, success => false, reason => 'cannot write to datadir' }) unless -w $datadir;
-    #return $self->render(json => { datalist => undef, success => false, reason => 'is limit exceeded' }) if $self->req->is_limit_exceeded;
+#    return $self->render(json => { datalist => undef, success => false, reason => 'datadir not exist' }) unless -d $datadir;
+#    return $self->render(json => { datalist => undef, success => false, reason => 'cannot write to datadir' }) unless -w $datadir;
 
     my @filenames;
-
     my $uploads = $self->req->uploads;
 
     foreach my $upload (@{$uploads}) {
-        my $filename = $upload->filename;
-        my $datasize = $upload->size;
 
-        $self->app->log->info("data_put: Try to upload dataset $filename with datasize $datasize");
+        my $filename = $upload->filename;
+        my $filesize = $upload->size;
+
+        $self->app->log->info("data_put: Try to upload dataset $filename with datasize $filesize");
 
         my $dataname = $filename =~ s/^[ \.]+/_/gr;
 
         my $df = df("$datadir", 1);
-        return $self->render(json => { success => false }) if $df->{bfree}+1 < $datasize;
+        return $self->render(json => { success => false }) if $df->{bfree}+1 < $filesize;
 
-        my $datafile = "$datadir/$dataname";
-        $upload->move_to($datafile);
+        my $outfile = "$datadir/$dataname";
 
-        $self->app->log->info("data_put: Move dataset $filename to filename $datafile");
+        $upload->move_to($outfile);
 
-        my $st = stat($datafile);
+        $self->app->log->info("data_put: Move dataset $filename to filename $outfile");
+
+        my $st = stat($outfile);
         my $realsize = $st->size;
-        do {
-            unlink $dataname;
-            next;
-        } if $datasize != $realsize;
-        push @filenames, { name => $dataname, size => $datasize, realsize => $realsize, realname => $datafile };
+
+##        if ($filesize != $realsize) {
+##            unlink $outfile;
+##            $self->app->log->info("data_put: Remove datafile $outfile because partial upload");
+##            next;
+##        }
+        $self->app->log->info("data_put: Done upload dataset $filename to file $outfile");
+        push @filenames, { name => $dataname, size => $filesize, realsize => $realsize, realname => $outfile };
     }
 
-    $self->render(json => { datalist => \@filenames, success => true });
+    $self->render(json => { datalist => \@filenames });
+
 }
 
 sub data_free {
@@ -441,7 +444,11 @@ if (-r $app->config('conffile')) {
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
 
-$app->max_request_size($app->config("maxrequestsize"));
+#$app->max_request_size($app->config("maxrequestsize"));
+$app->max_request_size(0);
+#$app->max_response_size(0);
+
+$ENV{MOJO_MAX_MESSAGE_SIZE} = 0; 
 
 #----------------
 #--- TIMEZONE ---
@@ -453,6 +460,7 @@ tzset;
 #--- TMPDIR ---
 #--------------
 $ENV{MOJO_TMPDIR} = $app->config("datadir");
+
 
 
 #---------------
