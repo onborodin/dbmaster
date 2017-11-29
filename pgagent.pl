@@ -983,6 +983,9 @@ $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenport => '3001');
 
 $app->config(tmpdir => '/tmp');
+$app->config(maxrequestsize => 1024*1024*1024);
+$app->config(timezone => 'Europe/Moscow');
+
 
 $app->config(pghost => '127.0.0.1');
 $app->config(pguser => 'postgres');
@@ -995,6 +998,11 @@ if (-r $app->config('conffile')) {
     $app->log->debug("Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
+#----------------
+#--- TIMEZONE ---
+#----------------
+$ENV{TZ} = $app->config('timezone');
+tzset;
 
 #---------------
 #--- HELPERS ---

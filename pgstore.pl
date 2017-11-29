@@ -278,7 +278,12 @@ sub data_put {
     my $uploads = $self->req->uploads;
 
     foreach my $upload (@{$uploads}) {
-        my $dataname = $upload->filename =~ s/^[ \.]+/_/gr;
+	my $filename = $upload->filename;
+        my $datasize = $upload->size;
+
+	$self->app->log->info("data_put: try to upload file filename $filename datasize $datasize");
+
+        my $dataname = filename =~ s/^[ \.]+/_/gr;
         my $datasize = $upload->size;
 
         my $df = df("$datadir", 1);
@@ -424,12 +429,26 @@ $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenport => '3002');
 
 $app->config(datadir => '@PGSTORE_DATADIR@');
+$app->config(maxrequestsize => 1024*1024*1024);
+$app->config(timezone => 'Europe/Moscow');
 
 
 if (-r $app->config('conffile')) {
     $app->log->debug("Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
+
+#----------------
+#--- TIMEZONE ---
+#----------------
+$ENV{TZ} = $app->config('timezone');
+tzset;
+
+#--------------
+#--- TMPDIR ---
+#--------------
+$ENV{MOJO_TMPDIR} = $app->config("datadir");
+
 
 #---------------
 #--- HELPERS ---
