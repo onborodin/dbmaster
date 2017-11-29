@@ -278,19 +278,20 @@ sub data_put {
     my $uploads = $self->req->uploads;
 
     foreach my $upload (@{$uploads}) {
-	my $filename = $upload->filename;
+        my $filename = $upload->filename;
         my $datasize = $upload->size;
 
-	$self->app->log->info("data_put: try to upload file filename $filename datasize $datasize");
+        $self->app->log->info("data_put: try to upload dataset $filename with datasize $datasize");
 
         my $dataname = filename =~ s/^[ \.]+/_/gr;
-        my $datasize = $upload->size;
 
         my $df = df("$datadir", 1);
         return $self->render(json => { success => false }) if $df->{bfree}+1 < $datasize;
 
         my $datafile = "$datadir/$dataname";
         $upload->move_to($datafile);
+
+        $self->app->log->info("data_put: move dataset $filename to filename $datafile");
 
         my $st = stat($datafile);
         my $realsize = $st->size;
