@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 
 #------------
@@ -990,53 +990,53 @@ sub agent_list {
 
 sub agent_add {
     my $self = shift;
-    $self->render(template => 'agent_add', req => $self->req);
+    $self->render(template => 'agent_add');
 }
 
 sub agent_config {
     my $self = shift;
-    $self->render(template => 'agent_config', req => $self->req);
+    $self->render(template => 'agent_config');
 }
 
 sub agent_delete {
     my $self = shift;
-    $self->render(template => 'agent_delete', req => $self->req);
+    $self->render(template => 'agent_delete');
 }
 
 sub agent_db_list {
     my $self = shift;
     my $id = $self->req->param('id');
-    $self->render(template => 'agent_db_list', req => $self->req);
+    $self->render(template => 'agent_db_list');
 }
 
 sub agent_db_create {
     my $self = shift;
-    $self->render(template => 'agent_db_create', req => $self->req);
+    $self->render(template => 'agent_db_create');
 }
 
 sub agent_db_drop {
     my $self = shift;
-    $self->render(template => 'agent_db_drop', req => $self->req);
+    $self->render(template => 'agent_db_drop');
 }
 
 sub agent_db_rename {
     my $self = shift;
-    $self->render(template => 'agent_db_rename', req => $self->req);
+    $self->render(template => 'agent_db_rename');
 }
 
 sub agent_db_copy {
     my $self = shift;
-    $self->render(template => 'agent_db_copy', req => $self->req);
+    $self->render(template => 'agent_db_copy');
 }
 
 sub agent_db_dump {
     my $self = shift;
-    $self->render(template => 'agent_db_dump', req => $self->req);
+    $self->render(template => 'agent_db_dump');
 }
 
 sub agent_db_restore {
     my $self = shift;
-    $self->render(template => 'agent_db_restore', req => $self->req);
+    $self->render(template => 'agent_db_restore');
 }
 
 #------------------
@@ -1050,32 +1050,32 @@ sub store_list {
 
 sub store_add {
     my $self = shift;
-    $self->render(template => 'store_add', req => $self->req);
+    $self->render(template => 'store_add');
 }
 
 sub store_config {
     my $self = shift;
-    $self->render(template => 'store_config', req => $self->req);
+    $self->render(template => 'store_config');
 }
 
 sub store_delete {
     my $self = shift;
-    $self->render(template => 'store_delete', req => $self->req);
+    $self->render(template => 'store_delete');
 }
 
 sub store_data_list {
     my $self = shift;
-    $self->render(template => 'store_data_list', req => $self->req);
+    $self->render(template => 'store_data_list');
 }
 
 sub store_data_delete {
     my $self = shift;
-    $self->render(template => 'store_data_delete', req => $self->req);
+    $self->render(template => 'store_data_delete');
 }
 
 sub store_data_download {
     my $self = shift;
-    $self->render(template => 'store_data_download', req => $self->req);
+    $self->render(template => 'store_data_download');
 }
 
 
@@ -1085,7 +1085,7 @@ sub store_data_download {
 
 sub data_list {
     my $self = shift;
-    $self->render(template => 'data_list', req => $self->req);
+    $self->render(template => 'data_list');
 }
 
 #----------------
@@ -1094,7 +1094,7 @@ sub data_list {
 
 sub job_list {
     my $self = shift;
-    $self->render(template => 'job_list', req => $self->req);
+    $self->render(template => 'job_list');
 }
 
 sub job_cb {
@@ -1109,22 +1109,22 @@ sub job_cb {
 
 sub schedule_list {
     my $self = shift;
-    $self->render(template => 'schedule_list', req => $self->req);
+    $self->render(template => 'schedule_list');
 }
 
 sub schedule_add {
     my $self = shift;
-    $self->render(template => 'schedule_add', req => $self->req);
+    $self->render(template => 'schedule_add');
 }
 
 sub schedule_delete {
     my $self = shift;
-    $self->render(template => 'schedule_delete', req => $self->req);
+    $self->render(template => 'schedule_delete');
 }
 
 sub schedule_config {
     my $self = shift;
-    $self->render(template => 'schedule_config', req => $self->req);
+    $self->render(template => 'schedule_config');
 }
 
 #--------------------
@@ -1261,8 +1261,8 @@ $app->config(pidfile => '/var/run/pgdumper/pgmaster.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgmaster.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgmaster.key');
 
-$app->config(user => $user || 'www');
-$app->config(group => $group || 'www');
+$app->config(user => $user || 'www-data');
+$app->config(group => $group || 'www-data');
 
 $app->config(listenaddr4 => '0.0.0.0');
 #$app->config(listenaddr6 => '[::]');

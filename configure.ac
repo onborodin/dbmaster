@@ -32,6 +32,7 @@ case $host_os in
         ;;
 esac
 
+test "x$ac_default_prefix" == "x" && prefix=/usr/local
 test "x$prefix" == "xNONE" && prefix=$ac_default_prefix
 
 AC_ARG_WITH(confdir,
