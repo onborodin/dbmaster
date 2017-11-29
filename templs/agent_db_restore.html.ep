@@ -70,22 +70,22 @@
 %     $m->job_update($job_id, status => 'pushjob');
 %     my $tx = $ua->get("https://$agent_username:$agent_password\@$agent_hostname:3001/db/restore?$param");
 
-%     my $body = '{"result":"mistake"}';
+%     my $body = '';
 %     eval { $body = $tx->result->body };
 %     my $res = decode_json($body);
 
-%     if ( $res->{success} ) {
-        <div class="callout success">
-            Agent <%= $agent_hostname %> now restore database <%= $dbname %> as job <%= $job_id %>.
-        </div>
+%     if ($res->{success}) {
+            <div class="callout success">
+                Agent <%= $agent_hostname %> now restore database <%= $dbname %> as job <%= $job_id %>.
+            </div>
 %       $m->job_update($job_id, status => 'pushjob', error => 'noerr', stop => $m->timestamp);
 %     }
 
-%     if ( $res->{success} ) {
-        <div class="callout alert">
-            Agent <%= $agent_hostname %> not correct responded for the request.
-            Job <%= $job_id %> was cancel.
-        </div>
+%     if ($res->{success}) {
+            <div class="callout alert">
+                Agent <%= $agent_hostname %> not correct responded for the request.
+                Job <%= $job_id %> was cancel.
+            </div>
 %       $m->job_update($job_id, status => 'pushjoberr', error => 'pushjoberr', stop => $m->timestamp);
 %     }
 % }

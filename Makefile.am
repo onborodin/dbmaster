@@ -94,7 +94,7 @@ nobase_dist_pkgdata_DATA = \
 	templs/agent_db_dump.html.ep \
 	templs/agent_db_list.html.ep \
 	templs/agent_db_rename.html.ep \
-	templs/agent_db_restore_.html.ep \
+	templs/agent_db_restore.html.ep \
 	\
 	templs/data_list.html.ep \
 	templs/exception.development.html.ep \

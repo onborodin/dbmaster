@@ -330,21 +330,21 @@ sub new {
         db => $db
     };
     bless $self, $class;
-    return $self;
+    $self;
 }
 
 sub db {
-    return shift->{db};
+    shift->{db};
 }
 
 sub app {
-    return shift->{app};
+    shift->{app};
 }
 
 sub hostname_alive {
     my ($self, $hostname) = @_;
     return undef unless gethostbyname($hostname);
-    return 1;
+    1;
 }
 
 sub parse_label {
@@ -362,7 +362,7 @@ sub parse_label {
     $data{'datetime'} = "$Y-$M-$D $h:$m:$s";
     $data{'tz'} = "$tz";
     $data{'source'} = $host;
-    return \%data;
+    \%data;
 }
 
 sub timestamp {
@@ -395,7 +395,7 @@ sub size_hr {
     return $size if $size < 1024;
     return int($size/1024+0.5)."k" if ($size < 1024*1024 && $size > 1024);
     return int($size/(1024*1024)+0.5)."M" if ($size < 1024*1024*1024 && $size > 1024*1024);
-    return int($size/(1024*1024*1024)+0.5)."G" if ($size < 1024*1024*1024*1024 && $size > 1024*1024*1024);
+    int($size/(1024*1024*1024)+0.5)."G" if ($size < 1024*1024*1024*1024 && $size > 1024*1024*1024);
 }
 
 sub size_wp {
@@ -1457,21 +1457,44 @@ $sub->run(
             10 => sub {
                 my $cron = $app->cron;
                 my $m = $app->model;
+                my $log = $app->log;
 
-                my $curr_time = $m->curr_time;
-                $app->log->info(dumper($curr_time));
+                my $ct = $m->curr_time;
+
+                my $c_mday = $ct->{mday};
+                my $c_wday = $ct->{wday};
+                my $c_hour = $ct->{hour};
+                my $c_min = $ct->{min};
+                my $c_sec = $ct->{sec};
 
                 foreach my $rec (@{$m->schedule_list}) {
 
+                    my $id = $rec->{id};
                     my $dest_id = $rec->{destid};
                     my $source_id = $rec->{sourceid};
-                    my $mday  = $rec->{mday};
-                    my $wday  = $rec->{wday};
-                    my $hour  = $rec->{hour};
-                    my $min  = $rec->{min};
+
+                    my $list_mday  = $cron->period_expand($rec->{mday}, 31, 1);
+                    my $list_wday  = $cron->period_expand($rec->{wday}, 7, 1);
+                    my $list_hour  = $cron->period_expand($rec->{hour}, 23, 0);
+                    my $list_min  = $cron->period_expand($rec->{min}, 59, 0);
+
+                    my $min = $rec->{min};
 
                     my $type  = $rec->{type};
-                    my $subject  = $rec->{subject};
+                    my $subject = $rec->{subject};
+
+                    if ($cron->period_match($c_min, $list_min)
+                        && $cron->period_match($c_hour, $list_hour)
+                        && $cron->period_match($c_wday, $list_wday)
+                        && $cron->period_match($c_mday, $list_mday)) {
+
+                        $log->debug("--- Match type=$type subject=$subject id=$id :  $min == $c_min ");
+
+                        if ($m->agent_alive($source_id)) {
+                                my $hostname = $m->agent_hostname($source_id);
+                                $log->debug("--- Agent $hostname is alive!");
+                        }
+                    }
 
                 }
                 my $res = $app->cron->ping;
