@@ -160,7 +160,7 @@ sub render_file {
     my $asset;
     if ( my $filepath = $args{filepath} ) {
         unless ( -f $filepath && -r $filepath ) {
-            $self->app->log->error("Cannot read file [$filepath]. error [$!]");
+            $self->app->log->error("render_file: Cannot read file [$filepath]. error [$!]");
             return $self->rendered(404);
         }
         $filename ||= fileparse($filepath);
@@ -171,7 +171,7 @@ sub render_file {
         $asset = Mojo::Asset::Memory->new();
         $asset->add_chunk( $args{data} );
     } else {
-        $self->app->log->error('You must provide "data" or "filepath" option');
+        $self->app->log->error('render_file: You must provide "data" or "filepath" option');
         return;
     }
     # set response headers
@@ -180,7 +180,7 @@ sub render_file {
     $filename = quote($filename); # quote the filename, per RFC 5987
     $filename = encode("UTF-8", $filename);
 
-    $self->app->log->info("render_file: send data as filename $filename");
+    $self->app->log->info("render_file: Send data as filename $filename");
 
     $headers->add( 'Content-Type', $content_type . '; name=' . $filename );
     $headers->add( 'Content-Disposition', $content_disposition . '; filename=' . $filename );
@@ -250,7 +250,7 @@ sub data_get {
 
     my $dataname = $self->req->param('dataname');
 
-    $self->app->log->debug("data_get: try to get data $dataname");
+    $self->app->log->info("data_get: Try to get data $dataname");
 
     return $self->rendered(404) unless $dataname;
 
@@ -269,9 +269,11 @@ sub data_put {
 
     my $datadir = $self->app->config("datadir");
 
-    return $self->render(json => { datalist => undef, success => false }) unless -d $datadir;
-    return $self->render(json => { datalist => undef, success => false }) unless -w $datadir;
-    return $self->render(json => { datalist => undef, success => false }) if $self->req->is_limit_exceeded;
+    $self->app->log->info("data_put: Start put data to dir $datadir");
+
+    return $self->render(json => { datalist => undef, success => false, reason => 'datadir not exist' }) unless -d $datadir;
+    return $self->render(json => { datalist => undef, success => false, reason => 'cannot write to datadir' }) unless -w $datadir;
+    #return $self->render(json => { datalist => undef, success => false, reason => 'is limit exceeded' }) if $self->req->is_limit_exceeded;
 
     my @filenames;
 
@@ -281,9 +283,9 @@ sub data_put {
         my $filename = $upload->filename;
         my $datasize = $upload->size;
 
-        $self->app->log->info("data_put: try to upload dataset $filename with datasize $datasize");
+        $self->app->log->info("data_put: Try to upload dataset $filename with datasize $datasize");
 
-        my $dataname = filename =~ s/^[ \.]+/_/gr;
+        my $dataname = $filename =~ s/^[ \.]+/_/gr;
 
         my $df = df("$datadir", 1);
         return $self->render(json => { success => false }) if $df->{bfree}+1 < $datasize;
@@ -291,7 +293,7 @@ sub data_put {
         my $datafile = "$datadir/$dataname";
         $upload->move_to($datafile);
 
-        $self->app->log->info("data_put: move dataset $filename to filename $datafile");
+        $self->app->log->info("data_put: Move dataset $filename to filename $datafile");
 
         my $st = stat($datafile);
         my $realsize = $st->size;
@@ -417,7 +419,7 @@ $app->renderer->paths(['/usr/local/share/pgdumper/templs']);
 $app->config(conffile => $conffile || '/usr/local/etc/pgdumper/pgstore.conf');
 $app->config(pwdfile => '/usr/local/etc/pgdumper/pgstore.pw');
 $app->config(logfile => '/var/log/pgdumper/pgstore.log');
-$app->config(loglevel => 'info');
+$app->config(loglevel => 'debug');
 $app->config(pidfile => '/var/run/pgdumper/pgstore.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgstore.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgstore.key');
@@ -435,7 +437,7 @@ $app->config(timezone => 'Europe/Moscow');
 
 
 if (-r $app->config('conffile')) {
-    $app->log->debug("Load configuration from ".$app->config('conffile'));
+    $app->log->debug("main: Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
 
@@ -470,8 +472,10 @@ $r->add_condition(
         my $log = $c->app->log;
         my $authstr = $c->req->headers->authorization;
         my $pwdfile = $c->app->config('pwdfile');
+
+        my $remote_address = $c->tx->remote_address;
         my $a = PGstore::BasicAuth->new($pwdfile);
-        $log->info("Try auth user ". $a->username($authstr));
+        $log->info("$remote_address auth: Try auth as user ". $a->username($authstr) || undef);
         $a->auth($authstr);
     }
 );
