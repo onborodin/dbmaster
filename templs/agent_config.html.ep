@@ -5,6 +5,8 @@
 % title 'Dumper';
 % use Mojo::Util qw(dumper);
 
+% my $req = $self->req;
+
 % my $agent_id = $req->param('id');
 % my $hostname = $req->param('hostname');
 % my $username = $req->param('username');

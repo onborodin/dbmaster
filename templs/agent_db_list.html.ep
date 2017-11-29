@@ -7,6 +7,7 @@
 
 
 % my $m = $self->app->model;
+% my $req = $self->req;
 
 % my $agent_id = $req->param('id');
 % my $agent_hostname = $m->agent_hostname($agent_id);

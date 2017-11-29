@@ -6,6 +6,7 @@
 % use Mojo::Util qw(dumper);
 % use Mojo::JSON qw(j encode_json decode_json true false);
 
+% my $req = $self->req;
 % my $m = $self->app->model;
 
 % my $dbname = $req->param('dbname') || undef;

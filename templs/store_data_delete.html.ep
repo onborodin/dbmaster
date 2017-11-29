@@ -6,7 +6,7 @@
 % use Mojo::Util qw(dumper url_escape);
 % use Mojo::JSON qw(decode_json);
 
-
+% my $req = $self->req;
 % my $m = $self->app->model;
 
 % my $store_id = $req->param('id');

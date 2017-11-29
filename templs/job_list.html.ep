@@ -6,6 +6,7 @@
 % use Switch;
 % use Mojo::Util qw(dumper);
 
+% my $req = $self->req;
 % my $m = $self->app->model;
 % my $job_list = $m->job_list;
 

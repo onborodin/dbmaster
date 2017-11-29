@@ -6,6 +6,7 @@
 % use Mojo::Util qw(dumper);
 % use Encode qw(decode encode);
 
+% my $req = $self->req;
 % my $m = $self->app->model;
 % my $store_id = $req->param('id');
 % my $dataname = $req->param('dataname');

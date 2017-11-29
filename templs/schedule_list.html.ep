@@ -6,6 +6,7 @@
 % use Mojo::Util qw(dumper);
 
 
+% my $req = $self->req;
 % my $m = $self->app->model;
 % my $schedule_list = $m->schedule_list;
 

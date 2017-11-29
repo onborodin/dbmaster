@@ -6,7 +6,7 @@
 % use Mojo::Util qw(b64_encode b64_decode md5_sum dumper);
 % use Encode qw(decode encode);
 
-
+% my $req = $self->req;
 % my $m = $self->app->model;
 % my $store_list = $m->store_list;
 
