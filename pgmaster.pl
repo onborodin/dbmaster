@@ -1282,6 +1282,8 @@ if (-r $app->config('conffile')) {
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
 
+#$app->max_request_size($app->config("maxrequestsize"));
+
 #----------------
 #--- TIMEZONE ---
 #----------------
