@@ -975,7 +975,7 @@ $app->config(user => $user || '@APP_USER@');
 $app->config(group => $group || '@APP_GROUP@');
 
 $app->config(listenaddr4 => '0.0.0.0');
-$app->config(listenaddr6 => '[::]');
+#$app->config(listenaddr6 => '[::]');
 $app->config(listenport => '3001');
 
 $app->config(tmpdir => '/tmp');

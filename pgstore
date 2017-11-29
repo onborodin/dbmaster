@@ -413,7 +413,7 @@ $app->config(user => $user || 'www-data');
 $app->config(group => $group || 'www-data');
 
 $app->config(listenaddr4 => '0.0.0.0');
-$app->config(listenaddr6 => '[::]');
+#$app->config(listenaddr6 => '[::]');
 $app->config(listenport => '3002');
 
 $app->config(datadir => '/var/pgstore');
