@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 
 #------------
@@ -1261,8 +1261,8 @@ $app->config(pidfile => '/var/run/pgdumper/pgmaster.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgmaster.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgmaster.key');
 
-$app->config(user => $user || 'www');
-$app->config(group => $group || 'www');
+$app->config(user => $user || 'www-data');
+$app->config(group => $group || 'www-data');
 
 $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenaddr6 => '[::]');
@@ -1457,10 +1457,11 @@ $sub->run(
             10 => sub {
                 my $cron = $app->cron;
                 my $m = $app->model;
-                foreach my $rec (@{$m->schedule_list}) {
 
-                    my $curr_time = $m->curr_time;
-                    $app->log->info(dumper($curr_time));
+                my $curr_time = $m->curr_time;
+                $app->log->info(dumper($curr_time));
+
+                foreach my $rec (@{$m->schedule_list}) {
 
                     my $dest_id = $rec->{destid};
                     my $source_id = $rec->{sourceid};

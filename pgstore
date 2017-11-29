@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 1;
 
@@ -409,8 +409,8 @@ $app->config(pidfile => '/var/run/pgdumper/pgstore.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgstore.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgstore.key');
 
-$app->config(user => $user || 'www');
-$app->config(group => $group || 'www');
+$app->config(user => $user || 'www-data');
+$app->config(group => $group || 'www-data');
 
 $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenaddr6 => '[::]');
