@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 
 
 #------------
@@ -1261,14 +1261,16 @@ $app->config(pidfile => '/var/run/pgdumper/pgmaster.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgmaster.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgmaster.key');
 
-$app->config(user => $user || 'www-data');
-$app->config(group => $group || 'www-data');
+$app->config(user => $user || 'www');
+$app->config(group => $group || 'www');
 
 $app->config(listenaddr4 => '0.0.0.0');
 #$app->config(listenaddr6 => '[::]');
 $app->config(listenport => '3003');
 
 $app->config(tmpdir => '/tmp');
+$app->config(timezone => 'Europe/Moscow');
+
 
 $app->config(dbhost => '127.0.0.1');
 $app->config(dbuser => 'postgres');
@@ -1279,6 +1281,15 @@ if (-r $app->config('conffile')) {
     $app->log->debug("Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
+
+#$app->max_request_size($app->config("maxrequestsize"));
+
+#----------------
+#--- TIMEZONE ---
+#----------------
+$ENV{TZ} = $app->config('timezone');
+tzset;
+
 
 #---------------
 #--- HELPERS ---

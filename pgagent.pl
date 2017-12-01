@@ -340,7 +340,6 @@ sub store_put {
     my ($self, $datafile, $storename, $storeuser, $storepwd) = @_;
     my $ua = Mojo::UserAgent->new(max_redirects => 5);
     $ua = $ua->connect_timeout(15)->request_timeout(15);;
-    $ua->max_response_size(0);
 
     return undef unless $datafile;
     return undef unless $storename;
@@ -351,10 +350,7 @@ sub store_put {
 
     $self->app->log->info("store_put: Start upload $datafile to store $storename");
     my $tx = $ua->post("https://$storeuser:$storepwd\@$storename:3002/data/put" =>
-                            form => { 
-				data => { file => $datafile }
-			    }
-    );
+                            form => { data => { file => $datafile }} );
     $self->app->log->info("store_put: End upload $datafile to store $storename");
 
     my $res;
@@ -1003,8 +999,8 @@ if (-r $app->config('conffile')) {
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
 
+
 $app->max_request_size($app->config("maxrequestsize"));
-$app->max_request_size(0);
 
 
 #----------------

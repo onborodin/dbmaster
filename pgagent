@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 
 #------------
 #--- AUTH ---
@@ -340,7 +340,6 @@ sub store_put {
     my ($self, $datafile, $storename, $storeuser, $storepwd) = @_;
     my $ua = Mojo::UserAgent->new(max_redirects => 5);
     $ua = $ua->connect_timeout(15)->request_timeout(15);;
-    $ua->max_response_size(0);
 
     return undef unless $datafile;
     return undef unless $storename;
@@ -976,8 +975,8 @@ $app->config(pidfile => '/var/run/pgdumper/pgagent.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgagent.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgagent.key');
 
-$app->config(user => $user || 'www-data');
-$app->config(group => $group || 'www-data');
+$app->config(user => $user || 'www');
+$app->config(group => $group || 'www');
 
 $app->config(listenaddr4 => '0.0.0.0');
 #$app->config(listenaddr6 => '[::]');
