@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 
 #------------
@@ -1261,8 +1261,8 @@ $app->config(pidfile => '/var/run/pgdumper/pgmaster.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgmaster.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgmaster.key');
 
-$app->config(user => $user || 'www');
-$app->config(group => $group || 'www');
+$app->config(user => $user || 'www-data');
+$app->config(group => $group || 'www-data');
 
 $app->config(listenaddr4 => '0.0.0.0');
 #$app->config(listenaddr6 => '[::]');

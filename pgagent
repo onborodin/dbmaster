@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 #------------
 #--- AUTH ---
@@ -339,7 +339,13 @@ sub store_alive {
 sub store_put {
     my ($self, $datafile, $storename, $storeuser, $storepwd) = @_;
     my $ua = Mojo::UserAgent->new(max_redirects => 5);
-    $ua = $ua->connect_timeout(15)->request_timeout(15);;
+    $ua->connect_timeout(30);
+    $ua->request_timeout(30);
+    $ua->inactivity_timeout(150);
+    $self->app->log->info("--- store_put: Try upload $datafile to store $storename");
+
+#    $ua->max_response_size(0);
+#    $ua->max_request_size(0);
 
     return undef unless $datafile;
     return undef unless $storename;
@@ -348,7 +354,7 @@ sub store_put {
     return undef unless -r $datafile;
     return undef unless $self->store_alive($storename);
 
-    $self->app->log->info("store_put: Start upload $datafile to store $storename");
+    $self->app->log->info("--- store_put: Start upload $datafile to store $storename");
     my $tx = $ua->post("https://$storeuser:$storepwd\@$storename:3002/data/put" =>
                             form => { data => { file => $datafile }} );
     $self->app->log->info("store_put: End upload $datafile to store $storename");
@@ -751,7 +757,11 @@ sub db_dump {
             my $subprocess = shift;
 
             $self->app->log->info("db_dump subprocess: Begin dump database $dbname"); 
-            my $filename = $self->app->model->db_dump($dbname, $hostname, $tmpdir);
+	    # The dump process
+#            my $filename = $self->app->model->db_dump($dbname, $hostname, $tmpdir);
+
+	    my $filename = "/tmp/copy_hrm_pereezd--20171130-015757-+10--pgdb2-ost.lazurit.us.sqlz";
+
             $self->app->log->info("db_dump subprocess: Done dump database $dbname, result is file $filename"); 
 
             unless ($filename) { 
@@ -773,7 +783,7 @@ sub db_dump {
             }
 
             $self->master_cb($master, $job_id, $magic, "stored", "noerr", 'success');
-            unlink $filename;
+#            unlink $filename;
             1;
         },
         sub {
@@ -925,6 +935,12 @@ use Apache::Htpasswd;
 use Cwd qw(getcwd abs_path);
 use EV;
 
+
+BEGIN {
+    $ENV{MOJO_CONNECT_TIMEOUT} = 20;
+    $ENV{MOJO_INACTIVITY_TIMEOUT} = 120;
+}
+
 my $appname = 'pgdumper';
 
 #--------------
@@ -975,8 +991,8 @@ $app->config(pidfile => '/var/run/pgdumper/pgagent.pid');
 $app->config(crtfile => '/usr/local/etc/pgdumper/pgagent.crt');
 $app->config(keyfile => '/usr/local/etc/pgdumper/pgagent.key');
 
-$app->config(user => $user || 'www');
-$app->config(group => $group || 'www');
+$app->config(user => $user || 'www-data');
+$app->config(group => $group || 'www-data');
 
 $app->config(listenaddr4 => '0.0.0.0');
 #$app->config(listenaddr6 => '[::]');
@@ -998,7 +1014,6 @@ if (-r $app->config('conffile')) {
     $app->log->debug("main: Load configuration from ".$app->config('conffile'));
     $app->plugin('JSONConfig', { file => $app->config('conffile') });
 }
-
 
 $app->max_request_size($app->config("maxrequestsize"));
 
