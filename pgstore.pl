@@ -377,6 +377,16 @@ use Apache::Htpasswd;
 use Cwd qw(getcwd abs_path);
 use EV;
 
+BEGIN {
+    $ENV{MOJO_CONNECT_TIMEOUT} = 20;
+    $ENV{MOJO_INACTIVITY_TIMEOUT} = 120;
+    $ENV{MOJO_REQUEST_TIMEOUT} = 30;
+    $ENV{MOJO_USERAGENT_DEBUG} = 1;
+    $ENV{MOJO_DAEMON_DEBUG} = 1;
+}
+
+
+
 my $appname = 'pgdumper';
 
 #--------------
