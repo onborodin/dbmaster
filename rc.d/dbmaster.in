@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# $Id$
+#
+# PROVIDE: dbmaster
+# REQUIRE: LOGIN
+
+. /etc/rc.subr
+
+name="dbmaster"
+
+rcvar="dbmaster_enable"
+
+pidfile="@APP_RUNDIR@"/dbmaster.pid
+command="@prefix@/sbin/${name}"
+procname="@prefix@/sbin/${name}"
+command_interpreter="@PERL@"
+
+
+load_rc_config ${name}
+
+: ${dbmaster_enable:="NO"}
+
+run_rc_command "$1"
+#EOF

@@ -8,8 +8,7 @@ EXTRA_DIST = \
 
 install-data-hook:
 if FREEBSD_OS
-	chmod a+x $(DESTDIR)/${etcdir}/rc.d/pgstore
-	chmod a+x $(DESTDIR)/${etcdir}/rc.d/pgagent
+	chmod a+x $(DESTDIR)/${etcdir}/rc.d/dbmaster
 endif
 	$(INSTALL) -d -m 750 -o $(APP_USER) -g $(APP_GROUP) $(DESTDIR)$(APP_LOGDIR)
 	$(INSTALL) -d -m 750 -o $(APP_USER) -g $(APP_GROUP) $(DESTDIR)$(APP_RUNDIR)
@@ -20,41 +19,21 @@ endif
 
 if FREEBSD_OS
 etcdir = @prefix@/etc
-nobase_etc_SCRIPTS = rc.d/pgagent rc.d/pgstore
-if PGMASTER
-nobase_etc_SCRIPTS += rc.d/pgmaster
-endif
+nobase_etc_SCRIPTS = rc.d/dbmaster
 endif
 
 if LINUX_OS
 systemddir = /lib/systemd/system
-nobase_systemd_DATA = pgagent.service pgstore.service
-if PGMASTER
-nobase_systemd_DATA += pgmaster.service
-endif
+nobase_systemd_DATA = dbmaster.service
 endif
 
-sbin_SCRIPTS = pgstore pgagent
-if PGMASTER
-sbin_SCRIPTS += pgmaster
-endif
+sbin_SCRIPTS = dbmaster
 
 confdir = @APP_CONFDIR@
-nobase_dist_conf_DATA = \
-	pgagent.pw.example \
-	pgstore.pw.example \
-	pgagent.crt.example \
-	pgagent.key.example \
-	pgstore.crt.example \
-	pgstore.key.example
+nobase_dist_conf_DATA = dbmaster.pw.example dbmaster.crt.example dbmaster.key.example
 
-if PGMASTER
-nobase_dist_conf_DATA += pgmaster.pw.example pgmaster.crt.example pgmaster.key.example
-endif
-
-if PGMASTER
 nobase_dist_pkgdata_DATA = \
-	pgmaster.sql \
+	dbmaster.sql \
 	public/css/app.css \
 	public/css/datatables.css \
 	public/css/datatables.min.css \
@@ -116,7 +95,5 @@ nobase_dist_pkgdata_DATA = \
 	templs/store_data_list.html.ep \
 	\
 	templs/layouts/default.html.ep
-
-endif
 
 #EOF

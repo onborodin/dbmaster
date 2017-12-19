@@ -79,18 +79,18 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@FREEBSD_OS_TRUE@@PGMASTER_TRUE@am__append_1 = rc.d/pgmaster
-@LINUX_OS_TRUE@@PGMASTER_TRUE@am__append_2 = pgmaster.service
-@PGMASTER_TRUE@am__append_3 = pgmaster
-@PGMASTER_TRUE@am__append_4 = pgmaster.pw.example pgmaster.crt.example pgmaster.key.example
+@FREEBSD_OS_TRUE@@PGMASTER_TRUE@am__append_1 = rc.d/dbmaster
+@LINUX_OS_TRUE@@PGMASTER_TRUE@am__append_2 = dbmaster.service
+@PGMASTER_TRUE@am__append_3 = dbmaster
+@PGMASTER_TRUE@am__append_4 = dbmaster.pw.example dbmaster.crt.example dbmaster.key.example
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/pgstore.pl $(srcdir)/pgagent.pl \
-	$(srcdir)/pgmaster.pl $(top_srcdir)/rc.d/pgagent.in \
-	$(top_srcdir)/rc.d/pgstore.in $(top_srcdir)/rc.d/pgmaster.in \
+	$(srcdir)/dbmaster.pl $(top_srcdir)/rc.d/pgagent.in \
+	$(top_srcdir)/rc.d/pgstore.in $(top_srcdir)/rc.d/dbmaster.in \
 	$(srcdir)/pgagent.service.in $(srcdir)/pgstore.service.in \
-	$(srcdir)/pgmaster.service.in \
+	$(srcdir)/dbmaster.service.in \
 	$(am__nobase_dist_conf_DATA_DIST) \
 	$(am__nobase_dist_pkgdata_DATA_DIST) config.guess config.sub \
 	install-sh missing
@@ -102,9 +102,9 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = pgstore pgagent pgmaster rc.d/pgagent \
-	rc.d/pgstore rc.d/pgmaster pgagent.service pgstore.service \
-	pgmaster.service
+CONFIG_CLEAN_FILES = pgstore pgagent dbmaster rc.d/pgagent \
+	rc.d/pgstore rc.d/dbmaster pgagent.service pgstore.service \
+	dbmaster.service
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -160,9 +160,9 @@ am__can_run_installinfo = \
   esac
 am__nobase_dist_conf_DATA_DIST = pgagent.pw.example pgstore.pw.example \
 	pgagent.crt.example pgagent.key.example pgstore.crt.example \
-	pgstore.key.example pgmaster.pw.example pgmaster.crt.example \
-	pgmaster.key.example
-am__nobase_dist_pkgdata_DATA_DIST = pgmaster.sql public/css/app.css \
+	pgstore.key.example dbmaster.pw.example dbmaster.crt.example \
+	dbmaster.key.example
+am__nobase_dist_pkgdata_DATA_DIST = dbmaster.sql public/css/app.css \
 	public/css/datatables.css public/css/datatables.min.css \
 	public/css/foundation-float.css \
 	public/css/foundation-float.min.css public/css/foundation.css \
@@ -327,7 +327,7 @@ nobase_dist_conf_DATA = pgagent.pw.example pgstore.pw.example \
 	pgagent.crt.example pgagent.key.example pgstore.crt.example \
 	pgstore.key.example $(am__append_4)
 @PGMASTER_TRUE@nobase_dist_pkgdata_DATA = \
-@PGMASTER_TRUE@	pgmaster.sql \
+@PGMASTER_TRUE@	dbmaster.sql \
 @PGMASTER_TRUE@	public/css/app.css \
 @PGMASTER_TRUE@	public/css/datatables.css \
 @PGMASTER_TRUE@	public/css/datatables.min.css \
@@ -431,19 +431,19 @@ pgstore: $(top_builddir)/config.status $(srcdir)/pgstore.pl
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 pgagent: $(top_builddir)/config.status $(srcdir)/pgagent.pl
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-pgmaster: $(top_builddir)/config.status $(srcdir)/pgmaster.pl
+dbmaster: $(top_builddir)/config.status $(srcdir)/dbmaster.pl
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 rc.d/pgagent: $(top_builddir)/config.status $(top_srcdir)/rc.d/pgagent.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 rc.d/pgstore: $(top_builddir)/config.status $(top_srcdir)/rc.d/pgstore.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-rc.d/pgmaster: $(top_builddir)/config.status $(top_srcdir)/rc.d/pgmaster.in
+rc.d/dbmaster: $(top_builddir)/config.status $(top_srcdir)/rc.d/dbmaster.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 pgagent.service: $(top_builddir)/config.status $(srcdir)/pgagent.service.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 pgstore.service: $(top_builddir)/config.status $(srcdir)/pgstore.service.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-pgmaster.service: $(top_builddir)/config.status $(srcdir)/pgmaster.service.in
+dbmaster.service: $(top_builddir)/config.status $(srcdir)/dbmaster.service.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-nobase_etcSCRIPTS: $(nobase_etc_SCRIPTS)
 	@$(NORMAL_INSTALL)
