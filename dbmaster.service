@@ -3,8 +3,8 @@ Description=DBmaster
 
 [Service]
 Type=forking
-PIDFile=/var/run/pgdumper/dbmaster.pid
-ExecStart=/usr/local/sbin/dbmaster
+PIDFile=/var/run/dbmaster/dbmaster.pid
+ExecStart=@APP_EXECDIR@/dbmaster
 ExecReload=/bin/kill -HUP $MAINPID
 
 

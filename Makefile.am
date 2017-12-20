@@ -62,37 +62,12 @@ nobase_dist_pkgdata_DATA = \
 	public/js/jquery.min.js \
 	public/js/what-input.js \
 	\
-	templs/agent_add.html.ep \
-	templs/agent_config.html.ep \
-	templs/agent_delete.html.ep \
-	templs/agent_list.html.ep \
-	\
-	templs/agent_db_copy.html.ep \
-	templs/agent_db_create.html.ep \
-	templs/agent_db_drop.html.ep \
-	templs/agent_db_dump.html.ep \
-	templs/agent_db_list.html.ep \
-	templs/agent_db_rename.html.ep \
-	templs/agent_db_restore.html.ep \
-	\
-	templs/data_list.html.ep \
+	templs/hello.html.ep \
+	templs/login.html.ep \
 	templs/exception.development.html.ep \
 	templs/exception.production.html.ep \
-	templs/hello.html.ep \
-	templs/job_list.html.ep \
-	templs/login.html.ep \
 	templs/not_found.development.html.ep \
 	templs/not_found.production.html.ep \
-	\
-	templs/schedule_add.html.ep \
-	templs/schedule_list.html.ep \
-	\
-	templs/store_add.html.ep \
-	templs/store_delete.html.ep \
-	templs/store_list.html.ep \
-	templs/store_config.html.ep \
-	templs/store_data_delete.html.ep \
-	templs/store_data_list.html.ep \
 	\
 	templs/layouts/default.html.ep
 
