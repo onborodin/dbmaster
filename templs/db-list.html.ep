@@ -1,0 +1,40 @@
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $agent_id = $c->req->param('agent_id') || 0;
+% my $profile = $m->agent_profile($agent_id);
+
+% if ($profile) {
+
+    % my $agent_name = $profile->{name};
+    % my $login = $profile->{login};
+    % my $password = $profile->{password};
+
+    % my $a = aAgentI->new($agent_name, $login, $password);
+    % if ($a->alive) {
+        <table>
+            % my $list = $a->db_list->{list};
+            % my $num = 1;
+            % foreach my $db (@$list) {
+                % my $num += 1;
+                % my $name = $db->{name};
+                % my $size = $db->{size};
+                % my $owner = $db->{owner};
+                % my $nb = $db->{numbackends};
+                <tr>
+                    <td><%= $num %></td>
+                    <td><%= $name %></td>
+                    <td><%= $size %></td>
+                    <td><%= $nb %></td>
+                    <td><%= $owner %></td>
+                </tr>
+            % }
+        </table>
+    % }
+% }
+%#EOF
+

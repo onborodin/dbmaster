@@ -356,7 +356,9 @@ nobase_dist_pkgdata_DATA = \
 	templs/store-update-form.html.ep \
 	templs/store-update-handler.html.ep \
 	templs/store-delete-form.html.ep \
-	templs/agent-delete-handler.html.ep
+	templs/agent-delete-handler.html.ep \
+	\
+	templs/db-list.html.ep
 
 all: all-am
 

@@ -277,7 +277,6 @@ sub port {
     $self;
 }
 
-
 sub rpc {
     my ($self,  $call, %args) = @_;
     return undef unless $call;
@@ -297,8 +296,12 @@ sub rpc {
     }
 
     $url =~ s/\?&/\?/;
-    my $tx = $self->ua->get($url);
-    my $res = $tx->result->body;
+    my $res;
+    eval {
+        my $tx = $self->ua->get($url);
+        $res = $tx->result->body;
+    };
+    return undef if $@;
     my $j = decode_json($res);
     return $j if $j;
     undef;
@@ -308,6 +311,7 @@ sub rpc {
 sub alive {
     my $self = shift;
     my $res = $self->rpc('/hello');
+    return undef unless $res;
     return 1 if  $res->{'message'} eq 'hello';
     return undef;
 }
@@ -406,6 +410,7 @@ sub db_restore {
 }
 
 1;
+
 
 #-----------------
 #--- STORE INT ---
@@ -576,19 +581,6 @@ sub data_put {
 }
 
 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #--------------
 #--- MASTER ---
@@ -769,8 +761,6 @@ sub store_delete {
     return undef if $self->store_profile($id);
     $id;
 }
-
-
 
 1;
 
@@ -979,6 +969,12 @@ sub store_delete_handler {
 }
 
 
+sub db_list {
+    my $self = shift;
+    $self->render(template => 'db-list');
+}
+
+
 1;
 
 #-----------
@@ -1147,6 +1143,7 @@ $r->any('/store/update/handler')->over('auth')->to('controller#store_update_hand
 $r->any('/store/delete/form')->over('auth')->to('controller#store_delete_form' );
 $r->any('/store/delete/handler')->over('auth')->to('controller#store_delete_handler' );
 
+$r->any('/db/list')->over('auth')->to('controller#db_list' );
 
 #----------------
 #--- LISTENER ---

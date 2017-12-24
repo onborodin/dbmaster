@@ -1,0 +1,10 @@
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+
+%#EOF
+
