@@ -1,7 +1,7 @@
 % layout 'default';
-% title 'Maacom';
+% title 'DBD';
 
-% use Mojo::Util qw(dumper html_unescape unquote);
+% use Mojo::Util qw(dumper);
 
 <h5 class="text-center">Hi! How are you there?</h5>
 
