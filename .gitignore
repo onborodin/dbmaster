@@ -4,3 +4,4 @@ config.status
 dbmaster
 dbmaster.service
 *~
+autom4te.cache
