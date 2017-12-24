@@ -77,9 +77,22 @@ nobase_dist_pkgdata_DATA = \
 	templs/agent-list.html.ep \
 	templs/agent-add-form.html.ep \
 	templs/agent-add-handler.html.ep \
+	templs/agent-rename-form.html.ep \
+	templs/agent-rename-handler.html.ep \
 	templs/agent-update-form.html.ep \
 	templs/agent-update-handler.html.ep \
 	templs/agent-delete-form.html.ep \
 	templs/agent-delete-handler.html.ep \
+	\
+	templs/store-list.html.ep \
+	templs/store-add-form.html.ep \
+	templs/store-add-handler.html.ep \
+	templs/store-rename-form.html.ep \
+	templs/store-rename-handler.html.ep \
+	templs/store-update-form.html.ep \
+	templs/store-update-handler.html.ep \
+	templs/store-delete-form.html.ep \
+	templs/agent-delete-handler.html.ep
+
 
 #EOF

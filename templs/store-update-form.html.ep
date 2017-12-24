@@ -8,11 +8,11 @@
 
 % my $u = $c->app->master;
 
-% my $agent_id = $c->req->param('agent_id') || 0;
-% my $profile = $u->agent_profile($agent_id);
+% my $store_id = $c->req->param('store_id') || 0;
+% my $profile = $u->store_profile($store_id);
 
 % if ($profile) {
-    % my $agent_name = $profile->{name};
+    % my $store_name = $profile->{name};
     % my $login = $profile->{login};
     % my $password = $profile->{password};
 
@@ -20,9 +20,9 @@
         <div class="grid-x grid-padding-x">
             <div class="medium-6 medium-centered cell">
 
-                <form accept-charset="UTF-8" action="/agent/update/handler" method="get" data-abide novalidate>
-                    <h5 class="text-center">Edit agent <%= $agent_name %></h5>
-                    <input type="hidden" name="agent_id" value="<%= $agent_id %>"/>
+                <form accept-charset="UTF-8" action="/store/update/handler" method="get" data-abide novalidate>
+                    <h5 class="text-center">Edit store <%= $store_name %></h5>
+                    <input type="hidden" name="store_id" value="<%= $store_id %>"/>
 
                     <label>Login
                         <input type="text" value="<%= $login %>" name="login" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
@@ -36,7 +36,7 @@
 
                     <div class="text-center">
                         <button type="submit" class="button">Accept</button>
-                        <a class="button" href="/agent/list?">Escape</a>
+                        <a class="button" href="/store/list?">Escape</a>
                     </div>
                 </form>
             </div>
@@ -45,6 +45,6 @@
 % }
 
 % unless ($profile) {
-        <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
+        <div class="callout warning">Store with id <%= $store_id %> not exist</div>
 % }
 %#EOF

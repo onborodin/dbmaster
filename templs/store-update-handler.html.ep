@@ -1,0 +1,45 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $store_id = $c->req->param('store_id') || 0;
+% my $store_name = $c->req->param('store_name');
+% my $login = $c->req->param('login');
+% my $password = $c->req->param('password');
+
+% my $profile = $m->store_profile($store_id);
+
+% if ($profile) {
+
+    % $store_name ||= $profile->{name};
+    % $login ||= $profile->{login};
+    % $password ||= $profile->{password};
+
+    % my $res = $m->store_update($store_id, name => $store_name, login => $login, password => $password);
+
+    % if ($res) {
+        <div class="callout success">Store <%= $store_name %> has been updated.</div>
+    % }
+
+    % unless ($res) {
+        <div class="callout alert">Store <%= $store_name %> was not updated.</div>
+    % }
+    <a class="float-left button tiny" href="/store/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Store with id <%= $store_id %> not exist</div>
+    <a class="float-left button tiny" href="/store/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF

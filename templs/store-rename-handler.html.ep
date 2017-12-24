@@ -1,0 +1,49 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $store_id = $c->req->param('store_id') || 0;
+% my $new_name = $c->req->param('new_name');
+
+% my $profile = $m->store_profile($store_id);
+
+% if ($profile) {
+
+    % $new_name ||= $profile->{name};
+    % my $store_name = $profile->{name};
+
+    % my $cid = $m->store_exist($new_name);
+
+    % if ($cid) {
+        <div class="callout warning">Store with name <%= $new_name %> already exists</div>
+    % }
+
+    % unless ($cid) {
+        % my $res = $m->store_update($store_id, name => $new_name);
+        % if ($res) {
+            <div class="callout success">Store <%= $store_name %> has been updated.</div>
+        % }
+
+        % unless ($res) {
+            <div class="callout alert">Store <%= $store_name %> was not updated.</div>
+        % }
+    % }
+    <a class="float-left button tiny" href="/store/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Store with id <%= $store_id %> not exist</div>
+    <a class="float-left button tiny" href="/store/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF

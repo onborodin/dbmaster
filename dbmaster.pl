@@ -264,10 +264,10 @@ sub agent_nextid {
 }
 
 sub agent_add {
-    my ($self, $name, $login, $quota) = @_;
+    my ($self, $name, $login, $password) = @_;
     return undef unless $name;
     return undef unless $login;
-    return undef unless $quota;
+    return undef unless $password;
     return undef if $self->agent_exist($name);
     my $next_id = $self->agent_nextid;
 
@@ -280,6 +280,18 @@ sub agent_list {
     $self->db->exec("select * from agent order by name");
 }
 
+
+sub agent_rename {
+    my ($self, $id, $new_name) = @_;
+    return undef unless $id;
+
+    my $prof = $self->agent_profile($id);
+    return undef unless $prof;
+
+    return undef if $self->agent_exist($new_name);
+    $self->agent_update($id, name => $new_name);
+}
+
 sub agent_update {
     my ($self, $id, %args) = @_;
     return undef unless $id;
@@ -288,10 +300,11 @@ sub agent_update {
     return undef unless $prof;
 
     my $name = $args{name} || $prof->{name};
-    my $name = $args{login} || $prof->{login};
-    my $name = $args{password} || $prof->{password};
+    my $login = $args{login} || $prof->{login};
+    my $password = $args{password} || $prof->{password};
 
-    $self->db->do("update agent set name = '$name', login = $login, password = $password where id = $id");
+    my $q = "update agent set name = '$name', login = '$login', password = '$password' where id = $id";
+    $self->db->do($q);
     my $res = $self->agent_profile($id);
     return undef unless $res->{name} eq $name;
     $id;
@@ -304,6 +317,86 @@ sub agent_delete {
     return undef if $self->agent_profile($id);
     $id;
 }
+
+# --- STORE ---
+
+sub store_exist {
+    my ($self, $name) = @_;
+    return undef unless $name;
+    my $res = $self->db->exec1("select id from store where name = '$name' order by id limit 1");
+    $res->{id};
+}
+
+sub store_profile {
+    my ($self, $id) = @_;
+    return undef unless $id;
+    my $row = $self->db->exec1("select * from store where store.id = $id limit 1");
+    $row;
+}
+
+sub store_nextid {
+    my $self = shift;
+    my $res = $self->db->exec1("select id from store order by id desc limit 1");
+    my $id = $res->{id} || 0;
+    $id += 1;
+}
+
+sub store_add {
+    my ($self, $name, $login, $password) = @_;
+    return undef unless $name;
+    return undef unless $login;
+    return undef unless $password;
+    return undef if $self->store_exist($name);
+    my $next_id = $self->store_nextid;
+
+    $self->db->do("insert into store (id, name, login, password) values ($next_id, '$name', '$login', '$password')");
+    $self->store_exist($name);
+}
+
+sub store_list {
+    my $self = shift;
+    $self->db->exec("select * from store order by name");
+}
+
+
+sub store_rename {
+    my ($self, $id, $new_name) = @_;
+    return undef unless $id;
+
+    my $prof = $self->store_profile($id);
+    return undef unless $prof;
+
+    return undef if $self->store_exist($new_name);
+    $self->store_update($id, name => $new_name);
+}
+
+sub store_update {
+    my ($self, $id, %args) = @_;
+    return undef unless $id;
+
+    my $prof = $self->store_profile($id);
+    return undef unless $prof;
+
+    my $name = $args{name} || $prof->{name};
+    my $login = $args{login} || $prof->{login};
+    my $password = $args{password} || $prof->{password};
+
+    my $q = "update store set name = '$name', login = '$login', password = '$password' where id = $id";
+    $self->db->do($q);
+    my $res = $self->store_profile($id);
+    return undef unless $res->{name} eq $name;
+    $id;
+}
+
+sub store_delete {
+    my ($self, $id) = @_;
+    return undef unless $id;
+    $self->db->do("delete from store where id = $id");
+    return undef if $self->store_profile($id);
+    $id;
+}
+
+
 
 1;
 
@@ -430,6 +523,7 @@ sub agent_list {
     my $self = shift;
     $self->render(template => 'agent-list');
 }
+
 sub agent_add_form {
     my $self = shift;
     $self->render(template => 'agent-add-form');
@@ -438,11 +532,20 @@ sub agent_add_handler {
     my $self = shift;
     $self->render(template => 'agent-add-handler');
 }
+
+sub agent_rename_form {
+    my $self = shift; 
+    $self->render(template => 'agent-rename-form');
+}
+sub agent_rename_handler {
+    my $self = shift;
+    $self->render(template => 'agent-rename-handler');
+}
+
 sub agent_update_form {
     my $self = shift; 
     $self->render(template => 'agent-update-form');
 }
-
 sub agent_update_handler {
     my $self = shift;
     $self->render(template => 'agent-update-handler');
@@ -452,11 +555,55 @@ sub agent_delete_form {
     my $self = shift;
     $self->render(template => 'agent-delete-form');
 }
-
 sub agent_delete_handler {
     my $self = shift;
     $self->render(template => 'agent-delete-handler');
 }
+
+
+# --- STORE ---
+
+sub store_list {
+    my $self = shift;
+    $self->render(template => 'store-list');
+}
+
+sub store_add_form {
+    my $self = shift;
+    $self->render(template => 'store-add-form');
+}
+sub store_add_handler {
+    my $self = shift;
+    $self->render(template => 'store-add-handler');
+}
+
+sub store_rename_form {
+    my $self = shift; 
+    $self->render(template => 'store-rename-form');
+}
+sub store_rename_handler {
+    my $self = shift;
+    $self->render(template => 'store-rename-handler');
+}
+
+sub store_update_form {
+    my $self = shift; 
+    $self->render(template => 'store-update-form');
+}
+sub store_update_handler {
+    my $self = shift;
+    $self->render(template => 'store-update-handler');
+}
+
+sub store_delete_form {
+    my $self = shift;
+    $self->render(template => 'store-delete-form');
+}
+sub store_delete_handler {
+    my $self = shift;
+    $self->render(template => 'store-delete-handler');
+}
+
 
 1;
 
@@ -539,8 +686,7 @@ $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenaddr6 => '[::]');
 $app->config(listenport => '8183');
 
-
-$app->config(dbname => '@app_datadir@/pgmaster.db');
+$app->config(dbname => '@app_datadir@/dbmaster.db');
 $app->config(dbhost => '');
 $app->config(dblogin => '');
 $app->config(dbpassword => '');
@@ -610,11 +756,22 @@ $r->any('/hello')->over('auth')->to('controller#hello');
 $r->any('/agent/list')->over('auth')->to('controller#agent_list' );
 $r->any('/agent/add/form')->over('auth')->to('controller#agent_add_form' );
 $r->any('/agent/add/handler')->over('auth')->to('controller#agent_add_handler' );
+$r->any('/agent/rename/form')->over('auth')->to('controller#agent_rename_form' );
+$r->any('/agent/rename/handler')->over('auth')->to('controller#agent_rename_handler' );
 $r->any('/agent/update/form')->over('auth')->to('controller#agent_update_form' );
 $r->any('/agent/update/handler')->over('auth')->to('controller#agent_update_handler' );
 $r->any('/agent/delete/form')->over('auth')->to('controller#agent_delete_form' );
 $r->any('/agent/delete/handler')->over('auth')->to('controller#agent_delete_handler' );
 
+$r->any('/store/list')->over('auth')->to('controller#store_list' );
+$r->any('/store/add/form')->over('auth')->to('controller#store_add_form' );
+$r->any('/store/add/handler')->over('auth')->to('controller#store_add_handler' );
+$r->any('/store/rename/form')->over('auth')->to('controller#store_rename_form' );
+$r->any('/store/rename/handler')->over('auth')->to('controller#store_rename_handler' );
+$r->any('/store/update/form')->over('auth')->to('controller#store_update_form' );
+$r->any('/store/update/handler')->over('auth')->to('controller#store_update_handler' );
+$r->any('/store/delete/form')->over('auth')->to('controller#store_delete_form' );
+$r->any('/store/delete/handler')->over('auth')->to('controller#store_delete_handler' );
 
 
 #----------------

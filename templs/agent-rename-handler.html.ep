@@ -9,19 +9,30 @@
 % my $m = $c->app->master;
 
 % my $agent_id = $c->req->param('agent_id') || 0;
+% my $new_name = $c->req->param('new_name');
+
 % my $profile = $m->agent_profile($agent_id);
 
 % if ($profile) {
+
+    % $new_name ||= $profile->{name};
     % my $agent_name = $profile->{name};
 
-    % my $res = $m->agent_delete($agent_id);
+    % my $cid = $m->agent_exist($new_name);
 
-    % if ($res) {
-        <div class="callout success">Agent <%= $agent_name %> has been deleted</div>
+    % if ($cid) {
+        <div class="callout warning">Agent with name <%= $new_name %> already exists</div>
     % }
 
-    % unless ($res) {
-        <div class="callout alert">Agent <%= $agent_name %> was not deleted</div>
+    % unless ($cid) {
+        % my $res = $m->agent_update($agent_id, name => $new_name);
+        % if ($res) {
+            <div class="callout success">Agent <%= $agent_name %> has been updated.</div>
+        % }
+
+        % unless ($res) {
+            <div class="callout alert">Agent <%= $agent_name %> was not updated.</div>
+        % }
     % }
     <a class="float-left button tiny" href="/agent/list">
         <i class="fi-arrow-left"></i>
@@ -34,5 +45,5 @@
         <i class="fi-arrow-left"></i>
     </a>
 % }
-%#EOF
 
+%#EOF

@@ -10,13 +10,13 @@
 % my $m = $c->app->master;
 
 <h5 class="text-center">
-    Agents <a href="/agent/list"><i class="fi-refresh"></i></a>
-    <a class="float-right button tiny" href="/agent/add/form">
+    Stores <a href="/store/list"><i class="fi-refresh"></i></a>
+    <a class="float-right button tiny" href="/store/add/form">
         <i class="fi-plus"></i>
     </a>
 </h5>
 
-% my $list = $m->agent_list;
+% my $list = $m->store_list;
 
 <table class="hover" id="table">
     <thead>
@@ -33,14 +33,14 @@
         % my $n = 0;
         % foreach my $row (@$list) {
             % $n += 1;
-            % my $agent_id = $row->{id};
-            % my $agent_name = $row->{name};
+            % my $store_id = $row->{id};
+            % my $store_name = $row->{name};
             <tr>
                 <td><%= $n %></td>
-                <td><%= $agent_name %></td>
-                <td><a href="/agent/rename/form?agent_id=<%= $agent_id %>"><i class="fi-address-book"></i></a></td>
-                <td><a href="/agent/update/form?agent_id=<%= $agent_id %>"><i class="fi-pencil"></i></a></td>
-                <td><a href="/agent/delete/form?agent_id=<%= $agent_id %>"><i class="fi-trash"></i></a></td>
+                <td><%= $store_name %></td>
+                <td><a href="/store/rename/form?store_id=<%= $store_id %>"><i class="fi-address-book"></i></a></td>
+                <td><a href="/store/update/form?store_id=<%= $store_id %>"><i class="fi-pencil"></i></a></td>
+                <td><a href="/store/delete/form?store_id=<%= $store_id %>"><i class="fi-trash"></i></a></td>
             </tr>
         % }
     % }
