@@ -23,6 +23,7 @@
         <tr>
             <th>#</th>
             <th>hostname</th>
+            <th><i class="fi-database"></i></th>
             <th><i class="fi-address-book"></i></th>
             <th><i class="fi-pencil"></i></th>
             <th><i class="fi-trash"></i></th>
@@ -38,6 +39,7 @@
             <tr>
                 <td><%= $n %></td>
                 <td><%= $agent_name %></td>
+                <td><a href="/db/list?agent_id=<%= $agent_id %>"><i class="fi-database"></i></a></td>
                 <td><a href="/agent/rename/form?agent_id=<%= $agent_id %>"><i class="fi-address-book"></i></a></td>
                 <td><a href="/agent/update/form?agent_id=<%= $agent_id %>"><i class="fi-pencil"></i></a></td>
                 <td><a href="/agent/delete/form?agent_id=<%= $agent_id %>"><i class="fi-trash"></i></a></td>

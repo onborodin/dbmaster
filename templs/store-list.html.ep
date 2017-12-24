@@ -23,6 +23,7 @@
         <tr>
             <th>#</th>
             <th>hostname</th>
+            <th><i class="fi-folder"></i></th>
             <th><i class="fi-address-book"></i></th>
             <th><i class="fi-pencil"></i></th>
             <th><i class="fi-trash"></i></th>
@@ -38,6 +39,7 @@
             <tr>
                 <td><%= $n %></td>
                 <td><%= $store_name %></td>
+                <td><a href="/data/list?store_id=<%= $store_id %>"><i class="fi-folder"></i></a></td>
                 <td><a href="/store/rename/form?store_id=<%= $store_id %>"><i class="fi-address-book"></i></a></td>
                 <td><a href="/store/update/form?store_id=<%= $store_id %>"><i class="fi-pencil"></i></a></td>
                 <td><a href="/store/delete/form?store_id=<%= $store_id %>"><i class="fi-trash"></i></a></td>
