@@ -1,0 +1,38 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->agent;
+
+% my $agent_id = $c->req->param('agent_id') || 0;
+% my $profile = $m->agent_profile($agent_id);
+
+% if ($profile) {
+    % my $agent_name = $profile->{name};
+
+    % my $res = $m->agent_delete($agent_id);
+
+    % if ($res) {
+        <div class="callout success">Agent <%= $agent_name %> has been deleted</div>
+    % }
+
+    % unless ($res) {
+        <div class="callout alert">Agent <%= $agent_name %> was not deleted</div>
+    % }
+    <a class="float-left button tiny" href="/agent/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
+    <a class="float-left button tiny" href="/agent/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+%#EOF
+

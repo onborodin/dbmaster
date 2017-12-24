@@ -1,12 +1,11 @@
 [Unit]
-Description=DBmaster
+Description=dbmaster
 
 [Service]
 Type=forking
 PIDFile=@APP_RUNDIR@/dbmaster.pid
-ExecStart=@APP_EXECDIR@/dbmaster
+ExecStart=@prefix@/sbin/dbmaster
 ExecReload=/bin/kill -HUP $MAINPID
-
 
 [Install]
 WantedBy=multi-user.target

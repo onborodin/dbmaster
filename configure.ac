@@ -226,9 +226,6 @@ done])
 AC_PERL_MODULES([
 POSIX
 Apache::Htpasswd
-File::Basename
-File::stat
-Sys::Hostname
 Mojo::Base
 Mojo::Home
 Mojo::IOLoop::Subprocess
@@ -247,5 +244,3 @@ init.d/dbmaster
 ])
 
 dnl EOF
-
-

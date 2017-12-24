@@ -10,11 +10,11 @@
 name="dbmaster"
 rcvar="dbmaster_enable"
 
-pidfile="@APP_RUNDIR@"/dbmaster.pid
-command="@prefix@/sbin/${name}"
+pidfile="/var/run/dbmaster"/dbmaster.pid
+command="/usr/local/sbin/${name}"
 command_args=""
-procname="@prefix@/sbin/${name}"
-command_interpreter="@perl@"
+procname="/usr/local/sbin/${name}"
+command_interpreter="/usr/local/bin/perl"
 
 load_rc_config ${name}
 

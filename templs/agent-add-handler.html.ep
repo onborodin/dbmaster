@@ -1,0 +1,40 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $agent_name = $c->req->param('agent_name');
+% my $login = $c->req->param('login');
+% my $password = $c->req->param('password');
+
+% my $cid = $m->agent_exist($agent_name);
+
+% if ($cid) {
+    <div class="callout warning">Agent <%= $agent_name %> already exists</div>
+% }
+
+% unless ($cid) {
+    % my $id = $m->agent_add($agent_name, $login, $password);
+    % if ($id) {
+        <div class="callout success">Agent <%= $agent_name %> has been added.</div>
+    % }
+
+    % unless ($id) {
+        <div class="callout alert">Agent <%= $agent_name %> was not added.</div>
+    % }
+% }
+
+<a class="float-left button tiny" href="/agent/list">
+    <i class="fi-arrow-left"></i>
+</a>
+
+%#EOF
+
+
+
+

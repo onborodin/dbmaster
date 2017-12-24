@@ -96,7 +96,7 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps) $(nobase_dist_conf_DATA) \
+	$(am__configure_deps) $(dist_conf_DATA) \
 	$(nobase_dist_pkgdata_DATA) $(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
@@ -132,8 +132,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(etcdir)" "$(DESTDIR)$(sbindir)" \
-	"$(DESTDIR)$(confdir)" "$(DESTDIR)$(pkgdatadir)" \
-	"$(DESTDIR)$(systemddir)"
+	"$(DESTDIR)$(confdir)" "$(DESTDIR)$(pkgdatadir)"
 SCRIPTS = $(nobase_etc_SCRIPTS) $(sbin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -156,8 +155,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-DATA = $(nobase_dist_conf_DATA) $(nobase_dist_pkgdata_DATA) \
-	$(nobase_systemd_DATA)
+DATA = $(dist_conf_DATA) $(nobase_dist_pkgdata_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/dbmaster.pl \
 	$(srcdir)/dbmaster.service.in $(top_srcdir)/init.d/dbmaster.in \
@@ -288,13 +286,17 @@ EXTRA_DIST = \
 
 @FREEBSD_OS_TRUE@etcdir = @prefix@/etc
 @FREEBSD_OS_TRUE@nobase_etc_SCRIPTS = rc.d/dbmaster
-@LINUX_OS_TRUE@systemddir = /lib/systemd/system
-@LINUX_OS_TRUE@nobase_systemd_DATA = dbmaster.service
 sbin_SCRIPTS = dbmaster
 confdir = @APP_CONFDIR@
-nobase_dist_conf_DATA = dbmaster.pw.example dbmaster.crt.example dbmaster.key.example
+dist_conf_DATA = \
+	dbmaster.pw.example \
+	dbmaster.crt.example \
+	dbmaster.conf.example \
+	dbmaster.key.example
+
 nobase_dist_pkgdata_DATA = \
-	dbmaster.sql \
+	schema.sql \
+	\
 	public/css/app.css \
 	public/css/datatables.css \
 	public/css/datatables.min.css \
@@ -302,18 +304,23 @@ nobase_dist_pkgdata_DATA = \
 	public/css/foundation-float.min.css \
 	public/css/foundation.css \
 	public/css/foundation.min.css \
+	\
 	public/favicon.ico \
 	public/favicon.png \
+	\
 	public/icons/foundation-icons.css \
 	public/icons/foundation-icons.eot \
 	public/icons/foundation-icons.svg \
 	public/icons/foundation-icons.ttf \
 	public/icons/foundation-icons.woff \
+	public/icons/preview.html \
+	\
 	public/images/sort_asc_disabled.png \
 	public/images/sort_asc.png \
 	public/images/sort_both.png \
 	public/images/sort_desc_disabled.png \
 	public/images/sort_desc.png \
+	\
 	public/js/app.js \
 	public/js/datatables.js \
 	public/js/datatables.min.js \
@@ -323,14 +330,13 @@ nobase_dist_pkgdata_DATA = \
 	public/js/jquery.min.js \
 	public/js/what-input.js \
 	\
-	templs/hello.html.ep \
-	templs/login.html.ep \
 	templs/exception.development.html.ep \
 	templs/exception.production.html.ep \
+	templs/layouts/default.html.ep \
 	templs/not_found.development.html.ep \
 	templs/not_found.production.html.ep \
-	\
-	templs/layouts/default.html.ep
+	templs/hello.html.ep \
+	templs/login.html.ep
 
 all: all-am
 
@@ -453,29 +459,26 @@ uninstall-sbinSCRIPTS:
 	files=`for p in $$list; do echo "$$p"; done | \
 	       sed -e 's,.*/,,;$(transform)'`; \
 	dir='$(DESTDIR)$(sbindir)'; $(am__uninstall_files_from_dir)
-install-nobase_dist_confDATA: $(nobase_dist_conf_DATA)
+install-dist_confDATA: $(dist_conf_DATA)
 	@$(NORMAL_INSTALL)
-	@list='$(nobase_dist_conf_DATA)'; test -n "$(confdir)" || list=; \
+	@list='$(dist_conf_DATA)'; test -n "$(confdir)" || list=; \
 	if test -n "$$list"; then \
 	  echo " $(MKDIR_P) '$(DESTDIR)$(confdir)'"; \
 	  $(MKDIR_P) "$(DESTDIR)$(confdir)" || exit 1; \
 	fi; \
-	$(am__nobase_list) | while read dir files; do \
-	  xfiles=; for file in $$files; do \
-	    if test -f "$$file"; then xfiles="$$xfiles $$file"; \
-	    else xfiles="$$xfiles $(srcdir)/$$file"; fi; done; \
-	  test -z "$$xfiles" || { \
-	    test "x$$dir" = x. || { \
-	      echo " $(MKDIR_P) '$(DESTDIR)$(confdir)/$$dir'"; \
-	      $(MKDIR_P) "$(DESTDIR)$(confdir)/$$dir"; }; \
-	    echo " $(INSTALL_DATA) $$xfiles '$(DESTDIR)$(confdir)/$$dir'"; \
-	    $(INSTALL_DATA) $$xfiles "$(DESTDIR)$(confdir)/$$dir" || exit $$?; }; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(confdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(confdir)" || exit $$?; \
 	done
 
-uninstall-nobase_dist_confDATA:
+uninstall-dist_confDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(nobase_dist_conf_DATA)'; test -n "$(confdir)" || list=; \
-	$(am__nobase_strip_setup); files=`$(am__nobase_strip)`; \
+	@list='$(dist_conf_DATA)'; test -n "$(confdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(confdir)'; $(am__uninstall_files_from_dir)
 install-nobase_dist_pkgdataDATA: $(nobase_dist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
@@ -501,30 +504,6 @@ uninstall-nobase_dist_pkgdataDATA:
 	@list='$(nobase_dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
 	$(am__nobase_strip_setup); files=`$(am__nobase_strip)`; \
 	dir='$(DESTDIR)$(pkgdatadir)'; $(am__uninstall_files_from_dir)
-install-nobase_systemdDATA: $(nobase_systemd_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(nobase_systemd_DATA)'; test -n "$(systemddir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(systemddir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(systemddir)" || exit 1; \
-	fi; \
-	$(am__nobase_list) | while read dir files; do \
-	  xfiles=; for file in $$files; do \
-	    if test -f "$$file"; then xfiles="$$xfiles $$file"; \
-	    else xfiles="$$xfiles $(srcdir)/$$file"; fi; done; \
-	  test -z "$$xfiles" || { \
-	    test "x$$dir" = x. || { \
-	      echo " $(MKDIR_P) '$(DESTDIR)$(systemddir)/$$dir'"; \
-	      $(MKDIR_P) "$(DESTDIR)$(systemddir)/$$dir"; }; \
-	    echo " $(INSTALL_DATA) $$xfiles '$(DESTDIR)$(systemddir)/$$dir'"; \
-	    $(INSTALL_DATA) $$xfiles "$(DESTDIR)$(systemddir)/$$dir" || exit $$?; }; \
-	done
-
-uninstall-nobase_systemdDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(nobase_systemd_DATA)'; test -n "$(systemddir)" || list=; \
-	$(am__nobase_strip_setup); files=`$(am__nobase_strip)`; \
-	dir='$(DESTDIR)$(systemddir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -699,7 +678,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(SCRIPTS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(etcdir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(confdir)" "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(systemddir)"; do \
+	for dir in "$(DESTDIR)$(etcdir)" "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(confdir)" "$(DESTDIR)$(pkgdatadir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -753,9 +732,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-nobase_dist_confDATA \
-	install-nobase_dist_pkgdataDATA install-nobase_etcSCRIPTS \
-	install-nobase_systemdDATA
+install-data-am: install-dist_confDATA install-nobase_dist_pkgdataDATA \
+	install-nobase_etcSCRIPTS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
@@ -802,9 +780,9 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-nobase_dist_confDATA \
+uninstall-am: uninstall-dist_confDATA \
 	uninstall-nobase_dist_pkgdataDATA uninstall-nobase_etcSCRIPTS \
-	uninstall-nobase_systemdDATA uninstall-sbinSCRIPTS
+	uninstall-sbinSCRIPTS
 
 .MAKE: install-am install-data-am install-strip
 
@@ -814,18 +792,17 @@ uninstall-am: uninstall-nobase_dist_confDATA \
 	distclean distclean-generic distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am \
-	install-data-hook install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-nobase_dist_confDATA \
+	install-data-hook install-dist_confDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
 	install-nobase_dist_pkgdataDATA install-nobase_etcSCRIPTS \
-	install-nobase_systemdDATA install-pdf install-pdf-am \
-	install-ps install-ps-am install-sbinSCRIPTS install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
-	pdf-am ps ps-am tags-am uninstall uninstall-am \
-	uninstall-nobase_dist_confDATA \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-sbinSCRIPTS install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am tags-am \
+	uninstall uninstall-am uninstall-dist_confDATA \
 	uninstall-nobase_dist_pkgdataDATA uninstall-nobase_etcSCRIPTS \
-	uninstall-nobase_systemdDATA uninstall-sbinSCRIPTS
+	uninstall-sbinSCRIPTS
 
 .PRECIOUS: Makefile
 
@@ -834,8 +811,7 @@ install-data-hook:
 @FREEBSD_OS_TRUE@	chmod a+x $(DESTDIR)/${etcdir}/rc.d/dbmaster
 	$(INSTALL) -d -m 750 -o $(APP_USER) -g $(APP_GROUP) $(DESTDIR)$(APP_LOGDIR)
 	$(INSTALL) -d -m 750 -o $(APP_USER) -g $(APP_GROUP) $(DESTDIR)$(APP_RUNDIR)
-	$(INSTALL) -d -m 750 -o $(APP_USER) -g $(APP_GROUP) $(DESTDIR)$(PGSTORE_DATADIR)
-	for data in $(nobase_dist_conf_DATA);do \
+	for data in $(nobase_conf_DATA);do \
 	  chmod 0644 $(DESTDIR)$(APP_CONFDIR)/$$data; \
 	done
 

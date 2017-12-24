@@ -1,0 +1,65 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $req = $c->req;
+% my $m = $c->app->master;
+
+<h5 class="text-center">
+    Agents <%= $domain_name %> <a href="/agent/list"><i class="fi-refresh"></i></a>
+    <a class="float-right button tiny" href="/agent/add/form">
+        <i class="fi-plus"></i>
+    </a>
+</h5>
+
+% my $list = $m->agent_list;
+
+<table class="hover" id="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>address</th>
+            <th><i class="fi-pencil"></i></th>
+            <th><i class="fi-trash"></i></th>
+        </tr>
+    </thead>
+    <tbody>
+    % if ($list) {
+        % my $n = 0;
+        % foreach my $row (@$list) {
+            % $n += 1;
+            % my $agent_id = $row->{id};
+            % my $agent_name = $row->{name};
+            <tr>
+                <td><%= $n %></td>
+                <td><%= $agent_name %></td>
+                <td><a href="/agent/update/form?agent_id=<%= $agent_id %>"><i class="fi-pencil"></i></a></td>
+                <td><a href="/agent/delete/form?agent_id=<%= $agent_id %>"><i class="fi-trash"></i></a></td>
+            </tr>
+        % }
+    % }
+    </tbody>
+</table>
+
+<script>
+$.extend(true, $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true,
+    "language": {
+        "search": "",
+        "lengthMenu": "_MENU_",
+        "info": "_START_-_END_ of _TOTAL_",
+        "infoEmpty": "",
+    },
+});
+
+$(document).ready(function() {
+    $('#table').DataTable();
+});
+</script>
+%# EOF
+
