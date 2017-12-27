@@ -1,0 +1,64 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $agent_id = $c->req->param('agent_id') || 0;
+% my $name = $c->req->param('name');
+% my $new_name = $c->req->param('new_name');
+
+% my $profile = $m->agent_profile($agent_id);
+
+% if ($profile) {
+
+    % my $agent_name = $profile->{name};
+    % my $login = $profile->{login};
+    % my $password = $profile->{password};
+
+    % my $a = aAgentI->new($agent_name, $login, $password);
+
+    % my $alive = $a->alive;
+    % if ($alive) {
+
+        % my $new_db_profile = $a->db_profile($new_name)->{profile};
+
+        % if ($new_db_profile) {
+            <div class="callout alert">Database <%= $new_name %> already exist</div>
+        % }
+
+        % unless ($new_db_profile) {
+
+            % my $res = $a->db_rename($name, $new_name);
+
+            % if ($res) {
+                <div class="callout success">Database <%= $name %> has been renamed to <%= $new_name %>.</div>
+            % }
+
+            % unless ($res) {
+                <div class="callout alert">Database <%= $name %> was not renamed.</div>
+            % }
+        % }
+    % }
+
+    % unless ($alive) {
+        <div class="callout alert">Agent <%= $agent_name %> dead. Sorry.</div>
+    % }
+
+    <a class="float-left button tiny" href="/db/list?agent_id=<%= $agent_id %>">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
+    <a class="float-left button tiny" href="/agent/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF
