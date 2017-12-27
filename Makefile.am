@@ -95,6 +95,9 @@ nobase_dist_pkgdata_DATA = \
 	templs/agent-delete-handler.html.ep \
 	\
 	templs/db-list.html.ep \
-	templs/db-create-form.html.ep
+	templs/db-create-form.html.ep \
+	templs/db-create-handler.html.ep \
+	templs/db-drop-form.html.ep \
+	templs/db-drop-handler.html.ep
 
 #EOF

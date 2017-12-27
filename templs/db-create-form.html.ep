@@ -37,4 +37,11 @@
     </div>
 % }
 
+% unless ($profile) {
+    <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
+    <a class="float-left button tiny" href="/agent/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
 %#EOF
