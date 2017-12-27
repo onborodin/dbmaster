@@ -287,7 +287,7 @@ sub rpc {
     my $password = $self->password;
     my $port = $self->port;
 
-    my $url = "http://$login:$password\@$host:$port$call";
+    my $url = "https://$login:$password\@$host:$port$call";
     $url .= "?" if %args;
     foreach my $key (sort keys %args) {
         my $value = $args{$key};
@@ -490,7 +490,7 @@ sub rpc {
     my $password = $self->password;
     my $port = $self->port;
 
-    my $url = "http://$login:$password\@$host:$port$call";
+    my $url = "https://$login:$password\@$host:$port$call";
     $url .= "?" if %args;
     foreach my $key (sort keys %args) {
         my $value = $args{$key};
@@ -546,7 +546,7 @@ sub data_get {
 
     $ENV{MOJO_TMPDIR} = $dir;
 
-    my $tx = $self->ua->get("http://$login:$password\@$host:$port/data/get?name=$name");
+    my $tx = $self->ua->get("https://$login:$password\@$host:$port/data/get?name=$name");
     my $res = $tx->result;
 
     my $type = $res->headers->content_type || '';
@@ -573,7 +573,7 @@ sub data_put {
     my $password = $self->password;
     my $port = $self->port;
 
-    my $url = "http://$login:$password\@$host:$port/data/put";
+    my $url = "https://$login:$password\@$host:$port/data/put";
     my $tx = $self->ua->post($url => form => {data => { file => $file } });
     my $res = $tx->result->body;
 
@@ -1016,6 +1016,21 @@ sub db_drop_handler {
 }
 
 
+sub data_list {
+    my $self = shift;
+    $self->render(template => 'data-list');
+}
+
+sub data_delete_form {
+    my $self = shift;
+    $self->render(template => 'data-delete-form');
+}
+
+sub data_delete_handler {
+    my $self = shift;
+    $self->render(template => 'data-delete-handler');
+}
+
 
 1;
 
@@ -1195,6 +1210,10 @@ $r->any('/db/dump/handler')->over('auth')->to('controller#db_dump_handler');
 $r->any('/db/drop/form')->over('auth')->to('controller#db_drop_form');
 $r->any('/db/drop/handler')->over('auth')->to('controller#db_drop_handler');
 
+$r->any('/data/list')->over('auth')->to('controller#data_list');
+$r->any('/data/delete/form')->over('auth')->to('controller#data_delete_form');
+$r->any('/data/delete/handler')->over('auth')->to('controller#data_delete_handler');
+
 
 #----------------
 #--- LISTENER ---
@@ -1206,14 +1225,14 @@ $tls .= '&key='.$app->config('keyfile');
 
 my $listen4;
 if ($app->config('listenaddr4')) {
-    $listen4 = "http://";
+    $listen4 = "https://";
     $listen4 .= $app->config('listenaddr4').':'.$app->config('listenport');
     $listen4 .= $tls;
 }
 
 my $listen6;
 if ($app->config('listenaddr6')) {
-    $listen6 = "http://";
+    $listen6 = "https://";
     $listen6 .= $app->config('listenaddr6').':'.$app->config('listenport');
     $listen6 .= $tls;
 }

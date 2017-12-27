@@ -362,7 +362,15 @@ nobase_dist_pkgdata_DATA = \
 	templs/db-create-form.html.ep \
 	templs/db-create-handler.html.ep \
 	templs/db-drop-form.html.ep \
-	templs/db-drop-handler.html.ep
+	templs/db-drop-handler.html.ep \
+	templs/db-rename-form.html.ep \
+	templs/db-rename-handler.html.ep \
+	templs/db-dump-form.html.ep \
+	templs/db-dump-handler.html.ep \
+	\
+	templs/data-list.html.ep \
+	templs/data-delete-form.html.ep \
+	templs/data-delete-handler.html.ep
 
 all: all-am
 

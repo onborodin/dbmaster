@@ -1,0 +1,69 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $agent_id = $c->req->param('agent_id') || 0;
+% my $store_id = $c->req->param('store_id') || 0;
+% my $name = $c->req->param('name');
+
+% my $profile = $m->agent_profile($agent_id);
+% my $store_profile = $m->store_profile($store_id);
+
+% if ($profile) {
+
+    % my $agent_name = $profile->{name};
+    % my $login = $profile->{login};
+    % my $password = $profile->{password};
+
+    % my $store_name = $store_profile->{name};
+    % my $store_login = $store_profile->{login};
+    % my $store_password = $store_profile->{password};
+
+    % my $a = aAgentI->new($agent_name, $login, $password);
+
+    % my $alive = $a->alive;
+    % if ($alive) {
+
+        % my $db_profile = $a->db_profile($name)->{profile};
+
+        % unless ($db_profile) {
+            <div class="callout alert">Database <%= $name %> not exist</div>
+        % }
+
+        % if ($db_profile) {
+
+            % my $res = $a->db_dump($name, $store_name, $store_login, $store_password, 'th.unix7.org', '123', 'magic');
+
+            % if ($res) {
+                <div class="callout success">Database <%= $name %> will be dumped.</div>
+            % }
+
+            % unless ($res) {
+                <div class="callout alert">Database <%= $agent_name %> was not dumped.</div>
+            % }
+        % }
+    % }
+
+    % unless ($alive) {
+        <div class="callout alert">Agent <%= $agent_name %> dead. Sorry.</div>
+    % }
+
+    <a class="float-left button tiny" href="/db/list?agent_id=<%= $agent_id %>">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
+    <a class="float-left button tiny" href="/agent/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF
