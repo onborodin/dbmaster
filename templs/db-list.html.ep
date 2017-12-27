@@ -8,21 +8,45 @@
 % my $agent_id = $c->req->param('agent_id') || 0;
 % my $profile = $m->agent_profile($agent_id);
 
+% sub mega { my $n = shift ; int($n/(1024*1024)+0.5); }
+
+
 % if ($profile) {
 
     % my $agent_name = $profile->{name};
     % my $login = $profile->{login};
     % my $password = $profile->{password};
 
+    <h5 class="text-center">
+        Agents <%= $agent_name %> DBs <a href="/db/list?agent_id=<%= $agent_id %>"><i class="fi-refresh"></i></a>
+        <a class="float-right button tiny" href="/db/add/form??agent_id=<%= $agent_id %>">
+            <i class="fi-plus"></i>
+        </a>
+    </h5>
+
+
     % my $a = aAgentI->new($agent_name, $login, $password);
     % if ($a->alive) {
-        <table>
+        <table class="hover" id="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>name</th>
+                    <th><i class="fi-graph-pie"></i></th>
+                    <th><i class="fi-male-female"></i></th>
+                    <th><i class="fi-male"></i></th>
+                    <th><i class="fi-address-book"></i></th>
+                    <th><i class="fi-save"></i></th>
+                    <th><i class="fi-trash"></i></th>
+                </tr>
+            </thead>
+            <tbody>
             % my $list = $a->db_list->{list};
-            % my $num = 1;
+            % my $num = 0;
             % foreach my $db (@$list) {
-                % my $num += 1;
+                % $num += 1;
                 % my $name = $db->{name};
-                % my $size = $db->{size};
+                % my $size = mega($db->{size});
                 % my $owner = $db->{owner};
                 % my $nb = $db->{numbackends};
                 <tr>
@@ -31,10 +55,35 @@
                     <td><%= $size %></td>
                     <td><%= $nb %></td>
                     <td><%= $owner %></td>
+                    <td><a href="/db/rename/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-address-book"></i></a></td>
+                    <td><a href="/db/dump/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-save"></i></a></td>
+                    <td><a href="/db/drop/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-trash"></i></a></td>
                 </tr>
             % }
+            </tbody>
         </table>
     % }
 % }
+
+<table class="hover" id="table">
+
+<script>
+$.extend(true, $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true,
+    "language": {
+        "search": "",
+        "lengthMenu": "_MENU_",
+        "info": "_START_-_END_ of _TOTAL_",
+        "infoEmpty": "",
+    },
+});
+
+$(document).ready(function() {
+    $('#table').DataTable();
+});
+</script>
+
+
 %#EOF
 
