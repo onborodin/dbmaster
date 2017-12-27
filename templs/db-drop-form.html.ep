@@ -9,7 +9,7 @@
 % my $m = $c->app->master;
 
 % my $agent_id = $c->req->param('agent_id') || 0;
-% my $name = $c->req->param('name') || 0;
+% my $name = $c->req->param('name') || '';
 
 % my $profile = $m->agent_profile($agent_id);
 
