@@ -1,0 +1,45 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $agent_id = $c->req->param('agent_id') || 0;
+% my $name = $c->req->param('name') || 0;
+
+% my $profile = $m->agent_profile($agent_id);
+
+% if ($profile) {
+    % my $agent_name = $profile->{name};
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="medium-6 medium-centered cell">
+                <form accept-charset="UTF-8" action="/db/drop/handler" method="get" data-abide novalidate>
+
+                    <h5 class="text-center">Drop database <%= $name %> on <%= $agent_name %></h5>
+
+                    <input type="hidden" name="agent_id" value="<%= $agent_id %>"/>
+                    <input type="hidden" name="name" value="<%= $name %>"/>
+
+                    <div class="text-center">
+                        <button type="submit" class="button">Accept</button>
+                        <a class="button" href="/db/list?agent_id=<%= $agent_id %>">Escape</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
+    <a class="float-left button tiny" href="/agent/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF
