@@ -1,0 +1,77 @@
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $store_id = $c->req->param('store_id') || 0;
+% my $profile = $m->store_profile($store_id);
+
+% sub mega { my $n = shift ; int($n/(1024*1024)+0.9); }
+
+
+% if ($profile) {
+
+    % my $store_name = $profile->{name};
+    % my $login = $profile->{login};
+    % my $password = $profile->{password};
+
+    <h5 class="text-center">
+        Stores <%= $store_name %> Dumps <a href="/data/list?store_id=<%= $store_id %>"><i class="fi-refresh"></i></a>
+    </h5>
+
+
+    % my $s = aStoreI->new($store_name, $login, $password);
+    % if ($s->alive) {
+        <table class="hover" id="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>dump</th>
+                    <th><i class="fi-graph-pie"></i></th>
+                    <th><i class="fi-arrow-up"></i></th>
+                    <th><i class="fi-trash"></i></th>
+                </tr>
+            </thead>
+            <tbody>
+            % my $list = $s->data_list->{list};
+            % my $num = 0;
+            % foreach my $dump (@$list) {
+                % $num += 1;
+                % my $name = $dump->{name};
+                % my $size = mega($dump->{size});
+                % my $mtime = $dump->{owner};
+                <tr>
+                    <td><%= $num %></td>
+                    <td><%= $name %></td>
+                    <td><%= $size %></td>
+                    <td><a href="/db/restore/form?store_id=<%= $store_id %>&name=<%= $name %>"><i class="fi-arrow-up"></i></a></td>
+                    <td><a href="/data/delete/form?store_id=<%= $store_id %>&name=<%= $name %>"><i class="fi-trash"></i></a></td>
+                </tr>
+            % }
+            </tbody>
+        </table>
+    % }
+% }
+
+<table class="hover" id="table">
+
+<script>
+$.extend(true, $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true,
+    "language": {
+        "search": "",
+        "lengthMenu": "_MENU_",
+        "info": "_START_-_END_ of _TOTAL_",
+        "infoEmpty": "",
+    },
+});
+
+$(document).ready(function() {
+    $('#table').DataTable();
+});
+</script>
+%#EOF
+

@@ -1,0 +1,45 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $store_id = $c->req->param('store_id') || 0;
+% my $name = $c->req->param('name') || '';
+
+% my $profile = $m->store_profile($store_id);
+
+% if ($profile) {
+    % my $store_name = $profile->{name};
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="medium-6 medium-centered cell">
+                <form accept-charset="UTF-8" action="/data/delete/handler" method="get" data-abide novalidate>
+
+                    <h5 class="text-center">Drop file <%= $name %> on <%= $store_name %></h5>
+
+                    <input type="hidden" name="store_id" value="<%= $store_id %>"/>
+                    <input type="hidden" name="name" value="<%= $name %>"/>
+
+                    <div class="text-center">
+                        <button type="submit" class="button">Accept</button>
+                        <a class="button" href="/db/list?store_id=<%= $store_id %>">Escape</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Agent with id <%= $store_id %> not exist</div>
+    <a class="float-left button tiny" href="/store/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF

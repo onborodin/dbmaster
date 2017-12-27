@@ -1,0 +1,63 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $store_id = $c->req->param('store_id') || 0;
+% my $name = $c->req->param('name');
+
+% my $profile = $m->store_profile($store_id);
+
+% if ($profile) {
+
+    % my $store_name = $profile->{name};
+    % my $login = $profile->{login};
+    % my $password = $profile->{password};
+
+    % my $s = aStoreI->new($store_name, $login, $password);
+
+    % my $alive = $s->alive;
+    % if ($alive) {
+
+        % my $data_profile = $s->data_profile($name)->{profile};
+
+        % unless ($data_profile) {
+            <div class="callout alert">File <%= $name %> not exist</div>
+        % }
+
+        % if ($data_profile) {
+
+            % my $res = $s->data_delete($name);
+
+            % if ($res) {
+                <div class="callout success">File <%= $name %> has been deleted.</div>
+            % }
+
+            % unless ($res) {
+                <div class="callout alert">File <%= $store_name %> was not deleted.</div>
+            % }
+        % }
+    % }
+
+    % unless ($alive) {
+        <div class="callout alert">Store <%= $store_name %> dead. Sorry.</div>
+    % }
+
+    <a class="float-left button tiny" href="/data/list?store_id=<%= $store_id %>">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Store with id <%= $store_id %> not exist</div>
+    <a class="float-left button tiny" href="/store/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+%#EOF
