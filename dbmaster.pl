@@ -974,6 +974,48 @@ sub db_list {
     $self->render(template => 'db-list');
 }
 
+sub db_create_form {
+    my $self = shift;
+    $self->render(template => 'db-create-form');
+}
+
+sub db_create_handler {
+    my $self = shift;
+    $self->render(template => 'db-create-handler');
+}
+
+sub db_rename_form {
+    my $self = shift;
+    $self->render(template => 'db-rename-form');
+}
+
+sub db_rename_handler {
+    my $self = shift;
+    $self->render(template => 'db-rename-handler');
+}
+
+
+sub db_dump_form {
+    my $self = shift;
+    $self->render(template => 'db-dump-form');
+}
+
+sub db_dump_handler {
+    my $self = shift;
+    $self->render(template => 'db-dump-handler');
+}
+
+sub db_drop_form {
+    my $self = shift;
+    $self->render(template => 'db-drop-form');
+}
+
+sub db_drop_handler {
+    my $self = shift;
+    $self->render(template => 'db-drop-handler');
+}
+
+
 
 1;
 
@@ -1123,27 +1165,36 @@ $r->any('/logout')->over('auth')->to('controller#logout');
 $r->any('/')->over('auth')->to('controller#hello' );
 $r->any('/hello')->over('auth')->to('controller#hello');
 
-$r->any('/agent/list')->over('auth')->to('controller#agent_list' );
-$r->any('/agent/add/form')->over('auth')->to('controller#agent_add_form' );
-$r->any('/agent/add/handler')->over('auth')->to('controller#agent_add_handler' );
-$r->any('/agent/rename/form')->over('auth')->to('controller#agent_rename_form' );
-$r->any('/agent/rename/handler')->over('auth')->to('controller#agent_rename_handler' );
-$r->any('/agent/update/form')->over('auth')->to('controller#agent_update_form' );
-$r->any('/agent/update/handler')->over('auth')->to('controller#agent_update_handler' );
-$r->any('/agent/delete/form')->over('auth')->to('controller#agent_delete_form' );
-$r->any('/agent/delete/handler')->over('auth')->to('controller#agent_delete_handler' );
+$r->any('/agent/list')->over('auth')->to('controller#agent_list');
+$r->any('/agent/add/form')->over('auth')->to('controller#agent_add_form');
+$r->any('/agent/add/handler')->over('auth')->to('controller#agent_add_handler');
+$r->any('/agent/rename/form')->over('auth')->to('controller#agent_rename_form');
+$r->any('/agent/rename/handler')->over('auth')->to('controller#agent_rename_handler');
+$r->any('/agent/update/form')->over('auth')->to('controller#agent_update_form');
+$r->any('/agent/update/handler')->over('auth')->to('controller#agent_update_handler');
+$r->any('/agent/delete/form')->over('auth')->to('controller#agent_delete_form');
+$r->any('/agent/delete/handler')->over('auth')->to('controller#agent_delete_handler');
 
-$r->any('/store/list')->over('auth')->to('controller#store_list' );
-$r->any('/store/add/form')->over('auth')->to('controller#store_add_form' );
-$r->any('/store/add/handler')->over('auth')->to('controller#store_add_handler' );
-$r->any('/store/rename/form')->over('auth')->to('controller#store_rename_form' );
-$r->any('/store/rename/handler')->over('auth')->to('controller#store_rename_handler' );
-$r->any('/store/update/form')->over('auth')->to('controller#store_update_form' );
-$r->any('/store/update/handler')->over('auth')->to('controller#store_update_handler' );
-$r->any('/store/delete/form')->over('auth')->to('controller#store_delete_form' );
-$r->any('/store/delete/handler')->over('auth')->to('controller#store_delete_handler' );
+$r->any('/store/list')->over('auth')->to('controller#store_list');
+$r->any('/store/add/form')->over('auth')->to('controller#store_add_form');
+$r->any('/store/add/handler')->over('auth')->to('controller#store_add_handler');
+$r->any('/store/rename/form')->over('auth')->to('controller#store_rename_form');
+$r->any('/store/rename/handler')->over('auth')->to('controller#store_rename_handler');
+$r->any('/store/update/form')->over('auth')->to('controller#store_update_form');
+$r->any('/store/update/handler')->over('auth')->to('controller#store_update_handler');
+$r->any('/store/delete/form')->over('auth')->to('controller#store_delete_form');
+$r->any('/store/delete/handler')->over('auth')->to('controller#store_delete_handler');
 
-$r->any('/db/list')->over('auth')->to('controller#db_list' );
+$r->any('/db/list')->over('auth')->to('controller#db_list');
+$r->any('/db/create/form')->over('auth')->to('controller#db_create_form');
+$r->any('/db/create/handler')->over('auth')->to('controller#db_create_handler');
+$r->any('/db/rename/form')->over('auth')->to('controller#db_rename_form');
+$r->any('/db/rename/handler')->over('auth')->to('controller#db_rename_handler');
+$r->any('/db/dump/form')->over('auth')->to('controller#db_dump_form');
+$r->any('/db/dump/handler')->over('auth')->to('controller#db_dump_handler');
+$r->any('/db/drop/form')->over('auth')->to('controller#db_drop_form');
+$r->any('/db/drop/handler')->over('auth')->to('controller#db_drop_handler');
+
 
 #----------------
 #--- LISTENER ---
@@ -1175,10 +1226,6 @@ $server->listen(\@listen);
 $server->heartbeat_interval(3);
 $server->heartbeat_timeout(60);
 
-$app->log(Mojo::Log->new( 
-                path => $app->config('logfile'),
-                level => $app->config('loglevel')
-));
 
 #--------------
 #--- DAEMON ---
@@ -1188,7 +1235,9 @@ unless ($nofork) {
     my $d = aDaemon->new;
     my $user = $app->config('user');
     my $group = $app->config('group');
+
     $d->fork;
+
     $app->log(Mojo::Log->new(
                 path => $app->config('logfile'),
                 level => $app->config('loglevel')

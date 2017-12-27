@@ -6,10 +6,10 @@
 
 % use Mojo::Util qw(dumper);
 
-% my $u = $c->app->master;
+% my $m = $c->app->master;
 
 % my $store_id = $c->req->param('store_id') || 0;
-% my $profile = $u->store_profile($store_id);
+% my $profile = $m->store_profile($store_id);
 
 % if ($profile) {
     % my $store_name = $profile->{name};

@@ -19,7 +19,7 @@
 
     <h5 class="text-center">
         Agents <%= $agent_name %> DBs <a href="/db/list?agent_id=<%= $agent_id %>"><i class="fi-refresh"></i></a>
-        <a class="float-right button tiny" href="/db/add/form??agent_id=<%= $agent_id %>">
+        <a class="float-right button tiny" href="/db/create/form?agent_id=<%= $agent_id %>">
             <i class="fi-plus"></i>
         </a>
     </h5>

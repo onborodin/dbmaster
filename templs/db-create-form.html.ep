@@ -16,24 +16,25 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="medium-6 medium-centered cell">
-                <form accept-charset="UTF-8" action="/agent/delete/handler" method="get" data-abide novalidate>
+                <form accept-charset="UTF-8" action="/db/create/handler" method="get" data-abide novalidate>
 
-                    <h5 class="text-center">Delete agent <%= $agent_name %></h5>
+                    <h5 class="text-center">Create database on <%= $agent_name %></h5>
 
                     <input type="hidden" name="agent_id" value="<%= $agent_id %>"/>
 
+                    <label>Name
+                    <input type="text" name="name" placeholder="database" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
+                        <span class="form-error">Mandatory, 2 or more letter</span>
+                    </label>
+
                     <div class="text-center">
                         <button type="submit" class="button">Accept</button>
-                        <a class="button" href="/agent/list">Escape</a>
+                        <a class="button" href="/db/list?agent_id=<%= $agent_id %>">Escape</a>
                     </div>
-
                 </form>
             </div>
         </div>
     </div>
 % }
 
-% unless ($profile) {
-        <div class="callout warning">Agent with id <%= $agent_id %> not exist</div>
-% }
 %#EOF

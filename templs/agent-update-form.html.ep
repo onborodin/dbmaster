@@ -6,10 +6,10 @@
 
 % use Mojo::Util qw(dumper);
 
-% my $u = $c->app->master;
+% my $m = $c->app->master;
 
 % my $agent_id = $c->req->param('agent_id') || 0;
-% my $profile = $u->agent_profile($agent_id);
+% my $profile = $m->agent_profile($agent_id);
 
 % if ($profile) {
     % my $agent_name = $profile->{name};
