@@ -23,7 +23,8 @@
 
 
     % my $s = aStoreI->new($store_name, $login, $password);
-    % if ($s->alive) {
+    % my $alive = $s->alive;
+    % if ($alive) {
         <table class="hover" id="table">
             <thead>
                 <tr>
@@ -52,6 +53,10 @@
             % }
             </tbody>
         </table>
+    % }
+
+    % unless ($alive) {
+        <div class="callout alert">Communication lost. Maybe store <%= $store_name %> died. Sorry.</div>
     % }
 % }
 

@@ -499,8 +499,12 @@ sub rpc {
     }
 
     $url =~ s/\?&/\?/;
-    my $tx = $self->ua->get($url);
-    my $res = $tx->result->body;
+    my $res;
+    eval {
+        my $tx = $self->ua->get($url);
+        $res = $tx->result->body;
+    };
+    return undef if $@;
     my $j = decode_json($res);
 }
 
@@ -574,9 +578,12 @@ sub data_put {
     my $port = $self->port;
 
     my $url = "https://$login:$password\@$host:$port/data/put";
-    my $tx = $self->ua->post($url => form => {data => { file => $file } });
-    my $res = $tx->result->body;
-
+    my $res;
+    eval {
+        my $tx = $self->ua->post($url => form => {data => { file => $file } });
+        $res = $tx->result->body;
+    };
+    return undef if $@;
     my $j = decode_json($res);
 }
 

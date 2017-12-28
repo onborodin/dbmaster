@@ -26,7 +26,8 @@
 
 
     % my $a = aAgentI->new($agent_name, $login, $password);
-    % if ($a->alive) {
+    % my $alive = $a->alive;
+    % if ($alive) {
         <table class="hover" id="table">
             <thead>
                 <tr>
@@ -63,6 +64,11 @@
             </tbody>
         </table>
     % }
+    % unless ($alive) {
+        <div class="callout alert">Communication lost. Maybe Agent <%= $agent_name %> died <i class="fi-skull"></i>. Sorry.</div>
+    % }
+
+
 % }
 
 <table class="hover" id="table">
