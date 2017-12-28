@@ -92,7 +92,7 @@ nobase_dist_pkgdata_DATA = \
 	templs/store-update-form.html.ep \
 	templs/store-update-handler.html.ep \
 	templs/store-delete-form.html.ep \
-	templs/agent-delete-handler.html.ep \
+	templs/store-delete-handler.html.ep \
 	\
 	templs/db-list.html.ep \
 	templs/db-create-form.html.ep \
@@ -103,6 +103,8 @@ nobase_dist_pkgdata_DATA = \
 	templs/db-rename-handler.html.ep \
 	templs/db-dump-form.html.ep \
 	templs/db-dump-handler.html.ep \
+	templs/db-restore-form.html.ep \
+	templs/db-restore-handler.html.ep \
 	\
 	templs/data-list.html.ep \
 	templs/data-delete-form.html.ep \

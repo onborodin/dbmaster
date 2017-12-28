@@ -1012,6 +1012,18 @@ sub db_dump_handler {
     $self->render(template => 'db-dump-handler');
 }
 
+
+sub db_restore_form {
+    my $self = shift;
+    $self->render(template => 'db-restore-form');
+}
+
+sub db_restore_handler {
+    my $self = shift;
+    $self->render(template => 'db-restore-handler');
+}
+
+
 sub db_drop_form {
     my $self = shift;
     $self->render(template => 'db-drop-form');
@@ -1216,6 +1228,9 @@ $r->any('/db/dump/form')->over('auth')->to('controller#db_dump_form');
 $r->any('/db/dump/handler')->over('auth')->to('controller#db_dump_handler');
 $r->any('/db/drop/form')->over('auth')->to('controller#db_drop_form');
 $r->any('/db/drop/handler')->over('auth')->to('controller#db_drop_handler');
+
+$r->any('/db/restore/form')->over('auth')->to('controller#db_restore_form');
+$r->any('/db/restore/handler')->over('auth')->to('controller#db_restore_handler');
 
 $r->any('/data/list')->over('auth')->to('controller#data_list');
 $r->any('/data/delete/form')->over('auth')->to('controller#data_delete_form');

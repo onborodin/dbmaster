@@ -9,7 +9,7 @@
 % my $m = $c->app->master;
 
 % my $store_id = $c->req->param('store_id') || 0;
-% my $name = $c->req->param('name') || '';
+% my $file = $c->req->param('file') || '';
 
 % my $profile = $m->store_profile($store_id);
 
@@ -20,10 +20,10 @@
             <div class="medium-6 medium-centered cell">
                 <form accept-charset="UTF-8" action="/data/delete/handler" method="get" data-abide novalidate>
 
-                    <h5 class="text-center">Drop file <%= $name %> on <%= $store_name %></h5>
+                    <h5 class="text-center">Drop file <%= $file %> on <%= $store_name %></h5>
 
                     <input type="hidden" name="store_id" value="<%= $store_id %>"/>
-                    <input type="hidden" name="name" value="<%= $name %>"/>
+                    <input type="hidden" name="name" value="<%= $file %>"/>
 
                     <div class="text-center">
                         <button type="submit" class="button">Accept</button>

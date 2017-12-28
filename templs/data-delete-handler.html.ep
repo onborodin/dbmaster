@@ -9,7 +9,7 @@
 % my $m = $c->app->master;
 
 % my $store_id = $c->req->param('store_id') || 0;
-% my $name = $c->req->param('name');
+% my $file = $c->req->param('file');
 
 % my $profile = $m->store_profile($store_id);
 
@@ -24,18 +24,18 @@
     % my $alive = $s->alive;
     % if ($alive) {
 
-        % my $data_profile = $s->data_profile($name)->{profile};
+        % my $data_profile = $s->data_profile($file)->{profile};
 
         % unless ($data_profile) {
-            <div class="callout alert">File <%= $name %> not exist</div>
+            <div class="callout alert">File <%= $file %> not exist</div>
         % }
 
         % if ($data_profile) {
 
-            % my $res = $s->data_delete($name);
+            % my $res = $s->data_delete($file);
 
             % if ($res) {
-                <div class="callout success">File <%= $name %> has been deleted.</div>
+                <div class="callout success">File <%= $file %> has been deleted.</div>
             % }
 
             % unless ($res) {

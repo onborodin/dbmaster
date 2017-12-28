@@ -47,8 +47,8 @@
                     <td><%= $num %></td>
                     <td><%= $name %></td>
                     <td><%= $size %></td>
-                    <td><a href="/db/restore/form?store_id=<%= $store_id %>&name=<%= $name %>"><i class="fi-arrow-up"></i></a></td>
-                    <td><a href="/data/delete/form?store_id=<%= $store_id %>&name=<%= $name %>"><i class="fi-trash"></i></a></td>
+                    <td><a href="/db/restore/form?store_id=<%= $store_id %>&file=<%= $name %>"><i class="fi-arrow-up"></i></a></td>
+                    <td><a href="/data/delete/form?store_id=<%= $store_id %>&file=<%= $name %>"><i class="fi-trash"></i></a></td>
                 </tr>
             % }
             </tbody>
