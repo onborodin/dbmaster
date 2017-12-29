@@ -492,6 +492,7 @@ sub rpc {
 
     my $url = "https://$login:$password\@$host:$port$call";
     $url .= "?" if %args;
+
     foreach my $key (sort keys %args) {
         my $value = $args{$key};
         next unless $value;

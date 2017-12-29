@@ -23,7 +23,7 @@
                     <h5 class="text-center">Drop file <%= $file %> on <%= $store_name %></h5>
 
                     <input type="hidden" name="store_id" value="<%= $store_id %>"/>
-                    <input type="hidden" name="name" value="<%= $file %>"/>
+                    <input type="hidden" name="file" value="<%= $file %>"/>
 
                     <div class="text-center">
                         <button type="submit" class="button">Accept</button>
