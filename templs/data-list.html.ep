@@ -8,7 +8,7 @@
 % my $store_id = $c->req->param('store_id') || 0;
 % my $profile = $m->store_profile($store_id);
 
-% sub mega { my $n = shift ; int($n/(1024*1024)+0.9); }
+% sub mega { my $n = shift ; int($n/(1024*1024)+1); }
 
 
 % if ($profile) {
