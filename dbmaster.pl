@@ -1274,9 +1274,9 @@ $server->heartbeat_timeout(60);
 #--------------
 
 unless ($nofork) {
-    my $d = aDaemon->new;
     my $user = $app->config('user');
     my $group = $app->config('group');
+    my $d = aDaemon->new($user, $group);
 
     $d->fork;
 
