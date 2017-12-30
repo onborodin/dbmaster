@@ -2,7 +2,7 @@
 %# $Id$
 %#
 % layout 'default';
-% title 'DBD';
+% title 'DBD Agents';
 
 % use Mojo::Util qw(dumper);
 

@@ -1,5 +1,5 @@
 % layout 'default';
-% title 'DBD';
+% title 'DBD Data List';
 
 % use Mojo::Util qw(dumper);
 

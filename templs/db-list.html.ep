@@ -1,5 +1,5 @@
 % layout 'default';
-% title 'DBD';
+% title 'DBD DB List';
 
 % use Mojo::Util qw(dumper);
 
@@ -10,7 +10,6 @@
 
 % sub mega { my $n = shift ; int($n/(1024*1024)+0.5); }
 
-
 % if ($profile) {
 
     % my $agent_name = $profile->{name};
@@ -18,7 +17,7 @@
     % my $password = $profile->{password};
 
     <h5 class="text-center">
-        Agents <%= $agent_name %> DBs <a href="/db/list?agent_id=<%= $agent_id %>"><i class="fi-refresh"></i></a>
+        Agent <%= $agent_name %> DBs <a href="/db/list?agent_id=<%= $agent_id %>"><i class="fi-refresh"></i></a>
         <a class="float-right button tiny" href="/db/create/form?agent_id=<%= $agent_id %>">
             <i class="fi-plus"></i>
         </a>
