@@ -7,4 +7,5 @@ dbhost = 127.0.0.1
 dblogin = dbmaster
 dbpassword = password
 dbengine = postgres
+#datadir = /data/dbmaster
 #EOF

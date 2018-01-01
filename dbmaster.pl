@@ -1265,8 +1265,11 @@ push @listen, $listen4 if $listen4;
 push @listen, $listen6 if $listen6;
 
 $server->listen(\@listen);
+
 $server->heartbeat_interval(3);
 $server->heartbeat_timeout(60);
+$server->spare(2);
+$server->workers(2);
 
 
 #--------------
