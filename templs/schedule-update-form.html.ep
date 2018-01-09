@@ -1,0 +1,100 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $schedule_id = $c->req->param('schedule_id') || 0;
+
+% my $profile = $m->schedule_profile($schedule_id);
+
+% if ($profile) {
+    % my $source_id = $profile('source_id');
+    % my $dest_id = $profile('dest_id');
+    % my $subject = $profile('subject');
+    % my $type = $profile('type');
+
+    % my $mday = $profile('mday');
+    % my $wday = $profile('wday');
+    % my $hour = $profile('hour');
+    % my $min = $profile('min');
+    % my $count = $profile('count');
+
+    % my $store_list = $m->store_list;
+
+    % my $agent_profile = $m->agent_profile($agent_id);
+    % my $store_profile = $m->store_profile($dest_id);
+
+    % my $agent_name = $agent_profile->{name};
+    % my $store_name = $store_profile->{name};
+
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="medium-6 medium-centered cell">
+                <form accept-charset="UTF-8" action="/schedule/add/handler" method="get" data-abide novalidate>
+
+                    <h5 class="text-center">Edit schedule record</h5>
+
+                    <div class="text-center">Source <%= $agent_name %></div>
+                    <div class="text-center">Database <%= $subject %></div>
+                    <div class="text-center">Type dump <%= $subject %></div>
+
+                    <input type="hidden" name="source_id" value="<%= $agent_id %>"/>
+
+                    <label>Store
+                        <select name="dest_id" required>
+                            <option value="<%= $dest_id %>"><%= $store_name %></option>
+                            % foreach my $store (@{$store_list}) {
+                                % my $store_name = $store->{'name'};
+                                % my $store_id = $store->{'id'};
+                                <option value="<%= $store_id %>"><%= $store_name %></option>
+                            % }
+                        </select>
+                    </label>
+
+                    <input type="hidden" name="type" value="dump"/>
+
+                    <label>Subject
+                        <input type="text" name="subject" value="<%= $subject %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Month Day
+                        <input type="text" name="mday" value="<%= $mday %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Week Day
+                        <input type="text" name="wday" value="<%= $wday %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 6 or more letter</span>
+                    </label>
+
+                    <label>Hours
+                        <input type="text" name="hour" value="<%= $hour %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Minutes
+                        <input type="text" name="min"  value="<%= $min %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Count
+                        <input type="number" name="count" value="<%= $count %>"  required pattern="[0-9]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more ciphers</span>
+                    </label>
+
+                    <div class="text-center">
+                        <button type="submit" class="button">Accept</button>
+                        <a class="button" href="/schedule/list">Escape</a>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+% }
+%#EOF
