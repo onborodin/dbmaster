@@ -1,0 +1,91 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD Schedules';
+
+% use Mojo::Util qw(dumper);
+
+% my $req = $c->req;
+% my $m = $c->app->master;
+
+<h5 class="text-center">
+    Schedules <a href="/schedule/list"><i class="fi-refresh"></i></a>
+</h5>
+
+% my $list = $m->schedule_list;
+
+
+<table class="hover" id="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>src</th>
+            <th>dest</th>
+            <th>type</i></th>
+            <th>wday</th>
+            <th>mday</th>
+            <th>hour</th>
+            <th>min</th>
+            <th>count</th>
+            <th>edit</th>
+            <th>del</th>
+        </tr>
+    </thead>
+    <tbody>
+    % if ($list) {
+        % my $n = 0;
+        % foreach my $row (@$list) {
+            % $n += 1;
+            % my $source_id = $row->{source_id};
+            % my $dest_id = $row->{dest_id};
+            % my $type = $row->{type};
+            % my $subject = $row->{subject};
+            % my $wday = $row->{wday};
+            % my $mday = $row->{mday};
+            % my $hour = $row->{hour};
+            % my $min = $row->{min};
+            % my $count = $row->{count};
+
+            % my $agent_profile = $m->agent_profile($source_id);
+            % my $store_profile = $m->store_profile($dest_id);
+
+            % my $source_name = $agent_profile->{name};
+            % my $dest_name = $store_profile->{name};
+            <tr>
+                <td><%= $source_name %></td>
+                <td><%= $dest_name %></td>
+                <td><%= $type %></td>
+                <td><%= $wday %></td>
+                <td><%= $mday %></td>
+                <td><%= $hour %></td>
+                <td><%= $min %></td>
+                <td><%= $count %></td>
+                <td>E</td>
+                <td>D</td>
+            </tr>
+
+
+        % }
+    % }
+    </tbody>
+</table>
+
+<script>
+$.extend(true, $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true,
+    "language": {
+        "search": "",
+        "lengthMenu": "_MENU_",
+        "info": "_START_-_END_ of _TOTAL_",
+        "infoEmpty": "",
+    },
+});
+
+$(document).ready(function() {
+    $('#table').DataTable();
+});
+</script>
+%# EOF
+
