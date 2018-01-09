@@ -22,6 +22,7 @@
             <th>#</th>
             <th>src</th>
             <th>dest</th>
+            <th>subj</th>
             <th>type</i></th>
             <th>wday</th>
             <th>mday</th>
@@ -53,8 +54,10 @@
             % my $source_name = $agent_profile->{name};
             % my $dest_name = $store_profile->{name};
             <tr>
+                <td><%= $n %></td>
                 <td><%= $source_name %></td>
                 <td><%= $dest_name %></td>
+                <td><%= $subject %></td>
                 <td><%= $type %></td>
                 <td><%= $wday %></td>
                 <td><%= $mday %></td>

@@ -36,6 +36,7 @@
                     <th><i class="fi-male-female"></i></th>
                     <th><i class="fi-male"></i></th>
                     <th><i class="fi-address-book"></i></th>
+                    <th><i class="fi-plus"></i></th>
                     <th><i class="fi-save"></i></th>
                     <th><i class="fi-trash"></i></th>
                 </tr>
@@ -56,6 +57,7 @@
                     <td><%= $nb %></td>
                     <td><%= $owner %></td>
                     <td><a href="/db/rename/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-address-book"></i></a></td>
+                    <td><a href="/schedule/add/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-plus"></i></a></td>
                     <td><a href="/db/dump/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-save"></i></a></td>
                     <td><a href="/db/drop/form?agent_id=<%= $agent_id %>&name=<%= $name %>"><i class="fi-trash"></i></a></td>
                 </tr>

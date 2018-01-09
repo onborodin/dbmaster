@@ -1,0 +1,63 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $source_id = $c->req->param('source_id');
+% my $dest_id = $c->req->param('dest_id');
+% my $subject = $c->req->param('subject');
+% my $type = $c->req->param('type');
+
+% my $mday = $c->req->param('mday');
+% my $wday = $c->req->param('wday');
+% my $hour = $c->req->param('hour');
+% my $min = $c->req->param('min');
+% my $count = $c->req->param('count');
+
+
+% my $id = $m->schedule_add($source_id, $dest_id, $subject, $type, $mday, $wday, $hour, $min, $count);
+
+% if ($id) {
+        <div class="callout success">Schedule  has been added.</div>
+% }
+
+% unless ($id) {
+        <div class="callout alert">Schedule was not added.</div>
+% }
+
+<a class="float-left button tiny" href="/agent/list">
+    <i class="fi-arrow-left"></i>
+</a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<a class="float-left button tiny" href="/schedule/list">
+    <i class="fi-arrow-left"></i>
+</a>
+
+%#EOF
+
+
+
+

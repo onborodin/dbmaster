@@ -1,0 +1,81 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $agent_id = $c->req->param('agent_id') || 0;
+% my $name = $c->req->param('name') || '';
+
+% my $agent_profile = $m->agent_profile($agent_id);
+
+% if ($agent_profile) {
+    % my $agent_name = $agent_profile->{name};
+    % my $store_list = $m->store_list;
+
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="medium-6 medium-centered cell">
+                <form accept-charset="UTF-8" action="/schedule/add/handler" method="get" data-abide novalidate>
+
+                    <h5 class="text-center">Add schedule record</h5>
+
+                    <div class="text-center">Source agent <%= $agent_name %></div>
+                    <div class="text-center">Database <%= $name %></div>
+
+                    <input type="hidden" name="source_id" value="<%= $agent_id %>"/>
+
+                    <label>Store
+                        <select name="dest_id" required>
+                            <option value=""></option>
+                            % foreach my $store (@{$store_list}) {
+                                % my $store_name = $store->{'name'};
+                                % my $store_id = $store->{'id'};
+                                <option value="<%= $store_id %>"><%= $store_name %></option>
+                            % }
+                        </select>
+                    </label>
+
+                    <input type="hidden" name="subject" value="<%= $name %>"/>
+                    <input type="hidden" name="type" value="dump"/>
+
+                    <label>Month Day
+                        <input type="text" name="mday" value="1-31" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Week Day
+                        <input type="text" name="wday" value="1-7" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 6 or more letter</span>
+                    </label>
+
+
+                    <label>Hours
+                        <input type="text" name="hour" value="1-24" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Minutes
+                        <input type="text" name="min"  value="1" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more letter</span>
+                    </label>
+
+                    <label>Count
+                        <input type="number" name="count" value="24"  required pattern="[0-9]{1,42}"/>
+                        <span class="form-error">Mandatory, 1 or more ciphers</span>
+                    </label>
+
+                    <div class="text-center">
+                        <button type="submit" class="button">Accept</button>
+                        <a class="button" href="/schedule/list">Escape</a>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+% }
+%#EOF
