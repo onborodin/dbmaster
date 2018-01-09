@@ -108,6 +108,11 @@ nobase_dist_pkgdata_DATA = \
 	\
 	templs/data-list.html.ep \
 	templs/data-delete-form.html.ep \
-	templs/data-delete-handler.html.ep
+	templs/data-delete-handler.html.ep \
+	\
+	templs/schedule-list.html.ep \
+	templs/schedule-add-form.html.ep \
+	templs/schedule-add-handler.html.ep
+
 
 #EOF

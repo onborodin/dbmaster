@@ -770,6 +770,48 @@ sub store_delete {
     $id;
 }
 
+# --- SCHEDULE ---
+
+sub schedule_profile {
+    my ($self, $id) = @_;
+    return undef unless $id;
+    my $row = $self->db->exec1("select * from schedule where schedule.id = $id limit 1");
+    $row;
+}
+
+sub schedule_nextid {
+    my $self = shift;
+    my $res = $self->db->exec1("select id from schedule order by id desc limit 1");
+    my $id = $res->{id} || 0;
+    $id += 1;
+}
+
+sub schedule_add {
+    my ($self, $source_id, $dest_id, $subject, $type, $mday, $wday, $hour, $min, $count) = @_;
+    return undef unless $source_id;
+    return undef unless $dest_id;
+    return undef unless $subject;
+    return undef unless $type;
+    return undef unless $mday;
+    return undef unless $wday;
+    return undef unless $hour;
+    return undef unless $min;
+    return undef unless $count;
+
+    my $next_id = $self->schedule_nextid;
+
+    $self->db->do("insert into schedule (id, source_id, dest_id, subject, type, mday, wday, hour, min, count)
+                        values ($next_id, $source_id, $dest_id, '$subject', '$type', '$mday', '$wday', '$hour', '$min', $count)");
+    return undef unless $self->schedule_profile($next_id);
+    $next_id;
+}
+
+
+sub schedule_list {
+    my $self = shift;
+    $self->db->exec("select * from schedule");
+}
+
 1;
 
 #--------------
@@ -1051,6 +1093,22 @@ sub data_delete_handler {
     $self->render(template => 'data-delete-handler');
 }
 
+sub schedule_list {
+    my $self = shift;
+    $self->render(template => 'schedule-list');
+}
+
+sub schedule_add_form {
+    my $self = shift;
+    $self->render(template => 'schedule-add-form');
+}
+sub schedule_add_handler {
+    my $self = shift;
+    $self->render(template => 'schedule-add-handler');
+}
+
+
+
 
 1;
 
@@ -1236,6 +1294,10 @@ $r->any('/db/restore/handler')->over('auth')->to('controller#db_restore_handler'
 $r->any('/data/list')->over('auth')->to('controller#data_list');
 $r->any('/data/delete/form')->over('auth')->to('controller#data_delete_form');
 $r->any('/data/delete/handler')->over('auth')->to('controller#data_delete_handler');
+
+$r->any('/schedule/list')->over('auth')->to('controller#schedule_list');
+$r->any('/schedule/add/form')->over('auth')->to('controller#schedule_add_form');
+$r->any('/schedule/add/handler')->over('auth')->to('controller#schedule_add_handler');
 
 
 #----------------

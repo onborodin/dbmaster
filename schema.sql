@@ -37,7 +37,9 @@ create table schedule (
     wday text,
     mday text,
     hour text,
-    min text
+    min text,
+    count int,
+    time int
 );
 
 create table job (
