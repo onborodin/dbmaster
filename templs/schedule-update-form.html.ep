@@ -10,23 +10,25 @@
 
 % my $schedule_id = $c->req->param('schedule_id') || 0;
 
+<%= $schedule_id %>
+
 % my $profile = $m->schedule_profile($schedule_id);
 
 % if ($profile) {
-    % my $source_id = $profile('source_id');
-    % my $dest_id = $profile('dest_id');
-    % my $subject = $profile('subject');
-    % my $type = $profile('type');
+    % my $source_id = $profile->{source_id};
+    % my $dest_id = $profile->{dest_id};
+    % my $subject = $profile->{subject};
+    % my $type = $profile->{type};
 
-    % my $mday = $profile('mday');
-    % my $wday = $profile('wday');
-    % my $hour = $profile('hour');
-    % my $min = $profile('min');
-    % my $count = $profile('count');
+    % my $mday = $profile->{mday};
+    % my $wday = $profile->{wday};
+    % my $hour = $profile->{hour};
+    % my $min = $profile->{min};
+    % my $count = $profile->{count};
 
     % my $store_list = $m->store_list;
 
-    % my $agent_profile = $m->agent_profile($agent_id);
+    % my $agent_profile = $m->agent_profile($source_id);
     % my $store_profile = $m->store_profile($dest_id);
 
     % my $agent_name = $agent_profile->{name};
@@ -35,7 +37,7 @@
     <div class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="medium-6 medium-centered cell">
-                <form accept-charset="UTF-8" action="/schedule/add/handler" method="get" data-abide novalidate>
+                <form accept-charset="UTF-8" action="/schedule/update/handler" method="get" data-abide novalidate>
 
                     <h5 class="text-center">Edit schedule record</h5>
 
@@ -43,7 +45,8 @@
                     <div class="text-center">Database <%= $subject %></div>
                     <div class="text-center">Type dump <%= $subject %></div>
 
-                    <input type="hidden" name="source_id" value="<%= $agent_id %>"/>
+                    <input type="hidden" name="schedule_id" value="<%= $schedule_id %>"/>
+                    <input type="hidden" name="source_id" value="<%= $source_id %>"/>
 
                     <label>Store
                         <select name="dest_id" required>

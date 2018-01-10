@@ -29,8 +29,8 @@
             <th>hour</th>
             <th>min</th>
             <th>count</th>
-            <th>edit</th>
-            <th>del</th>
+            <th><i class="fi-pencil"></i></th>
+            <th><i class="fi-trash"></i></th>
         </tr>
     </thead>
     <tbody>
@@ -38,6 +38,7 @@
         % my $n = 0;
         % foreach my $row (@$list) {
             % $n += 1;
+            % my $schedule_id = $row->{id};
             % my $source_id = $row->{source_id};
             % my $dest_id = $row->{dest_id};
             % my $type = $row->{type};
@@ -64,8 +65,8 @@
                 <td><%= $hour %></td>
                 <td><%= $min %></td>
                 <td><%= $count %></td>
-                <td>E</td>
-                <td>D</td>
+                <td><a href="/schedule/update/form?schedule_id=<%= $schedule_id %>"><i class="fi-pencil"></i></a></td>
+                <td><a href="/schedule/delete/form?schedule_id=<%= $schedule_id %>"><i class="fi-trash"></i></a></td>
             </tr>
 
 

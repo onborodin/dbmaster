@@ -1,0 +1,37 @@
+%#
+%# $Id$
+%#
+% layout 'default';
+% title 'DBD';
+
+% use Mojo::Util qw(dumper);
+
+% my $m = $c->app->master;
+
+% my $schedule_id = $c->req->param('schedule_id') || 0;
+% my $profile = $m->schedule_profile($schedule_id);
+
+% if ($profile) {
+
+    % my $res = $m->schedule_delete($schedule_id);
+
+    % if ($res) {
+        <div class="callout success">Schedule has been deleted</div>
+    % }
+
+    % unless ($res) {
+        <div class="callout alert">Schedule was not deleted</div>
+    % }
+    <a class="float-left button tiny" href="/schedule/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+
+% unless ($profile) {
+    <div class="callout warning">Schedule with id <%= $schedule_id %> not exist</div>
+    <a class="float-left button tiny" href="/schedule/list">
+        <i class="fi-arrow-left"></i>
+    </a>
+% }
+%#EOF
+

@@ -812,6 +812,53 @@ sub schedule_list {
     $self->db->exec("select * from schedule");
 }
 
+sub schedule_update {
+    my ($self, $id, %args) = @_;
+    return undef unless $id;
+
+    my $prof = $self->schedule_profile($id);
+    return undef unless $prof;
+
+    my $name = $args{name} || $prof->{name};
+    my $login = $args{login} || $prof->{login};
+    my $password = $args{password} || $prof->{password};
+
+
+    my $source_id = $args{source_id} || $prof->{source_id};
+    my $dest_id = $args{dest_id} || $prof->{dest_id};
+    my $subject = $args{subject} || $prof->{subject};
+    my $type = $args{type} || $prof->{type};
+    my $mday = $args{mday} || $prof->{mday};
+    my $wday = $args{wday} || $prof->{wday};
+    my $hour = $args{hour} || $prof->{hour};
+    my $min = $args{min} || $prof->{min};
+    my $count = $args{count} || $prof->{count};
+
+    my $q = "update schedule set source_id = $source_id,
+                                dest_id = $dest_id,
+                                subject = '$subject',
+                                type = '$type',
+                                mday = '$mday',
+                                wday = '$wday',
+                                hour = '$hour',
+                                min = '$min',
+                                count = $count where id = $id";
+    $self->db->do($q);
+    my $res = $self->schedule_profile($id);
+    return undef unless $res;
+    $id;
+}
+
+sub schedule_delete {
+    my ($self, $id) = @_;
+    return undef unless $id;
+    $self->db->do("delete from schedule where id = $id");
+    return undef if $self->schedule_profile($id);
+    $id;
+}
+
+
+
 1;
 
 #--------------
@@ -1107,7 +1154,25 @@ sub schedule_add_handler {
     $self->render(template => 'schedule-add-handler');
 }
 
+sub schedule_update_form {
+    my $self = shift;
+    $self->render(template => 'schedule-update-form');
+}
 
+sub schedule_update_handler {
+    my $self = shift;
+    $self->render(template => 'schedule-update-handler');
+}
+
+sub schedule_delete_form {
+    my $self = shift;
+    $self->render(template => 'schedule-delete-form');
+}
+
+sub schedule_delete_handler {
+    my $self = shift;
+    $self->render(template => 'schedule-delete-handler');
+}
 
 
 1;
@@ -1298,7 +1363,11 @@ $r->any('/data/delete/handler')->over('auth')->to('controller#data_delete_handle
 $r->any('/schedule/list')->over('auth')->to('controller#schedule_list');
 $r->any('/schedule/add/form')->over('auth')->to('controller#schedule_add_form');
 $r->any('/schedule/add/handler')->over('auth')->to('controller#schedule_add_handler');
+$r->any('/schedule/update/form')->over('auth')->to('controller#schedule_update_form');
+$r->any('/schedule/update/handler')->over('auth')->to('controller#schedule_update_handler');
 
+$r->any('/schedule/delete/form')->over('auth')->to('controller#schedule_delete_form');
+$r->any('/schedule/delete/handler')->over('auth')->to('controller#schedule_delete_handler');
 
 #----------------
 #--- LISTENER ---

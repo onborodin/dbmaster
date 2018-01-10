@@ -30,28 +30,6 @@
         <div class="callout alert">Schedule was not added.</div>
 % }
 
-<a class="float-left button tiny" href="/agent/list">
-    <i class="fi-arrow-left"></i>
-</a>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <a class="float-left button tiny" href="/schedule/list">
     <i class="fi-arrow-left"></i>
 </a>

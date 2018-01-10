@@ -376,7 +376,11 @@ nobase_dist_pkgdata_DATA = \
 	\
 	templs/schedule-list.html.ep \
 	templs/schedule-add-form.html.ep \
-	templs/schedule-add-handler.html.ep
+	templs/schedule-add-handler.html.ep \
+	templs/schedule-update-form.html.ep \
+	templs/schedule-update-handler.html.ep \
+	templs/schedule-delete-form.html.ep \
+	templs/schedule-delete-handler.html.ep
 
 all: all-am
 

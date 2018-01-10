@@ -8,6 +8,10 @@
 
 % my $m = $c->app->master;
 
+% my $schedule_id = $c->req->param('schedule_id');
+
+<%= $schedule_id %>
+
 % my $source_id = $c->req->param('source_id');
 % my $dest_id = $c->req->param('dest_id');
 % my $subject = $c->req->param('subject');
@@ -19,8 +23,7 @@
 % my $min = $c->req->param('min');
 % my $count = $c->req->param('count');
 
-
-% my $id = $m->schedule_update($id,
+% my $rid = $m->schedule_update($schedule_id,
                 % source_id => $source_id,
                 % dest_id => $dest_id,
                 % subject => $subject,
@@ -31,35 +34,13 @@
                 % min => $min,
                 % count => $count);
 
-% if ($id) {
-        <div class="callout success">Schedule  has been added.</div>
+% if ($rid) {
+        <div class="callout success">Schedule has been added.</div>
 % }
 
-% unless ($id) {
+% unless ($rid) {
         <div class="callout alert">Schedule was not added.</div>
 % }
-
-<a class="float-left button tiny" href="/agent/list">
-    <i class="fi-arrow-left"></i>
-</a>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <a class="float-left button tiny" href="/schedule/list">
     <i class="fi-arrow-left"></i>
