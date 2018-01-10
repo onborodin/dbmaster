@@ -23,7 +23,7 @@
                     <input type="hidden" name="agent_id" value="<%= $agent_id %>"/>
 
                     <label>Hostname
-                        <input type="text" value="<%= $agent_name %>" name="new_name" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
+                        <input type="text" value="<%= $agent_name %>" name="new_name" required pattern="[_\.a-zA-Z0-9]{2,42}"/>
                         <span class="form-error">Mandatory, 2 or more letter</span>
                     </label>
 

@@ -25,12 +25,12 @@
                     <input type="hidden" name="store_id" value="<%= $store_id %>"/>
 
                     <label>Login
-                        <input type="text" value="<%= $login %>" name="login" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
+                        <input type="text" value="<%= $login %>" name="login" required pattern="[_\.a-zA-Z0-9]{2,42}"/>
                         <span class="form-error">Mandatory, 2 or more letter</span>
                     </label>
 
                     <label>Password
-                        <input type="text" value="<%= $password %>" name="password" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
+                        <input type="text" value="<%= $password %>" name="password" required pattern="[_\.a-zA-Z0-9]{2,42}"/>
                         <span class="form-error">Mandatory, 2 or more letter</span>
                     </label>
 

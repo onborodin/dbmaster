@@ -16,17 +16,17 @@
                 <h5 class="text-center">Add agent</h5>
 
                 <label>Hostname
-                <input type="text" name="agent_name" placeholder="hostname" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
+                <input type="text" name="agent_name" placeholder="hostname" required pattern="[_\.a-zA-Z0-9]{2,42}"/>
                     <span class="form-error">Mandatory, 2 or more letter</span>
                 </label>
 
                 <label>Login
-                    <input type="text" name="login" placeholder="login" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                    <input type="text" name="login" placeholder="login" required pattern="[_\.a-zA-Z0-9]{5,42}"/>
                     <span class="form-error">Mandatory, 6 or more letter</span>
                 </label>
 
                 <label>Password
-                    <input type="text" name="password" placeholder="xxxxxxxxx" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{5,42}"/>
+                    <input type="text" name="password" placeholder="xxxxxxxxx" required pattern="[_\.a-zA-Z0-9]{5,42}"/>
                     <span class="form-error">Mandatory, 6 or more letter</span>
                 </label>
 

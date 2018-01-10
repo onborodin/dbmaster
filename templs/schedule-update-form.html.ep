@@ -70,27 +70,27 @@
                     <input type="hidden" name="type" value="dump"/>
 
                     <label>Subject
-                        <input type="text" name="subject" value="<%= $subject %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <input type="text" name="subject" value="<%= $subject %>" required pattern="[,*\-_\.a-zA-Z0-9]{1,42}"/>
                         <span class="form-error">Mandatory, 1 or more letter</span>
                     </label>
 
                     <label>Month Day
-                        <input type="text" name="mday" value="<%= $mday %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <input type="text" name="mday" value="<%= $mday %>" required pattern="[,*\-_\.a-zA-Z0-9]{1,42}"/>
                         <span class="form-error">Mandatory, 1 or more letter</span>
                     </label>
 
                     <label>Week Day
-                        <input type="text" name="wday" value="<%= $wday %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <input type="text" name="wday" value="<%= $wday %>" required pattern="[,*\-_\.a-zA-Z0-9]{1,42}"/>
                         <span class="form-error">Mandatory, 6 or more letter</span>
                     </label>
 
                     <label>Hours
-                        <input type="text" name="hour" value="<%= $hour %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <input type="text" name="hour" value="<%= $hour %>" required pattern="[,*\-_\.a-zA-Z0-9]{1,42}"/>
                         <span class="form-error">Mandatory, 1 or more letter</span>
                     </label>
 
                     <label>Minutes
-                        <input type="text" name="min"  value="<%= $min %>" required pattern="[,*\-_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{1,42}"/>
+                        <input type="text" name="min"  value="<%= $min %>" required pattern="[,*\-_\.a-zA-Z0-9]{1,42}"/>
                         <span class="form-error">Mandatory, 1 or more letter</span>
                     </label>
 

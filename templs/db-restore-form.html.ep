@@ -41,7 +41,7 @@
                     </label>
 
                     <label>New name
-                        <input type="text" name="name" value="a_recovered" required pattern="[_.-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,42}"/>
+                        <input type="text" name="name" value="a_recovered" required pattern="[_\.a-zA-Z0-9]{2,42}"/>
                         <span class="form-error">Mandatory, 2 or more letter</span>
                     </label>
 
