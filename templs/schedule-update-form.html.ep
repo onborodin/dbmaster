@@ -10,8 +10,6 @@
 
 % my $schedule_id = $c->req->param('schedule_id') || 0;
 
-<%= $schedule_id %>
-
 % my $profile = $m->schedule_profile($schedule_id);
 
 % if ($profile) {
@@ -27,6 +25,7 @@
     % my $count = $profile->{count};
 
     % my $store_list = $m->store_list;
+    % my $agent_list = $m->agent_list;
 
     % my $agent_profile = $m->agent_profile($source_id);
     % my $store_profile = $m->store_profile($dest_id);
@@ -46,9 +45,18 @@
                     <div class="text-center">Type dump <%= $subject %></div>
 
                     <input type="hidden" name="schedule_id" value="<%= $schedule_id %>"/>
-                    <input type="hidden" name="source_id" value="<%= $source_id %>"/>
 
-                    <label>Store
+                    <label>Source agent
+                        <select name="source_id" required>
+                            <option value="<%= $source_id %>"><%= $agent_name %></option>
+                            % foreach my $agent (@{$agent_list}) {
+                                % my $agent_name = $agent->{'name'};
+                                % my $agent_id = $agent->{'id'};
+                                <option value="<%= $agent_id %>"><%= $agent_name %></option>
+                            % }
+                        </select>
+                    </label>
+                    <label>Destination store
                         <select name="dest_id" required>
                             <option value="<%= $dest_id %>"><%= $store_name %></option>
                             % foreach my $store (@{$store_list}) {

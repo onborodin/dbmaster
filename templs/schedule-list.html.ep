@@ -41,7 +41,6 @@
             % my $schedule_id = $row->{id};
             % my $source_id = $row->{source_id};
             % my $dest_id = $row->{dest_id};
-            % my $type = $row->{type};
             % my $subject = $row->{subject};
             % my $wday = $row->{wday};
             % my $mday = $row->{mday};
@@ -49,26 +48,30 @@
             % my $min = $row->{min};
             % my $count = $row->{count};
 
-            % my $agent_profile = $m->agent_profile($source_id);
-            % my $store_profile = $m->store_profile($dest_id);
+            % my $type = $row->{type};
 
-            % my $source_name = $agent_profile->{name};
-            % my $dest_name = $store_profile->{name};
-            <tr>
-                <td><%= $n %></td>
-                <td><%= $source_name %></td>
-                <td><%= $dest_name %></td>
-                <td><%= $subject %></td>
-                <td><%= $type %></td>
-                <td><%= $wday %></td>
-                <td><%= $mday %></td>
-                <td><%= $hour %></td>
-                <td><%= $min %></td>
-                <td><%= $count %></td>
-                <td><a href="/schedule/update/form?schedule_id=<%= $schedule_id %>"><i class="fi-pencil"></i></a></td>
-                <td><a href="/schedule/delete/form?schedule_id=<%= $schedule_id %>"><i class="fi-trash"></i></a></td>
-            </tr>
+            % if ($type eq 'dump') {
+                % my $agent_profile = $m->agent_profile($source_id);
+                % my $store_profile = $m->store_profile($dest_id);
 
+                % my $source_name = $agent_profile->{name};
+                % my $dest_name = $store_profile->{name};
+
+                <tr>
+                    <td><%= $n %></td>
+                    <td><a href="/db/list?agent_id=<%= $agent_id %>"><%= $source_name %></a></td>
+                    <td><%= $dest_name %></td>
+                    <td><%= $subject %></td>
+                    <td><%= $type %></td>
+                    <td><%= $wday %></td>
+                    <td><%= $mday %></td>
+                    <td><%= $hour %></td>
+                    <td><%= $min %></td>
+                    <td><%= $count %></td>
+                    <td><a href="/schedule/update/form?schedule_id=<%= $schedule_id %>"><i class="fi-pencil"></i></a></td>
+                    <td><a href="/schedule/delete/form?schedule_id=<%= $schedule_id %>"><i class="fi-trash"></i></a></td>
+                </tr>
+            % }
 
         % }
     % }

@@ -10,8 +10,6 @@
 
 % my $schedule_id = $c->req->param('schedule_id');
 
-<%= $schedule_id %>
-
 % my $source_id = $c->req->param('source_id');
 % my $dest_id = $c->req->param('dest_id');
 % my $subject = $c->req->param('subject');
@@ -45,9 +43,4 @@
 <a class="float-left button tiny" href="/schedule/list">
     <i class="fi-arrow-left"></i>
 </a>
-
 %#EOF
-
-
-
-
