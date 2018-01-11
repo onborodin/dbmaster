@@ -537,7 +537,6 @@ sub store_profile {
     $self->rpc('/store/profile');
 }
 
-
 sub data_get {
     my ($self, $name, $dir) = @_;
 
@@ -587,6 +586,12 @@ sub data_put {
     return undef if $@;
     my $j = decode_json($res);
 }
+
+sub dump_clean {
+    my ($self, $pattern, $remain) = @_;
+    $self->rpc('/dump/clean', pattern => $pattern, remain => $remain);
+}
+
 
 1;
 
