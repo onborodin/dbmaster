@@ -59,7 +59,7 @@
 
                 <tr>
                     <td><%= $n %></td>
-                    <td><a href="/db/list?agent_id=<%= $agent_id %>"><%= $source_name %></a></td>
+                    <td><a href="/db/list?agent_id=<%= $source_id %>"><%= $source_name %></a></td>
                     <td><%= $dest_name %></td>
                     <td><%= $subject %></td>
                     <td><%= $type %></td>
