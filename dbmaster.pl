@@ -1,5 +1,173 @@
 #!@perl@
 
+#------------
+#--- CRON ---
+#------------
+
+package aCron;
+
+use strict;
+use warnings;
+use POSIX qw(strftime);
+use Mojo::Util qw(dumper);
+
+sub new {
+    my $class = shift;
+    my %quantums;
+    my %minutes;
+    my $self = {
+        quantums => \%quantums,
+        minutes => \%minutes,
+        quantum_width => 2,
+        minute_width => 60,
+        horizon => 7,
+    };
+    bless $self, $class;
+    return $self;
+}
+
+sub quantum_width {
+    my ($self, $width) = @_;
+    return $self->{quantum_width} unless $width;
+    $self->{quantum_width} = $width;
+    $self;
+}
+
+sub minute_width {
+    my ($self, $width) = @_;
+    return $self->{minute_width} unless $width;
+    $self->{minute_width} = $width;
+    $self;
+}
+
+sub horizon {
+    my ($self, $width) = @_;
+    return $self->{horizon} unless $width;
+    $self->{horizon} = $width;
+    $self;
+}
+
+
+sub quantum {
+    my ($self, $quantum, $status) = @_;
+    return $self->{quantums}->{$quantum} unless $status;
+    $self->{quantums}->{$quantum} = $status;
+    $self;
+}
+
+sub minutes {
+    my ($self, $min, $status) = @_;
+    return $self->{minutes}->{$min} unless $status;
+    $self->{minutes}->{$min} = $status;
+    $self;
+}
+
+sub get_current_quantum {
+    my $self = shift;
+    int(time/$self->quantum_width);
+}
+
+sub min {
+    my ($self, $time) = @_;
+    strftime("%M", localtime($time));
+}
+
+sub hour {
+    my ($self, $time) = @_;
+    strftime("%H", localtime($time));
+}
+
+sub wday {
+    my ($self, $time) = @_;
+    strftime("%u", localtime($time));
+}
+
+sub mday {
+    my ($self, $time) = @_;
+    strftime("%d", localtime($time));
+}
+
+sub expand {
+    my ($self, $def, $start, $limit) = @_;
+    $limit = 100 unless defined $limit;
+    $start = 1 unless defined $start;
+
+    $def =~ s/\s/,/g;
+    $def =~ s/,,/,/g;
+
+    my @list = split ',', $def;
+    my @out;
+    my %n;
+    foreach my $sub (@list) {
+        if (my ($num) = $sub =~ m/^(\d+)$/ ) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+        }
+        elsif (my ($begin, $end) = $sub =~ /^(\d+)[-. ]+(\d+)$/) {
+            foreach my $num ($begin..$end) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+            }
+        }
+        elsif (my ($inc) = $sub =~ /^[*]\/(\d+)$/) {
+            my $num = $start-1;
+            while ($num <= $limit - $inc) {
+                $num += $inc;
+                next if $num < $start;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+            }
+        }
+        elsif ($sub =~ /^[*]$/) {
+            my $num = $start;
+            my $inc = 1;
+            while ($num <= $limit) {
+                next if $num < $start;
+                next if $num > $limit;
+                push @out, $num unless $n{$num};
+                $n{$num} = 1;
+                $num += $inc;
+            }
+        }
+    }
+    @out = sort {$a <=> $b} @out;
+    return \@out
+}
+
+sub compact {
+    my ($self, $list) = @_;
+    my %n;
+    my $out;
+    foreach my $num (@{$list}) { $n{$num} = 1; }
+    foreach my $num (sort { $a <=> $b } (keys %n)) {
+        $out .= $num."-" if $n{$num + 1} && not $n{$num - 1};
+        $out .= $num."," unless $n{$num+1};
+    }
+    $out =~ s/,$//;
+    return $out;
+}
+
+sub match {
+    my ($self, $num, $spec, $start, $end) = @_;
+
+    my $list = $self->expand($spec, $start, $end);
+    foreach my $rec (@$list) {
+        return $rec if $num == $rec;
+    }
+    return undef;
+}
+
+
+1;
+
+#--------------
+#--- CONFIG ---
+#--------------
+
 package aConfig;
 
 use strict;
@@ -1466,17 +1634,121 @@ local $SIG{HUP} = sub {
     ));
 };
 
+my $cr = aCron->new;
+
+
+#------------------------------------
 my $sub = Mojo::IOLoop::Subprocess->new;
 $sub->run(
     sub {
         my $subproc = shift;
-        my $loop = Mojo::IOLoop->singleton;
-        my $id = $loop->recurring(
-            300 => sub {
+        sub do_quantum {
+
+            my $current_quantum = $cr->get_current_quantum;
+            my $quantum_status = $cr->quantum($current_quantum) || 'undef';
+
+            return 1 if $quantum_status eq 'done';
+
+            # some do for this quantum 
+            my $quantum_sec = $current_quantum * $cr->quantum_width;
+            my $current_min = int($quantum_sec / $cr->minute_width);
+
+            # the time machine
+            foreach my $old_min (($current_min - $cr->horizon)..$current_min) {
+
+                my $minute_status = $cr->minutes($old_min) || 'undef';
+                next if ($minute_status eq 'done');
+
+                my $time = $old_min * $cr->minute_width;
+
+                my $min = $cr->min($time);
+                my $hour = $cr->hour($time);
+                my $wday = $cr->wday($time);
+                my $mday = $cr->mday($time);
+
+                # some do for the past minute
+                $app->log->info("Do old_min=$old_min $hour:$min");
+                my $schedule_list = $app->master->schedule_list;
+
+                foreach my $rec (@{$schedule_list}) {
+
+                    my $mday_def = $rec->{mday};
+                    my $wday_def = $rec->{wday};
+                    my $hour_def = $rec->{hour};
+                    my $min_def = $rec->{min};
+
+                    my $id = $rec->{id};
+
+                    $app->log->debug("Check schedule record with id=$id mday=$mday_def wday=$wday_def hour=$hour_def min=$min_def");
+
+                    my $match_mday = $cr->match($mday, $mday_def, 1, 31);
+                    my $match_wday = $cr->match($wday, $wday_def, 1, 7);
+                    my $match_hour = $cr->match($hour, $hour_def, 0, 23);
+                    my $match_min = $cr->match($min, $min_def, 0, 59);
+
+                    if ($match_mday and $match_wday and $match_hour and $match_min) {
+                        $app->log->debug("Match schedule record with id=$id mday=$mday_def wday=$wday_def hour=$hour_def min=$min_def");
+
+                        my $type = $rec->{type};
+
+                        if ($type eq 'dump') {
+
+                            my $agent_id = $rec->{source_id};
+                            my $store_id = $rec->{dest_id};
+
+                            my $agent_profile = $app->master->agent_profile($agent_id);
+                            my $store_profile = $app->master->store_profile($store_id);
+
+                            my $db_name = $rec->{subject};
+
+                            if ($agent_profile) {
+
+                                my $agent_name = $agent_profile->{name};
+                                my $agent_login = $agent_profile->{login};
+                                my $agent_password = $agent_profile->{password};
+
+                                my $store_name = $store_profile->{name};
+                                my $store_login = $store_profile->{login};
+                                my $store_password = $store_profile->{password};
+
+                                my $a = aAgentI->new($agent_name, $agent_login, $agent_password);
+                                my $alive = $a->alive;
+                                if ($alive) {
+                                    my $db_profile = $a->db_profile($db_name)->{profile};
+                                    unless ($db_profile) {
+                                        $app->log->info("--- Database $db_name not exist");
+                                    }
+
+                                    if ($db_profile) {
+                                        my $res = $a->db_dump($db_name, $store_name, $store_login, $store_password, 'th.unix7.org', '123', 'magic');
+                                        if ($res) {
+                                            $app->log->info("--- Database $db_name on $agent_name will be dumped to $store_name");
+                                        } else {
+                                            $app->log->info("--- Database $agent_name on $agent_name was not dumped =(");
+                                        }
+                                    }
+                                }
+                                unless ($alive) {
+                                    $app->log->info("Agent $agent_name dead 8/. Sorry");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                # TODO: need hash cleaner
+                $cr->minutes($old_min, 'done');
             }
+            $cr->quantum($current_quantum, 'done');
+        }
+
+        my $loop = Mojo::IOLoop->singleton;
+
+        my $id = $loop->recurring(
+            1 => \&do_quantum
         );
+
         $loop->start unless $loop->is_running;
-        1;
     },
     sub {
         my ($subprocess, $err, @results) = @_;
