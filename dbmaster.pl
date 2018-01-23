@@ -1678,6 +1678,7 @@ $sub->run(
                     my $min_def = $rec->{min};
 
                     my $id = $rec->{id};
+                    my $count = $rec->{count} || 5;
 
                     $app->log->debug("Check schedule record with id=$id mday=$mday_def wday=$wday_def hour=$hour_def min=$min_def");
 
@@ -1712,8 +1713,9 @@ $sub->run(
                                 my $store_password = $store_profile->{password};
 
                                 my $a = aAgentI->new($agent_name, $agent_login, $agent_password);
-                                my $alive = $a->alive;
-                                if ($alive) {
+                                my $agent_alive = $a->alive;
+
+                                if ($agent_alive) {
                                     my $db_profile = $a->db_profile($db_name)->{profile};
                                     unless ($db_profile) {
                                         $app->log->info("--- Database $db_name not exist");
@@ -1728,9 +1730,21 @@ $sub->run(
                                         }
                                     }
                                 }
-                                unless ($alive) {
+                                unless ($agent_alive) {
                                     $app->log->info("Agent $agent_name dead 8/. Sorry");
                                 }
+                                my $s = aStoreI->new($store_name, $store_login, $store_password);
+                                my $store_alive = $s->alive;
+                                if ($store_alive) {
+                                    $s->dump_clean("$db_name--*--$agent_name*", $count);
+                                    $app->log->info("--- Clean database dumps of $db_name on store $store_name to last $count");
+                                }
+                                unless ($store_alive) {
+                                    $app->log->info("--- Store $store_name dead 8/. Sorry");
+                                }
+
+
+
                             }
                         }
                     }
