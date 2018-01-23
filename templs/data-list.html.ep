@@ -18,7 +18,7 @@
     % my $password = $profile->{password};
 
     <h5 class="text-center">
-        Stores <%= $store_name %> Dumps <a href="/data/list?store_id=<%= $store_id %>"><i class="fi-refresh"></i></a>
+        Store <%= $store_name %> dumps <a href="/data/list?store_id=<%= $store_id %>"><i class="fi-refresh"></i></a>
     </h5>
 
 
@@ -29,7 +29,10 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>dump</th>
+                    <td>name</td>
+                    <td>ts</td>
+                    <td>src</td>
+                    <td>ext</td>
                     <th><i class="fi-graph-pie"></i></th>
                     <th><i class="fi-arrow-up"></i></th>
                     <th><i class="fi-trash"></i></th>
@@ -40,15 +43,41 @@
             % my $num = 0;
             % foreach my $dump (@$list) {
                 % $num += 1;
-                % my $name = $dump->{name};
+                % my $file_name = $dump->{name};
                 % my $size = mega($dump->{size});
                 % my $mtime = $dump->{owner};
                 <tr>
                     <td><%= $num %></td>
-                    <td><%= $name %></td>
+
+                    % my ($all, $ext) = $file_name =~ /(.*)\.(sqlz|sql.gz|sql|\w{1,5})$/;
+
+                    % $all ||= $file_name;
+                    % $ext ||= '';
+
+                    % my ($db_name, $year, $month, $day, $hour, $min, $sec, $tz, $source) = $all =~
+                    %    /^(\w+)--(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})-(\w{3})--([\w\.\-_]+)$/;
+
+                    % $db_name ||= $file_name;
+                    % $year ||= '';
+                    % $month ||= '';
+                    % $day ||= '';
+                    % $hour ||= '';
+                    % $min ||= '';
+                    % $sec ||= '';
+                    % $tz ||= '';
+                    % $source ||= '';
+
+                    % my $ts = "$year-$month-$day $hour:$min $tz" if $year and $month;
+                    % $ts ||= '';
+
+                    <td><%= $db_name %></td>
+                    <td><%= $ts %></td>
+                    <td><%= $source %></td>
+                    <td><%= $ext %></td>
+
                     <td><%= $size %></td>
-                    <td><a href="/db/restore/form?store_id=<%= $store_id %>&file=<%= $name %>"><i class="fi-arrow-up"></i></a></td>
-                    <td><a href="/data/delete/form?store_id=<%= $store_id %>&file=<%= $name %>"><i class="fi-trash"></i></a></td>
+                    <td><a href="/db/restore/form?store_id=<%= $store_id %>&file=<%= $file_name %>"><i class="fi-arrow-up"></i></a></td>
+                    <td><a href="/data/delete/form?store_id=<%= $store_id %>&file=<%= $file_name %>"><i class="fi-trash"></i></a></td>
                 </tr>
             % }
             </tbody>
@@ -56,7 +85,7 @@
     % }
 
     % unless ($alive) {
-        <div class="callout alert">Communication lost. Maybe store <%= $store_name %> died. Sorry.</div>
+        <div class="callout alert">Communication lost. Maybe store <%= $store_name %> died. I'm so sorry.</div>
     % }
 % }
 
