@@ -14,7 +14,6 @@ pidfile="@APP_RUNDIR@"/dbmaster.pid
 command="@prefix@/sbin/${name}"
 command_args=""
 procname="@prefix@/sbin/${name}"
-command_interpreter="@perl@"
 
 load_rc_config ${name}
 

@@ -101,7 +101,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = dbmaster dbmaster.service rc.d/dbmaster \
+CONFIG_CLEAN_FILES = dbmaster.pl dbmaster.service rc.d/dbmaster \
 	init.d/dbmaster
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -157,7 +157,7 @@ am__can_run_installinfo = \
   esac
 DATA = $(dist_conf_DATA) $(nobase_dist_pkgdata_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/dbmaster.pl \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/dbmaster.pl.in \
 	$(srcdir)/dbmaster.service.in $(top_srcdir)/init.d/dbmaster.in \
 	$(top_srcdir)/rc.d/dbmaster.in config.guess config.sub \
 	install-sh missing
@@ -198,6 +198,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 HAVE_PERL = @HAVE_PERL@
+HAVE_PP = @HAVE_PP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -418,7 +419,7 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
-dbmaster: $(top_builddir)/config.status $(srcdir)/dbmaster.pl
+dbmaster.pl: $(top_builddir)/config.status $(srcdir)/dbmaster.pl.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 dbmaster.service: $(top_builddir)/config.status $(srcdir)/dbmaster.service.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -757,7 +758,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic mostlyclean-am
+clean-am: clean-generic clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -831,9 +832,9 @@ uninstall-am: uninstall-dist_confDATA \
 .MAKE: install-am install-data-am install-strip
 
 .PHONY: all all-am am--refresh check check-am clean clean-generic \
-	cscopelist-am ctags-am dist dist-all dist-bzip2 dist-gzip \
-	dist-lzip dist-shar dist-tarZ dist-xz dist-zip distcheck \
-	distclean distclean-generic distcleancheck distdir \
+	clean-local cscopelist-am ctags-am dist dist-all dist-bzip2 \
+	dist-gzip dist-lzip dist-shar dist-tarZ dist-xz dist-zip \
+	distcheck distclean distclean-generic distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am \
 	install-data-hook install-dist_confDATA install-dvi \
@@ -858,6 +859,16 @@ install-data-hook:
 	for data in $(nobase_conf_DATA);do \
 	  chmod 0644 $(DESTDIR)$(APP_CONFDIR)/$$data; \
 	done
+
+dbmaster: dbmaster.pl
+	pp -B -M Mojolicious::Plugin::HeaderCondition \
+	    -M Mojolicious::Plugin::EPRenderer \
+	    -M Mojolicious::Plugin::DefaultHelpers \
+	    -M Mojolicious::Plugin::TagHelpers \
+	    -M IO::Socket::SSL -f Bleach -o $@ $<
+
+clean-local:
+	rm -f dbmaster
 
 #EOF
 

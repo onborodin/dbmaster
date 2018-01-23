@@ -1,4 +1,4 @@
-AC_INIT(dbmaster.pl,0.01)
+AC_INIT(dbmaster.pl.in,0.01.7)
 AM_INIT_AUTOMAKE
 AC_PREFIX_DEFAULT(/usr/local)
 
@@ -10,6 +10,11 @@ if test "x$HAVE_PERL" = "xfalse"; then
 fi
 AC_PATH_PROG([perl],[perl])
 dnl AC_SUBST(perl, perl)
+
+AC_CHECK_PROG(HAVE_PP, pp, true, false, /usr/local/bin /usr/bin)
+if test "x$HAVE_PP" = "xfalse"; then
+	AC_MSG_ERROR([Requested program pp not found])
+fi
 
 AC_PROG_INSTALL
 
@@ -233,11 +238,12 @@ Mojo::JSON
 Mojo::Server::Prefork
 Mojo::UserAgent
 Mojo::Util
+PAR
 ])
 
 AC_OUTPUT([
 Makefile
-dbmaster:dbmaster.pl
+dbmaster.pl
 dbmaster.service
 rc.d/dbmaster
 init.d/dbmaster

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!@perl@
 
 #------------
 #--- CRON ---
@@ -1414,29 +1414,29 @@ $app = $app->controller_class('DBmaster::Controller');
 
 $app->secrets(['6d578e43ba88260e0375a1a35fd7954b']);
 
-$app->static->paths(['/usr/local/share/dbmaster/public']);
-$app->renderer->paths(['/usr/local/share/dbmaster/templs']);
+$app->static->paths(['@app_libdir@/public']);
+$app->renderer->paths(['@app_libdir@/templs']);
 
-$app->config(conffile => $conffile || '/usr/local/etc/dbmaster/dbmaster.conf');
-$app->config(pwfile => '/usr/local/etc/dbmaster/dbmaster.pw');
-$app->config(logfile => '/var/log/dbmaster/dbmaster.log');
+$app->config(conffile => $conffile || '@app_confdir@/dbmaster.conf');
+$app->config(pwfile => '@app_confdir@/dbmaster.pw');
+$app->config(logfile => '@app_logdir@/dbmaster.log');
 $app->config(loglevel => 'info');
-$app->config(pidfile => '/var/run/dbmaster/dbmaster.pid');
-$app->config(crtfile => '/usr/local/etc/dbmaster/dbmaster.crt');
-$app->config(keyfile => '/usr/local/etc/dbmaster/dbmaster.key');
+$app->config(pidfile => '@app_rundir@/dbmaster.pid');
+$app->config(crtfile => '@app_confdir@/dbmaster.crt');
+$app->config(keyfile => '@app_confdir@/dbmaster.key');
 
 $app->config(listenaddr4 => '0.0.0.0');
 $app->config(listenaddr6 => '[::]');
 $app->config(listenport => '8183');
 
-$app->config(dbname => '/var/dbmaster/dbmaster.db');
+$app->config(dbname => '@app_datadir@/dbmaster.db');
 $app->config(dbhost => '');
 $app->config(dblogin => '');
 $app->config(dbpassword => '');
 $app->config(dbengine => 'sqlite3');
 
-$app->config(group => $group || 'www');
-$app->config(user => $user || 'www');
+$app->config(group => $group || '@app_group@');
+$app->config(user => $user || '@app_user@');
 
 if (-r $app->config('conffile')) {
     $app->log->debug("Load configuration from ".$app->config('conffile'));

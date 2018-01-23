@@ -23,6 +23,17 @@ endif
 
 sbin_SCRIPTS = dbmaster
 
+dbmaster: dbmaster.pl
+	pp -B -M Mojolicious::Plugin::HeaderCondition \
+	    -M Mojolicious::Plugin::EPRenderer \
+	    -M Mojolicious::Plugin::DefaultHelpers \
+	    -M Mojolicious::Plugin::TagHelpers \
+	    -M IO::Socket::SSL -f Bleach -o $@ $<
+
+clean-local:
+	rm -f dbmaster
+
+
 confdir = @APP_CONFDIR@
 dist_conf_DATA = \
 	dbmaster.pw.example \
