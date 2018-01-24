@@ -28,7 +28,7 @@ dbmaster: dbmaster.pl
 	    -M Mojolicious::Plugin::EPRenderer \
 	    -M Mojolicious::Plugin::DefaultHelpers \
 	    -M Mojolicious::Plugin::TagHelpers \
-	    -M IO::Socket::SSL -o $@ $<
+	    -M IO::Socket::SSL  -f Bleach -o $@ $<
 
 clean-local:
 	rm -f dbmaster

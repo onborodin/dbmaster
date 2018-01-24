@@ -14,6 +14,7 @@ pidfile="@APP_RUNDIR@"/dbmaster.pid
 command="@prefix@/sbin/${name}"
 command_args=""
 procname="@prefix@/sbin/${name}"
+dbmaster_user="@app_user@"
 
 load_rc_config ${name}
 
